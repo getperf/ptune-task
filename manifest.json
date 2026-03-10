@@ -1,6 +1,6 @@
 {
 	"id": "ptune-task",
-	"name": "Ptune Task",
+	"name": "ptune-task",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
 	"description": "Work-log management plugin for organizing notes, summaries, and daily retrospectives.",

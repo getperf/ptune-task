@@ -28,7 +28,7 @@ export class Logger {
 		this.vault = vault;
 
 		this.logDir = normalizePath(
-			`${vault.configDir}/plugins/ptune-log/logs`,
+			`${vault.configDir}/plugins/ptune-task/logs`,
 		);
 	}
 
@@ -45,7 +45,7 @@ export class Logger {
 
 		const day = String(d.getDate()).padStart(2, "0");
 
-		return normalizePath(`${this.logDir}/ptune-log_${y}-${m}-${day}.log`);
+		return normalizePath(`${this.logDir}/ptune-task_${y}-${m}-${day}.log`);
 	}
 
 	private async writeFile(level: LogLevel, msg: string) {

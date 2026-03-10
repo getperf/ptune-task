@@ -1,7 +1,8 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
-import type PtunePlugin from "../../main";
 import { config } from "./config";
 import type { LogLevel } from "./types";
+import { logger } from "../shared/logger/loggerInstance";
+import PtunePlugin from "main";
 
 function isLogLevel(v: string): v is LogLevel {
 	return ["debug", "info", "warn", "error", "none"].includes(v);
@@ -20,7 +21,7 @@ export class PtuneSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		new Setting(containerEl).setName("Basic settings").setHeading();
+		new Setting(containerEl).setName("Basic").setHeading();
 
 		new Setting(containerEl)
 			.setName("Log level")
@@ -41,6 +42,12 @@ export class PtuneSettingTab extends PluginSettingTab {
 						config.settings.logLevel = value;
 
 						await config.save();
+
+						logger.configure(
+							config.settings.logLevel,
+							config.settings.enableLogFile,
+						);
+						logger.info("TEST");
 					}),
 			);
 
@@ -54,6 +61,11 @@ export class PtuneSettingTab extends PluginSettingTab {
 						config.settings.enableLogFile = value;
 
 						await config.save();
+
+						logger.configure(
+							config.settings.logLevel,
+							config.settings.enableLogFile,
+						);
 					}),
 			);
 	}
