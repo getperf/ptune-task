@@ -1,4 +1,4 @@
-# Obsidian Sample Plugin
+# Ptune Task Plugin
 
 This is a sample plugin for Obsidian (https://obsidian.md).
 
