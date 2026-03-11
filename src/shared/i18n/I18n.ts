@@ -4,7 +4,7 @@ import type { I18nSchema } from "./types";
 
 export type Lang = "ja" | "en";
 
-class I18n {
+export class I18n {
 	private dict: I18nSchema = ja;
 
 	init(lang: Lang) {
