@@ -19,7 +19,11 @@ export interface ReviewSettings {
 	noteSummaryOutputFormat: NoteSummaryOutputFormat;
 }
 
+export type Lang = "ja" | "en";
+
 export interface PluginSettings {
+	language: Lang;
+
 	logLevel: LogLevel;
 	enableLogFile: boolean;
 
