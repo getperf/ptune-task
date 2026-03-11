@@ -1,16 +1,15 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
-import { config } from "./config";
-import type { LogLevel, Lang } from "./types";
-import { logger } from "../shared/logger/loggerInstance";
 import PtunePlugin from "main";
+import { config } from "./config";
+import type { Lang } from "./types";
 import { i18n } from "../shared/i18n/I18n";
+
+import { renderBasicSettings } from "./SettingsTabBasic";
+import { renderNoteSettings } from "./SettingsTabNote";
+import { renderSnippetSettings } from "./SettingsTabSnippet";
 
 function isLang(v: string): v is Lang {
 	return ["ja", "en"].includes(v);
-}
-
-function isLogLevel(v: string): v is LogLevel {
-	return ["debug", "info", "warn", "error", "none"].includes(v);
 }
 
 export class PtuneSettingTab extends PluginSettingTab {
@@ -23,21 +22,9 @@ export class PtuneSettingTab extends PluginSettingTab {
 
 	display(): void {
 		const { containerEl } = this;
-
-		const common = i18n.common;
-		const settings = i18n.settings.basic;
-
 		containerEl.empty();
 
-		/* =========================
-		 * Basic
-		 * ========================= */
-
-		new Setting(containerEl).setName(settings.heading).setHeading();
-
-		/* =========================
-		 * Language
-		 * ========================= */
+		const common = i18n.common;
 
 		new Setting(containerEl)
 			.setName(common.language.name)
@@ -62,57 +49,10 @@ export class PtuneSettingTab extends PluginSettingTab {
 					}),
 			);
 
-		/* =========================
-		 * Log level
-		 * ========================= */
+		renderBasicSettings(containerEl);
 
-		new Setting(containerEl)
-			.setName(settings.logLevel.name)
-			.setDesc(settings.logLevel.desc)
-			.addDropdown((dropdown) =>
-				dropdown
-					.addOptions({
-						debug: settings.logLevel.options.debug,
-						info: settings.logLevel.options.info,
-						warn: settings.logLevel.options.warn,
-						error: settings.logLevel.options.error,
-						none: settings.logLevel.options.none,
-					})
-					.setValue(config.settings.logLevel)
-					.onChange(async (value) => {
-						if (!isLogLevel(value)) return;
+		renderNoteSettings(containerEl);
 
-						config.settings.logLevel = value;
-
-						await config.save();
-
-						logger.configure(
-							config.settings.logLevel,
-							config.settings.enableLogFile,
-						);
-					}),
-			);
-
-		/* =========================
-		 * Enable log file
-		 * ========================= */
-
-		new Setting(containerEl)
-			.setName(settings.enableLogFile.name)
-			.setDesc(settings.enableLogFile.desc)
-			.addToggle((toggle) =>
-				toggle
-					.setValue(config.settings.enableLogFile)
-					.onChange(async (value) => {
-						config.settings.enableLogFile = value;
-
-						await config.save();
-
-						logger.configure(
-							config.settings.logLevel,
-							config.settings.enableLogFile,
-						);
-					}),
-			);
+		renderSnippetSettings(containerEl);
 	}
 }
