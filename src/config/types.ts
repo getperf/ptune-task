@@ -21,6 +21,18 @@ export interface ReviewSettings {
 
 export type Lang = "ja" | "en";
 
+export interface HabitTaskSettings {
+	morning: string[];
+	evening: string[];
+}
+
+export interface DailyNoteTaskSettings {
+	habit: HabitTaskSettings;
+	tagSuggestions: string[];
+	goalSuggestions: string[];
+	subTaskTemplates: string[];
+}
+
 export interface PluginSettings {
 	language: Lang;
 
@@ -30,4 +42,6 @@ export interface PluginSettings {
 	note: NoteSettings;
 	snippet: SnippetSettings;
 	review: ReviewSettings;
+	habitTasks: HabitTaskSettings;
+	dailyNoteTask?: DailyNoteTaskSettings;
 }

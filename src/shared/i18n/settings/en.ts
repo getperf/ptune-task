@@ -55,6 +55,42 @@ export const settingsEn = {
 		},
 	},
 
+	dailyNoteTask: {
+		sectionTitle: "Daily Task Settings",
+
+		habit: {
+			morning: {
+				name: "Morning list",
+				desc: "Enter the tasks you perform each morning, one per line",
+				placeholder: "e.g. Exercise\nMeditate",
+			},
+
+			evening: {
+				name: "Evening list",
+				desc: "Enter the tasks you perform each evening, one per line",
+				placeholder: "e.g. Write journal\nStretch",
+			},
+		},
+
+		tagSuggestions: {
+			name: "Tag suggestions",
+			desc: "Code completion candidates for task tags (one per line)",
+			placeholder: "Design\nResearch\nPrototype\nImplementation\nVerification",
+		},
+
+		goalSuggestions: {
+			name: "Goal suggestions",
+			desc: "Code completion candidates for task goals (one per line)",
+			placeholder: "Requirements finalized\nDesign complete\nImplementation complete\nTest coverage added\nRefactoring complete\nBug fix complete",
+		},
+
+		subTaskTemplates: {
+			name: "Sub-task templates",
+			desc: "Code completion candidates for sub-tasks (one per line)",
+			placeholder: "Requirements review #Design 🍅x1\nUse cases #Design 🍅x1\nChange analysis #Research 🍅x1\nPrototype #Implementation 🍅x1\nBug fix #Implementation 🍅x1\nReview #Verification 🍅x1\nRegression test #Verification 🍅x1",
+		},
+	},
+
 	snippet: {
 		sectionTitle: "Snippet Settings",
 

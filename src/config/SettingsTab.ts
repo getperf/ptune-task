@@ -6,6 +6,7 @@ import { i18n } from "../shared/i18n/I18n";
 
 import { renderBasicSettings } from "./SettingsTabBasic";
 import { renderNoteSettings } from "./SettingsTabNote";
+import { renderDailyNoteTaskSettings } from "./SettingsTabDailyNote";
 import { renderSnippetSettings } from "./SettingsTabSnippet";
 
 function isLang(v: string): v is Lang {
@@ -52,6 +53,8 @@ export class PtuneSettingTab extends PluginSettingTab {
 		renderBasicSettings(containerEl);
 
 		renderNoteSettings(containerEl);
+
+		renderDailyNoteTaskSettings(containerEl);
 
 		renderSnippetSettings(containerEl);
 	}
