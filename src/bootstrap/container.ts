@@ -1,6 +1,5 @@
 import { App } from "obsidian";
 import { GenerateDailyReviewUseCase } from "../application/review/usecases/GenerateDailyReviewUseCase";
-import { PtuneSyncAuthService } from "../infrastructure/sync/ptune-sync/PtuneSyncAuthService";
 import { ObsidianContext } from "../infrastructure/obsidian/ObsidianContext";
 import { PullTodayCommand } from "../presentation/pull/PullTodayCommand";
 import { PushAndRebuildCommand } from "../presentation/push/PushAndRebuildCommand";
@@ -11,6 +10,7 @@ import { HookFactory } from "./factories/HookFactory";
 import { PresentationFactory } from "./factories/PresentationFactory";
 import { SyncFactory } from "./factories/SyncFactory";
 import { DailyNoteOpenHook } from "../infrastructure/obsidian/DailyNoteOpenHook";
+import { PtuneSyncUriAuthService } from "../infrastructure/sync/ptune-sync-uri/PtuneSyncUriAuthService";
 
 export class Container {
   private readonly runtime: PtuneRuntime;
@@ -24,6 +24,7 @@ export class Container {
     this.calendarFactory = new CalendarFactory(app, this.runtime);
     this.presentationFactory = new PresentationFactory(app);
     this.syncFactory = new SyncFactory(
+      app,
       this.runtime,
       this.calendarFactory,
       this.presentationFactory.createConfirmDialog(),
@@ -66,7 +67,7 @@ export class Container {
     );
   }
 
-  createAuthService(): PtuneSyncAuthService {
-    return new PtuneSyncAuthService(this.syncFactory.createClient());
+  createAuthService(): PtuneSyncUriAuthService {
+    return this.syncFactory.createAuthService();
   }
 }
