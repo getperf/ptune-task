@@ -1,115 +1,145 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code when working in this repository.
 
 ## Commands
 
 ```bash
-npm install          # install dependencies
-npm run dev          # watch mode build (inline sourcemaps)
-npm run build        # production build (minified)
-npm run lint         # eslint src/ and tests/
-npm test             # run all Jest tests
-npm test -- --testPathPattern="<file>" # run a single test file
+npm install
+npm run dev
+npm run build
+npm run lint
+npm test
+npm test -- --testPathPattern="<file>"
 ```
 
-Tests live in `**/__tests__/**/*.test.ts` and use ts-jest with a mocked `obsidian` module.
+Tests use Jest with a mocked `obsidian` module.
 
 ## Project
 
-Obsidian community plugin for work-log management (task planning, sync, daily retrospectives). Entry point is `src/main.ts` → compiled to `main.js`. The VS Code extension surface lives under `src/infrastructure/vscode/`.
+`ptune-task` is the Obsidian implementation of the ptune workflow.
+It manages Daily Note task planning, Google Tasks sync, and daily review generation.
 
-External sync is done via the `ptune-sync` CLI (spawned as a subprocess). The mock client (`src/infrastructure/sync/ptune-sync/mock/`) is used in tests.
+Entry point:
+
+- `src/main.ts` -> bundled to `main.js`
+
+Primary command surface:
+
+- `Pull Today`
+- `Push and Rebuild`
+- `Generate Daily Review`
+- `Login`
+- `Auth Status`
+
+## Authoritative references
+
+Read these before making structural changes:
+
+- `docs/architecture/development-policy.md`
+- `docs/architecture/logging-policy.md`
+- `docs/architecture/ptune-task-architecture-policy.md`
+- `docs/md-ast-core/spec-lite.md`
+- `docs/ptune-sync-skel/cli-contract.md`
+- `docs/ptune-sync-skel/uri-contract.md`
+- `docs/ptune-sync-skel/task-json-schema.md`
+
+Use archived implementations as references:
+
+- `archived/vscode-ptune-task/` is the main historical reference for the current `src/` structure
+- `archived/ptune-log/` is the secondary reference for older Obsidian patterns
 
 ## Architecture
 
-Strict layered architecture — dependencies only flow inward:
+The repository follows a simplified clean architecture with minimal DI.
 
-```
-domain ← application ← infrastructure ← presentation
-                      ↑
-                  bootstrap (DI container)
-```
-
-- **`src/domain/`** — pure TypeScript models and interfaces, no I/O. Core entities: `TaskEntry`, `TaskDocument`, `DailyNote`, `DailyReview`.
-- **`src/application/`** — use cases orchestrating domain logic: `planning/`, `sync/pull|push|diff|merge/`, `review/`, `calendar/`, `rebuild/`.
-- **`src/infrastructure/`** — I/O adapters: markdown ↔ JSON task conversion (`conversion/task/`), `DailyNoteRepository`, `ProcessRunner`, `PtuneSyncClient`, VS Code components.
-- **`src/presentation/`** — thin command entry points (`PullTodayCommand`, `PushAndRebuildCommand`, `ReviewCommand`) using presenter pattern.
-- **`src/bootstrap/container.ts`** — dependency injection; minimal by design. Creates `PtuneRuntime` and exposes public methods for command registration.
-- **`src/shared/`** — logger, i18n (English/Japanese), and `PtuneRuntime`.
-
-## Dependency Injection Strategy
-
-The project follows **minimal DI**, using **`PtuneRuntime`** as a single aggregation point with **`ObsidianContext`** for platform-specific operations:
-
-```
-container.ts (App)
-   ↓
-ObsidianContext (App reference, Obsidian API)
-   ↓
-PtuneRuntime
-   ├ dailyNoteRepository (I/O adapter)
-   ├ obsidianContext (delegated operations)
-   └ config access
-   ↓
-UseCase (receives runtime)
-   ↓
-Business Services (instantiated inline, no DI)
+```text
+presentation -> application -> domain
+                    |
+             infrastructure
+bootstrap composes the graph
 ```
 
-**Key separation:**
-- **`ObsidianContext`** (`infrastructure/obsidian/`) — Obsidian App reference and Obsidian-specific operations (path resolution, vault access)
-- **`PtuneRuntime`** (`shared/`) — Repository aggregation, delegates Obsidian ops to context
-- **Container** — Creates context → runtime; no DI bloat
+- `src/domain/` contains pure models and domain services
+- `src/application/` contains use cases and orchestration logic
+- `src/infrastructure/` contains Obsidian adapters, repositories, Markdown conversion, and sync adapters
+- `src/presentation/` contains command entry points and editor-facing UI logic
+- `src/bootstrap/` wires the app together
+- `src/shared/` contains logger, i18n, and `PtuneRuntime`
 
-**Rationale:**
-- Container stays lean; only creates context → runtime → exposes public commands
-- UseCase receives runtime only, accessing repositories and config on demand
-- Obsidian operations isolated in context, enabling alternative implementations (e.g., testing)
-- Utility services (parsers, formatters, business logic) are `new`'d inline; they do not depend on DI
-- Aligns with Obsidian plugin architecture and remains highly testable
+Dependency flow must remain inward. Do not move Obsidian API access into domain code.
 
-**Example UseCase:**
+## Dependency Injection strategy
 
-```typescript
-export class CreateDailyNoteUseCase {
-  constructor(private readonly runtime: PtuneRuntime) {}
-  
-  async execute(date: string) {
-    const repo = this.runtime.dailyNoteRepository;
-    const existing = await repo.findByDate(date);
-    if (existing) {
-      return { note: existing, created: false };
-    }
-    
-    const note = this.creator.create(date);  // creator is utility, no DI
-    await repo.save(note);
-    return { note, created: true };
-  }
-}
-```
+DI is intentionally minimal.
 
-## Infrastructure in PtuneRuntime
+- `PtuneRuntime` is the main aggregation point for infrastructure access
+- `ObsidianContext` isolates Obsidian-specific operations
+- repositories and platform adapters are wired from bootstrap/factories
+- small parsers, builders, mappers, and helpers should usually be instantiated inline
 
-The `PtuneRuntime` holds:
-- **Repositories** (e.g., `DailyNoteRepository`) — I/O adapters
-- **ObsidianContext** — Obsidian App, vault, path resolution
-- **Config access** (via `config` singleton)
+Avoid adding container-managed classes unless they represent real infrastructure boundaries.
 
-The runtime **does NOT** hold:
-- Business logic services (e.g., `HabitService`, `TaskTreeBuilder`)
-- Formatters or parsers (e.g., `TaskLineMetaParser`, `MarkdownTaskListParser`)
-- Temporary transformers or utility functions
+## Markdown editing rules
 
-Those are instantiated in place, where needed.
+Structural Markdown edits must use `md-ast-core`.
 
-## Key Conventions
+Required patterns:
 
-- TypeScript strict mode (`noImplicitAny`, `strictNullChecks`, `noImplicitReturns`).
-- Files stay under ~200–300 lines; single responsibility per file.
-- Register all Obsidian listeners via `this.registerEvent` / `this.registerDomEvent` / `this.registerInterval` so they clean up on unload.
-- Use `async/await`; avoid raw Promise chains.
-- `manifest.json` `id` is stable — never rename after release.
-- Avoid VS Code API; Obsidian plugin is the authoritative implementation.
-- Keep `PtuneRuntime` focused on infrastructure; let business services remain stateless and instantiated inline.
-- Utility services (parsers, formatters, builders) must NOT depend on DI; instantiate them where needed.
+- `MarkdownFile.parse(...)`
+- `MarkdownFile.createEmpty()`
+- section lookup via `findSection(...)` or `findSectionOrThrow(...)`
+- section/root mutation via `append(...)`, `upsert(...)`, `resetContent(...)`, `root().ensureChild(...)`
+- `toString()` for serialization
+
+Do not:
+
+- concatenate full Markdown documents
+- insert headings manually with string operations
+- mutate raw Markdown outside section APIs
+- edit YAML frontmatter as raw text
+
+Prefer existing adapters such as `DailyNoteDocumentAdapter` before introducing new Markdown manipulation paths.
+
+## Sync integration rules
+
+External sync uses the `ptune-sync` URI-based integration under `src/infrastructure/sync/ptune-sync-uri/`.
+
+Current assumptions:
+
+- desktop-only integration
+- URI format starts with `ptune-sync://`
+- work files live under the plugin work directory
+- status is read from `status.json`
+- task payloads follow the documented `schema_version` contract
+
+Do not couple Obsidian code to Python internals or SQLite schema details.
+Treat the JSON and URI contracts under `docs/ptune-sync-skel/` as the stable boundary.
+
+## Logging
+
+Follow `docs/architecture/logging-policy.md`.
+
+- log in UseCases, important Services, Repositories, and sync adapters
+- prefer counts, identifiers, and state flags
+- avoid logging full note bodies or large payloads
+- use standard tags such as `[UseCase]`, `[Service]`, `[Repository]`, `[Sync]`, `[Command]`
+
+## Conventions
+
+- TypeScript strict mode is expected
+- keep files focused and reasonably small
+- keep `src/main.ts` minimal
+- command IDs are stable API
+- keep settings backward compatible
+- update both Japanese and English dictionaries for new user-facing strings
+- register listeners with Obsidian cleanup helpers
+- use `async/await` over raw promise chains
+
+## Testing and verification
+
+After substantial changes, run when feasible:
+
+- `npm run lint`
+- `npm test`
+- `npm run build`
