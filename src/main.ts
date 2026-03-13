@@ -6,6 +6,7 @@ import { PtuneSettingTab } from "config/SettingsTab";
 import { i18n } from "./shared/i18n/I18n";
 import { Container } from "./bootstrap/container";
 import { registerAllCommands } from "./bootstrap/commandRegistrar";
+import { registerEditorFeatures } from "./bootstrap/registerEditorFeatures";
 
 export default class PtunePlugin extends Plugin {
 	async onload() {
@@ -22,6 +23,7 @@ export default class PtunePlugin extends Plugin {
 
 		const container = new Container(this.app);
 		registerAllCommands(this, container);
+		registerEditorFeatures(this);
 		container.createDailyNoteOpenHook().start(this);
 
 		logger.debug("ptune-task loaded");
