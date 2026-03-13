@@ -11,10 +11,10 @@ const INLINE_TRIGGERS: ReadonlyArray<{
 	kind: Exclude<TaskTriggerKind, "subtask">;
 	trigger: string;
 }> = [
-	{ kind: "tag", trigger: "##" },
-	{ kind: "goal", trigger: "||" },
-	{ kind: "pomodoro", trigger: "::" },
-];
+		{ kind: "tag", trigger: "##" },
+		{ kind: "goal", trigger: "||" },
+		{ kind: "pomodoro", trigger: "::" },
+	];
 
 export function detectTaskTrigger(prefix: string): TaskTriggerMatch | null {
 	for (const candidate of INLINE_TRIGGERS) {
@@ -38,10 +38,10 @@ export function detectTaskTrigger(prefix: string): TaskTriggerMatch | null {
 		};
 	}
 
-	if (prefix.endsWith("!!")) {
+	if (prefix.endsWith(";;")) {
 		return {
 			kind: "subtask",
-			trigger: "!!",
+			trigger: ";;",
 			query: "",
 			startCh: prefix.length - 2,
 		};

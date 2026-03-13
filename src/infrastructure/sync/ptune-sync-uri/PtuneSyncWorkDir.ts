@@ -4,19 +4,34 @@ export class PtuneSyncWorkDir {
   constructor(private readonly app: App) {}
 
   getRootRelative(): string {
-    return normalizePath(`${this.app.vault.configDir}/plugins/ptune-task/work`);
+    const workDir = this.getWorkDirPath();
+
+    if (!this.isAbsolutePath(workDir)) {
+      return workDir;
+    }
+
+    const basePath = this.getBasePath();
+    const normalizedBase = normalizePath(basePath);
+
+    if (workDir === normalizedBase) {
+      return ".";
+    }
+
+    const prefix = `${normalizedBase}/`;
+    if (workDir.startsWith(prefix)) {
+      return workDir.slice(prefix.length);
+    }
+
+    return workDir;
   }
 
   getRootAbsolute(): string {
-    const adapter = this.app.vault.adapter;
-
-    if (!(adapter instanceof FileSystemAdapter)) {
-      throw new Error("Ptune sync URI is only supported on desktop");
+    const workDir = this.getWorkDirPath();
+    if (this.isAbsolutePath(workDir)) {
+      return workDir;
     }
 
-    return normalizePath(
-      `${adapter.getBasePath()}/${this.getRootRelative()}`,
-    );
+    return normalizePath(`${this.getBasePath()}/${workDir}`);
   }
 
   getStatusFile(): string {
@@ -55,5 +70,23 @@ export class PtuneSyncWorkDir {
     if (!(await this.app.vault.adapter.exists(this.getRootRelative()))) {
       await this.app.vault.adapter.mkdir(this.getRootRelative());
     }
+  }
+
+  private getWorkDirPath(): string {
+    return normalizePath(`${this.app.vault.configDir}/plugins/ptune-task/work`);
+  }
+
+  private getBasePath(): string {
+    const adapter = this.app.vault.adapter;
+
+    if (!(adapter instanceof FileSystemAdapter)) {
+      throw new Error("Ptune sync URI is only supported on desktop");
+    }
+
+    return adapter.getBasePath();
+  }
+
+  private isAbsolutePath(path: string): boolean {
+    return /^[A-Za-z]:[\\/]/.test(path) || path.startsWith("//") || path.startsWith("/");
   }
 }

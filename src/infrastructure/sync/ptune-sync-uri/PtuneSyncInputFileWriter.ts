@@ -8,14 +8,12 @@ export class PtuneSyncInputFileWriter {
   ) {}
 
   async writeDiffInput(payload: string): Promise<string> {
-    const path = this.workDir.getDiffInputFile();
-    await this.app.vault.adapter.write(path, payload);
-    return path;
+    await this.app.vault.adapter.write(this.workDir.getDiffInputFile(), payload);
+    return this.workDir.getDiffInputFileAbsolute();
   }
 
   async writePushInput(payload: string): Promise<string> {
-    const path = this.workDir.getPushInputFile();
-    await this.app.vault.adapter.write(path, payload);
-    return path;
+    await this.app.vault.adapter.write(this.workDir.getPushInputFile(), payload);
+    return this.workDir.getPushInputFileAbsolute();
   }
 }

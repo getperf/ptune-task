@@ -14,7 +14,7 @@ export class PtuneSyncUriBuilder {
   buildPull(list: string, includeCompleted: boolean): string {
     return this.build("pull", {
       list,
-      includeCompleted: includeCompleted ? "true" : undefined,
+      "include-completed": includeCompleted ? "true" : undefined,
     });
   }
 
