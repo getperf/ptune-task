@@ -1,6 +1,6 @@
-import { ParsedTaskNode } from "../../../domain/planning/dto/ParsedTaskNode";
-import { TaskEntry } from "../../../domain/planning/TaskEntry";
-import { HabitService } from "../../../domain/planning/HabitService";
+import { ParsedTaskNode } from "../../../domain/task/dto/ParsedTaskNode";
+import { TaskEntry } from "../../../domain/task/TaskEntry";
+import { HabitService } from "../../../domain/task/HabitService";
 
 /**
  * ParsedTaskNode → TaskEntry 生成専用

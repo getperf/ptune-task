@@ -1,4 +1,4 @@
-import { TaskEntry } from "../../../../domain/planning/TaskEntry";
+import { TaskEntry } from "../../../../domain/task/TaskEntry";
 
 export interface TaskTreeNode {
   entry: TaskEntry;

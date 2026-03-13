@@ -1,8 +1,8 @@
 // src/task-io/transforms/json/EntriesToJson.ts
 
-import { DeletedTaskEntry } from "../../../../domain/planning/DeletedTaskEntry";
-import { TaskEntry } from "../../../../domain/planning/TaskEntry";
-import { TaskDocumentTask } from "../../../../domain/planning/TaskDocument";
+import { DeletedTaskEntry } from "../../../../domain/task/DeletedTaskEntry";
+import { TaskEntry } from "../../../../domain/task/TaskEntry";
+import { TaskDocumentTask } from "../../../../domain/task/TaskDocument";
 import { CURRENT_SCHEMA_VERSION } from "../schema/schema";
 
 

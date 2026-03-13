@@ -1,7 +1,7 @@
 // src/application/planning/usecases/MarkdownToJsonUseCase.ts
 
 import { FrontmatterParser } from "md-ast-core";
-import type { TaskKeys } from "../../../domain/planning/TaskKeys";
+import type { TaskKeys } from "../../../domain/task/TaskKeys";
 
 import {
   MarkdownTaskListParser,

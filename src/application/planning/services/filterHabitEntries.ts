@@ -1,6 +1,6 @@
 // src/application/planning/services/filterHabitEntries.ts
 
-import { TaskEntry } from "../../../domain/planning/TaskEntry";
+import { TaskEntry } from "../../../domain/task/TaskEntry";
 
 export function filterHabitEntries(
   entries: TaskEntry[],

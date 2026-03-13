@@ -1,6 +1,6 @@
 // src/task-io/transforms/json/JsonToEntries.ts
 
-import { TaskEntry } from "../../../../domain/planning/TaskEntry";
+import { TaskEntry } from "../../../../domain/task/TaskEntry";
 import { MigrationRunner } from "../schema/MigrationRunner";
 
 

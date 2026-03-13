@@ -1,5 +1,5 @@
 import { PtuneRuntime } from "../../../shared/PtuneRuntime";
-import { HabitService } from "../../../domain/planning/HabitService";
+import { HabitService } from "../../../domain/task/HabitService";
 import { i18n } from "../../../shared/i18n/I18n";
 
 export interface PlannedTaskSectionOptions {

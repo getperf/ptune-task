@@ -1,5 +1,5 @@
 import { DailyNote } from "../../domain/daily/DailyNote";
-import { TaskEntry } from "../../domain/planning/TaskEntry";
+import { TaskEntry } from "../../domain/task/TaskEntry";
 import { DailyNoteDocumentAdapter } from "../../infrastructure/document/adapter/DailyNoteDocumentAdapter";
 import { DailyNoteRepository } from "../../infrastructure/repository/DailyNoteRepository";
 import { logger } from "../../shared/logger/loggerInstance";
@@ -16,7 +16,7 @@ import { MergeTaskTreeService } from "../sync/merge/MergeTaskTreeService";
 
 import { PullQuery } from "../sync/shared/dto/PullQuery";
 import { PtuneSyncPort } from "../sync/shared/ports/PtuneSyncPort";
-import { SyncPhase } from "../../domain/sync/SyncPhase";
+import { SyncPhase } from "../../domain/task/SyncPhase";
 
 export class SyncAndRebuildDailyNoteUseCase {
   constructor(

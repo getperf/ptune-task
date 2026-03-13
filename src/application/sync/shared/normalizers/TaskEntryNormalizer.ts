@@ -1,7 +1,7 @@
 // src/application/sync/shared/TaskEntryNormalizer.ts
 
-import { TaskEntry } from "../../../../domain/planning/TaskEntry";
-import { TaskDocument, TaskDocumentTask } from "../../../../domain/planning/TaskDocument";
+import { TaskEntry } from "../../../../domain/task/TaskEntry";
+import { TaskDocument, TaskDocumentTask } from "../../../../domain/task/TaskDocument";
 
 export class TaskEntryNormalizer {
   static toDomain(doc: TaskDocument): TaskEntry[] {

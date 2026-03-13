@@ -1,4 +1,4 @@
-import { TaskEntry } from "../../../domain/planning/TaskEntry";
+import { TaskEntry } from "../../../domain/task/TaskEntry";
 import { PtuneSyncPort } from "../shared/ports/PtuneSyncPort";
 import { buildTaskTree } from "../../planning/services/buildTaskTree";
 import { generateTaskEntries } from "../../planning/services/generateTaskEntries";

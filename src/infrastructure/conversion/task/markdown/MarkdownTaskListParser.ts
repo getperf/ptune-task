@@ -1,6 +1,6 @@
 // src/task-io/transforms/markdown/MarkdownTaskListParser.ts
 
-import { ParsedTaskNode } from "../../../../domain/planning/dto/ParsedTaskNode";
+import { ParsedTaskNode } from "../../../../domain/task/dto/ParsedTaskNode";
 import { TaskLineMetaParser } from "./TaskLineMetaParser";
 import { TaskListMdastExtractor } from "./TaskListMdastExtractor";
 

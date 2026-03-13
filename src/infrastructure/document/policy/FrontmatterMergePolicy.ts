@@ -1,6 +1,6 @@
 // src/infrastructure/document/policy/FrontmatterMergePolicy.ts
 
-import { TaskKeys } from "../../../domain/planning/TaskKeys";
+import { TaskKeys } from "../../../domain/task/TaskKeys";
 
 export class FrontmatterMergePolicy {
   static union(

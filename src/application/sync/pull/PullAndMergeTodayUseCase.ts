@@ -13,12 +13,12 @@ import { renderTaskTree } from "../../planning/services/renderTaskTree";
 import { MarkdownToJsonUseCase } from "../../planning/usecases/MarkdownToJsonUseCase";
 import { MergeTaskTreeService } from "../merge/MergeTaskTreeService";
 import { DailyNoteDocumentAdapter } from "../../../infrastructure/document/adapter/DailyNoteDocumentAdapter";
-import { TaskDocumentFactory } from "../../../domain/planning/TaskDocument";
+import { TaskDocumentFactory } from "../../../domain/task/TaskDocument";
 import { TaskEntryNormalizer } from "../shared/normalizers/TaskEntryNormalizer";
 import { PtuneRuntime } from "../../../shared/PtuneRuntime";
 import { PlannedTaskSectionBuilder } from "../../planning/builders/PlannedTaskSectionBuilder";
-import { SyncPhase } from "../../../domain/sync/SyncPhase";
-import { HabitService } from "../../../domain/planning/HabitService";
+import { SyncPhase } from "../../../domain/task/SyncPhase";
+import { HabitService } from "../../../domain/task/HabitService";
 
 export class PullAndMergeTodayUseCase {
   constructor(

@@ -1,7 +1,7 @@
 // src/task-io/builders/TaskDeletionDetector.ts
 
-import { DeletedTaskEntry } from "../../../../domain/planning/DeletedTaskEntry";
-import { ParsedTaskNode } from "../../../../domain/planning/dto/ParsedTaskNode";
+import { DeletedTaskEntry } from "../../../../domain/task/DeletedTaskEntry";
+import { ParsedTaskNode } from "../../../../domain/task/dto/ParsedTaskNode";
 import { TaskKeyService } from "./TaskKeyService";
 
 export class TaskDeletionDetector {

@@ -1,9 +1,9 @@
 import { MarkdownFile, Section } from "md-ast-core";
 import { FrontmatterMergePolicy } from "../policy/FrontmatterMergePolicy";
-import { TaskKeys } from "../../../domain/planning/TaskKeys";
+import { TaskKeys } from "../../../domain/task/TaskKeys";
 import { HeadingService } from "../../../domain/heading/HeadingService";
 import { DailyHeadingKey } from "../../../domain/heading/DailyHeadingKeys";
-import { SyncPhase } from "../../../domain/sync/SyncPhase";
+import { SyncPhase } from "../../../domain/task/SyncPhase";
 import { HeadingMatcher } from "../matcher/HeadingMatcher";
 
 export class DailyNoteDocumentAdapter {

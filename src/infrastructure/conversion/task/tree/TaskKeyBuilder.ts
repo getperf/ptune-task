@@ -1,6 +1,6 @@
 import { TaskTreeNode } from "./TaskTreeBuilder";
 import { TaskKeyService } from "./TaskKeyService";
-import { TaskKeys } from "../../../../domain/planning/TaskKeys";
+import { TaskKeys } from "../../../../domain/task/TaskKeys";
 
 function isGoogleId(id: string): boolean {
   // Google Tasks ID は英数字・ハイフン・アンダースコアのみで構成され、

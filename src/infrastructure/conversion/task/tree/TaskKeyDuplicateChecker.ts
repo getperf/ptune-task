@@ -1,6 +1,6 @@
 // src/task-io/builders/TaskKeyDuplicateChecker.ts
 
-import { ParsedTaskNode } from "../../../../domain/planning/dto/ParsedTaskNode";
+import { ParsedTaskNode } from "../../../../domain/task/dto/ParsedTaskNode";
 import { TaskKeyService } from "./TaskKeyService";
 
 export class TaskKeyDuplicateChecker {

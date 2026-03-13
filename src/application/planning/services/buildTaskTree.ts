@@ -1,6 +1,6 @@
 // src/application/planning/services/buildTaskTree.ts
 
-import { TaskEntry } from "../../../domain/planning/TaskEntry";
+import { TaskEntry } from "../../../domain/task/TaskEntry";
 import { TaskTreeBuilder } from "../../../infrastructure/conversion/task";
 import type { TaskTreeNode } from "../../../infrastructure/conversion/task/tree/TaskTreeBuilder";
 

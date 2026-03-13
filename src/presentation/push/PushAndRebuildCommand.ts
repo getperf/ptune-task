@@ -9,7 +9,7 @@ import { PushPresenter } from "./PushPresenter";
 import { TodayResolver } from "../../application/calendar/services/TodayResolver";
 import { DailyNoteRepository } from "../../infrastructure/repository/DailyNoteRepository";
 import { DailyNoteDocumentAdapter } from "../../infrastructure/document/adapter/DailyNoteDocumentAdapter";
-import { SyncPhase } from "../../domain/sync/SyncPhase";
+import { SyncPhase } from "../../domain/task/SyncPhase";
 
 export class PushAndRebuildCommand {
   constructor(

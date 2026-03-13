@@ -1,8 +1,8 @@
 // src/infrastructure/conversion/task/tree/TaskKeyMatcher.ts
 
 import { TaskEntryMapper } from "../../../../application/planning/services/TaskEntryMapper";
-import { ParsedTaskNode } from "../../../../domain/planning/dto/ParsedTaskNode";
-import { TaskEntry } from "../../../../domain/planning/TaskEntry";
+import { ParsedTaskNode } from "../../../../domain/task/dto/ParsedTaskNode";
+import { TaskEntry } from "../../../../domain/task/TaskEntry";
 import { TaskKeyService } from "./TaskKeyService";
 
 export class TaskKeyMatcher {
