@@ -49,9 +49,15 @@ export class PtuneRuntime {
   }
 
   getHabitTasks(): HabitTasks {
+    const dailyNoteHabit = config.settings.dailyNoteTask?.habit;
+
     return {
-      morning: config.settings.habitTasks?.morning ?? [],
-      evening: config.settings.habitTasks?.evening ?? [],
+      morning: dailyNoteHabit?.morning
+        ?? config.settings.habitTasks?.morning
+        ?? [],
+      evening: dailyNoteHabit?.evening
+        ?? config.settings.habitTasks?.evening
+        ?? [],
     };
   }
 }

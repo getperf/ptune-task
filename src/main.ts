@@ -22,6 +22,7 @@ export default class PtunePlugin extends Plugin {
 
 		const container = new Container(this.app);
 		registerAllCommands(this, container);
+		container.createDailyNoteOpenHook().start(this);
 
 		logger.debug("ptune-task loaded");
 		this.addSettingTab(new PtuneSettingTab(this.app, this));

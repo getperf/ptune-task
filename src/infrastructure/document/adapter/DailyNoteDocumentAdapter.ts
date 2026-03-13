@@ -71,6 +71,26 @@ export class DailyNoteDocumentAdapter {
     section.resetContent(markdownBody);
   }
 
+  upsertSection(
+    key: DailyHeadingKey,
+    markdownBody: string
+  ): boolean {
+
+    const normalized =
+      markdownBody.trim();
+
+    const current =
+      this.getSectionMarkdown(key).trim();
+
+    if (current === normalized) {
+      return false;
+    }
+
+    this.replaceSection(key, markdownBody);
+
+    return true;
+  }
+
   // =========================================================
   // Frontmatter: READ
   // =========================================================

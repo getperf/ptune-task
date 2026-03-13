@@ -20,21 +20,20 @@ export interface PlannedTaskSectionTodayOptions {
 export class PlannedTaskSectionBuilder {
   static build(options: PlannedTaskSectionOptions): string {
     const lines: string[] = [];
-
-    lines.push("<!--", options.commentLine1, options.commentLine2, "-->", "");
-
     const taskLines = options.tasksMarkdown
       ? options.tasksMarkdown.split("\n")
       : [];
+    const shouldInsertDefaultHabits =
+      !options.keepExistingHabits || taskLines.length === 0;
 
-    if (options.keepExistingHabits) {
-      lines.push(...taskLines);
-    } else {
+    lines.push("<!--", options.commentLine1, options.commentLine2, "-->", "");
+
+    if (shouldInsertDefaultHabits) {
       lines.push(...HabitService.buildHabitLines(options.morningHabits));
-
       lines.push(...taskLines);
-
       lines.push(...HabitService.buildHabitLines(options.eveningHabits));
+    } else {
+      lines.push(...taskLines);
     }
 
     lines.push("");
