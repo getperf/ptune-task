@@ -1,6 +1,7 @@
 // src/infrastructure/repository/DailyNoteRepository.ts
 
-import { App, TFile } from "obsidian";
+import { App, moment, TFile } from "obsidian";
+import { createDailyNote } from "obsidian-daily-notes-interface";
 import { PtuneRuntime } from "../../shared/PtuneRuntime";
 import { DailyNote } from "../../domain/daily/DailyNote";
 import { logger } from "../../shared/logger/loggerInstance";
@@ -20,38 +21,31 @@ export class DailyNoteRepository {
       throw new Error("No active file.");
     }
 
-    const match = file.name.match(/^(\d{4}-\d{2}-\d{2})\.md$/);
-    if (!match) {
+    const date = this.runtime.parseDailyNoteDate(file.path);
+
+    if (!date) {
       logger.warn(`getActive: Not a DailyNote file (${file.path})`);
       throw new Error("Active file is not a DailyNote.");
     }
 
     const content = await this.app.vault.read(file);
-    logger.debug(`getActive: resolved date=${match[1]!}`);
+    logger.debug(`getActive: resolved date=${date}`);
 
-    return new DailyNote(match[1]!, file.path, content);
+    return new DailyNote(date, file.path, content);
   }
 
   async listExistingDates(): Promise<string[]> {
     const dir = this.runtime.resolveJournalDir();
-
     logger.debug(`listExistingDates: dir=${dir}`);
 
-    try {
-      const result = await this.app.vault.adapter.list(dir || "/");
+    const dates = this.app.vault.getMarkdownFiles()
+      .filter((file) => !dir || file.path.startsWith(`${dir}/`) || file.path === `${dir}.md`)
+      .map((file) => this.runtime.parseDailyNoteDate(file.path))
+      .filter((date): date is string => date !== null);
 
-      const dates = result.files
-        .map((f) => f.split("/").pop() ?? f)
-        .filter((name) => /^\d{4}-\d{2}-\d{2}\.md$/.test(name))
-        .map((name) => name.replace(".md", ""));
+    logger.debug(`listExistingDates: found ${dates.length} notes`);
 
-      logger.debug(`listExistingDates: found ${dates.length} notes`);
-
-      return dates;
-    } catch {
-      logger.warn(`listExistingDates: directory not found or unreadable (${dir})`);
-      return [];
-    }
+    return dates;
   }
 
   async findByDate(date: string): Promise<DailyNote | null> {
@@ -78,11 +72,15 @@ export class DailyNoteRepository {
       if (existing instanceof TFile) {
         await this.app.vault.modify(existing, note.content);
       } else {
-        const dir = this.runtime.resolveJournalDir();
-        if (dir && !(await this.app.vault.adapter.exists(dir))) {
-          await this.app.vault.adapter.mkdir(dir);
+        const created = await createDailyNote(
+          moment(note.date, "YYYY-MM-DD", true),
+        );
+
+        if (note.filePath !== created.path) {
+          logger.debug(`save: created resolved path ${created.path}`);
         }
-        await this.app.vault.create(note.filePath, note.content);
+
+        await this.app.vault.modify(created, note.content);
       }
 
       logger.info(`save: completed (${note.filePath})`);

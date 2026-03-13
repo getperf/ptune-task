@@ -1,4 +1,6 @@
 import { App } from "obsidian";
+import { getDailyNoteSettings } from "obsidian-daily-notes-interface";
+import { DailyNotePathResolver } from "../repository/DailyNotePathResolver";
 
 /**
  * Obsidian-specific context and operations.
@@ -18,18 +20,26 @@ export class ObsidianContext {
    * Returns vault-relative path or empty string if not configured.
    */
   resolveJournalDir(): string {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const dailyNotes = (this.app as any).internalPlugins?.plugins?.["daily-notes"];
-    const folder = dailyNotes?.instance?.options?.folder as string | undefined;
-    return folder?.trim() || "";
+    return getDailyNoteSettings().folder?.trim() || "";
   }
 
   /**
-   * Resolve note URI for a given date (YYYY-MM-DD).
-   * Returns path in format: {journalDir}/{date}.md
+   * Resolve note URI using the Daily Notes plugin format.
    */
   resolveNoteUri(date: string): string {
-    const folder = this.resolveJournalDir();
-    return folder ? `${folder}/${date}.md` : `${date}.md`;
+    return this.getPathResolver().resolve(date);
+  }
+
+  parseDailyNoteDate(path: string): string | null {
+    return this.getPathResolver().parse(path);
+  }
+
+  private getPathResolver(): DailyNotePathResolver {
+    const settings = getDailyNoteSettings();
+
+    return new DailyNotePathResolver(
+      settings.folder?.trim() || "",
+      settings.format?.trim() || "YYYY-MM-DD",
+    );
   }
 }

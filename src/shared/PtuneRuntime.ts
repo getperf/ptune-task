@@ -48,6 +48,10 @@ export class PtuneRuntime {
     return this.obsidianContext.resolveNoteUri(date);
   }
 
+  parseDailyNoteDate(path: string): string | null {
+    return this.obsidianContext.parseDailyNoteDate(path);
+  }
+
   getHabitTasks(): HabitTasks {
     const dailyNoteHabit = config.settings.dailyNoteTask?.habit;
 

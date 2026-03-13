@@ -7,6 +7,7 @@ import {
   EditorSuggestTriggerInfo,
   TFile,
 } from "obsidian";
+import { getDailyNoteSettings } from "obsidian-daily-notes-interface";
 import { config } from "../../config/config";
 import {
   getTaskBodyStart,
@@ -18,6 +19,7 @@ import {
   TaskTriggerKind,
 } from "../../application/completion/TaskTriggerDetector";
 import { isInsidePlannedSection } from "../../application/completion/PlannedSectionDetector";
+import { DailyNotePathResolver } from "../../infrastructure/repository/DailyNotePathResolver";
 
 interface TaskSuggestionItem {
   kind: TaskTriggerKind;
@@ -41,7 +43,7 @@ export class TaskInlineSuggest extends EditorSuggest<TaskSuggestionItem> {
     editor: Editor,
     file: TFile | null,
   ): EditorSuggestTriggerInfo | null {
-    if (!file || !/^\d{4}-\d{2}-\d{2}\.md$/.test(file.name)) {
+    if (!file || !this.isDailyNoteFile(file)) {
       return null;
     }
 
@@ -167,5 +169,15 @@ export class TaskInlineSuggest extends EditorSuggest<TaskSuggestionItem> {
           }))
           .filter((item) => item.label.startsWith(query));
     }
+  }
+
+  private isDailyNoteFile(file: TFile): boolean {
+    const settings = getDailyNoteSettings();
+    const resolver = new DailyNotePathResolver(
+      settings.folder?.trim() || "",
+      settings.format?.trim() || "YYYY-MM-DD",
+    );
+
+    return resolver.parse(file.path) !== null;
   }
 }

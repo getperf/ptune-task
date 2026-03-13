@@ -29,6 +29,7 @@
 	},
 	"dependencies": {
 		"md-ast-core": "file:../md-ast-core/md-ast-core-1.0.0.tgz",
-		"obsidian": "latest"
+		"obsidian": "latest",
+		"obsidian-daily-notes-interface": "^0.9.4"
 	}
 }
