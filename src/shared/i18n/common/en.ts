@@ -30,6 +30,8 @@ export const commonEn = {
 			projectFolderTitle: "Create Project Folder",
 			projectNoteTitle: "Create Note",
 			targetLabel: "Target folder",
+			taskKeyLabel: "Select task",
+			taskKeyEmptyOption: "(None)",
 			titleLabel: "Title",
 			titlePlaceholder: "Enter title",
 		},

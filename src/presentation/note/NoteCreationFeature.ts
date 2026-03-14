@@ -10,6 +10,7 @@ import {
 import { NoteCreationRequest } from "../../application/note/NoteCreationModels";
 import { NoteCreationUseCase } from "../../application/note/NoteCreationUseCase";
 import { ProjectFolder } from "../../domain/project/ProjectFolder";
+import { TodayTaskKeyReader } from "../../infrastructure/obsidian/TodayTaskKeyReader";
 import { i18n } from "../../shared/i18n/I18n";
 import { logger } from "../../shared/logger/loggerInstance";
 import { NoteCreatorModal } from "./NoteCreatorModal";
@@ -18,6 +19,7 @@ export class NoteCreationFeature {
   constructor(
     private readonly app: App,
     private readonly useCase: NoteCreationUseCase,
+    private readonly taskKeyReader: TodayTaskKeyReader,
   ) {}
 
   start(plugin: Plugin): void {
@@ -61,13 +63,16 @@ export class NoteCreationFeature {
 
     try {
       const prefix = await this.useCase.getProjectFolderPrefix(folder.path);
+      const taskKeyOptions = this.taskKeyReader.readToday();
       logger.debug(`[Command] NoteCreationFeature.openProjectFolderModal prefix=${prefix} path=${folder.path}`);
+      logger.debug(`[Command] NoteCreationFeature.openProjectFolderModal taskOptions=${taskKeyOptions.length} path=${folder.path}`);
 
       new NoteCreatorModal(
         this.app,
         "project-folder",
         folder.path,
         prefix,
+        taskKeyOptions,
         async (input) => {
           if (!this.validateTitle(input.title)) {
             return false;
@@ -75,7 +80,7 @@ export class NoteCreationFeature {
 
           try {
             const created = await this.useCase.createProjectFolder(
-              this.buildRequest(folder.path, input.title),
+              this.buildRequest(folder.path, input.title, input.taskKey),
             );
             await this.openFileIfExists(created.indexNotePath);
             logger.info(`[Command] NoteCreationFeature.notice ${i18n.common.noteCreation.notice.projectFolderCreated} path=${created.path}`);
@@ -103,13 +108,16 @@ export class NoteCreationFeature {
 
     try {
       const prefix = await this.useCase.getProjectNotePrefix(folder.path);
+      const taskKeyOptions = this.taskKeyReader.readToday();
       logger.debug(`[Command] NoteCreationFeature.openProjectNoteModal prefix=${prefix} path=${folder.path}`);
+      logger.debug(`[Command] NoteCreationFeature.openProjectNoteModal taskOptions=${taskKeyOptions.length} path=${folder.path}`);
 
       new NoteCreatorModal(
         this.app,
         "project-note",
         folder.path,
         prefix,
+        taskKeyOptions,
         async (input) => {
           if (!this.validateTitle(input.title)) {
             return false;
@@ -117,7 +125,7 @@ export class NoteCreationFeature {
 
           try {
             const created = await this.useCase.createProjectNote(
-              this.buildRequest(folder.path, input.title),
+              this.buildRequest(folder.path, input.title, input.taskKey),
             );
             await this.openFileIfExists(created.notePath);
             logger.info(`[Command] NoteCreationFeature.notice ${i18n.common.noteCreation.notice.projectNoteCreated} path=${created.notePath}`);
@@ -143,10 +151,12 @@ export class NoteCreationFeature {
   private buildRequest(
     parentPath: string,
     title: string,
+    taskKey?: string,
   ): NoteCreationRequest {
     return {
       parentPath,
       title,
+      taskKey,
     };
   }
 

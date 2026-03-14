@@ -9,6 +9,10 @@ export class ProjectIndexBuilder {
     frontmatter.set("created", createdAt);
     frontmatter.set("updated", createdAt);
 
+    if (folder.taskKey) {
+      frontmatter.set("taskKey", folder.taskKey);
+    }
+
     md.root().appendChild({
       title: folder.title,
       depth: 1,

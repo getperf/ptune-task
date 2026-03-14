@@ -30,6 +30,8 @@ export const commonJa = {
 			projectFolderTitle: "プロジェクトフォルダ作成",
 			projectNoteTitle: "ノート作成",
 			targetLabel: "対象フォルダ",
+			taskKeyLabel: "タスクを選択",
+			taskKeyEmptyOption: "(選択なし)",
 			titleLabel: "タイトル",
 			titlePlaceholder: "タイトルを入力",
 		},

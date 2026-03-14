@@ -1,5 +1,6 @@
 import { App, Modal, Setting } from "obsidian";
 import { NoteCreationKind } from "../../application/note/NoteCreationModels";
+import { TaskKeyOption } from "../../application/note/TaskKeyOption";
 import { i18n } from "../../shared/i18n/I18n";
 import { logger } from "../../shared/logger/loggerInstance";
 
@@ -11,12 +12,15 @@ export interface NoteCreatorModalSubmit {
 
 export class NoteCreatorModal extends Modal {
   private title = "";
+  private taskKey: string | undefined;
+  private isTitleEdited = false;
 
   constructor(
     app: App,
     private readonly kind: NoteCreationKind,
     private readonly targetPath: string,
     private readonly prefix: string,
+    private readonly taskKeyOptions: TaskKeyOption[],
     private readonly onSubmit: (input: NoteCreatorModalSubmit) => Promise<boolean>,
   ) {
     super(app);
@@ -41,10 +45,39 @@ export class NoteCreatorModal extends Modal {
       cls: "ptune-note-create-target",
     });
 
+    let titleInputEl: HTMLInputElement | null = null;
+
+    if (this.taskKeyOptions.length > 0) {
+      new Setting(contentEl)
+        .setName(t.modal.taskKeyLabel)
+        .addDropdown((dropdown) => {
+          dropdown.addOption("", t.modal.taskKeyEmptyOption);
+
+          for (const option of this.taskKeyOptions) {
+            dropdown.addOption(option.taskKey, option.label);
+          }
+
+          dropdown.onChange((value) => {
+            this.taskKey = value || undefined;
+
+            const selected = this.taskKeyOptions.find((option) => option.taskKey === value);
+            logger.debug(`[Command] NoteCreatorModal.taskSelected kind=${this.kind} taskKey=${value || "none"}`);
+
+            if (!selected || this.isTitleEdited || !titleInputEl) {
+              return;
+            }
+
+            this.title = selected.suggestedTitle;
+            titleInputEl.value = selected.suggestedTitle;
+          });
+        });
+    }
+
     new Setting(contentEl)
       .setName(t.modal.titleLabel)
       .addText((text) => {
         this.decorateTitleInput(text.inputEl);
+        titleInputEl = text.inputEl;
         text.inputEl.placeholder = t.modal.titlePlaceholder;
         text.inputEl.addEventListener("keydown", (event) => {
           if (event.key !== "Enter") {
@@ -56,6 +89,7 @@ export class NoteCreatorModal extends Modal {
         });
         text.onChange((value) => {
           this.title = value;
+          this.isTitleEdited = true;
         });
 
         setTimeout(() => text.inputEl.focus(), 0);
@@ -104,6 +138,7 @@ export class NoteCreatorModal extends Modal {
 
     const completed = await this.onSubmit({
       title: this.title.trim(),
+      taskKey: this.taskKey,
     });
 
     if (completed) {

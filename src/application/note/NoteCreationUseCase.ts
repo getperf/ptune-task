@@ -41,6 +41,7 @@ export class NoteCreationUseCase {
     const prefix = await this.getFolderPrefix(request.parentPath);
     const folder = new ProjectFolder(
       joinPath(request.parentPath, `${prefix}_${request.title.trim()}`),
+      normalizeOptionalText(request.taskKey),
     );
 
     if (this.repository.exists(folder.path)) {

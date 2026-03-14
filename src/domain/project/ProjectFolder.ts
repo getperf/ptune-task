@@ -4,9 +4,11 @@ export class ProjectFolder {
   static readonly rootDir = PROJECT_ROOT_DIR;
 
   readonly path: string;
+  readonly taskKey?: string;
 
-  constructor(path: string) {
+  constructor(path: string, taskKey?: string) {
     this.path = normalizePath(path);
+    this.taskKey = taskKey;
   }
 
   static isProjectRootPath(path: string): boolean {
