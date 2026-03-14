@@ -10,6 +10,7 @@ import { HookFactory } from "./factories/HookFactory";
 import { PresentationFactory } from "./factories/PresentationFactory";
 import { SyncFactory } from "./factories/SyncFactory";
 import { DailyNoteOpenHook } from "../infrastructure/obsidian/DailyNoteOpenHook";
+import { LayoutReadyHook } from "../infrastructure/obsidian/LayoutReadyHook";
 import { PtuneSyncUriAuthService } from "../infrastructure/sync/ptune-sync-uri/PtuneSyncUriAuthService";
 
 export class Container {
@@ -58,6 +59,10 @@ export class Container {
 
   createDailyNoteOpenHook(): DailyNoteOpenHook {
     return this.hookFactory.createDailyNoteOpenHook();
+  }
+
+  createLayoutReadyHook(): LayoutReadyHook {
+    return this.hookFactory.createLayoutReadyHook();
   }
 
   createGenerateDailyReviewUseCase(): GenerateDailyReviewUseCase {

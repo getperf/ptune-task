@@ -1,5 +1,7 @@
 import { App } from "obsidian";
 import { DailyNoteOpenHook } from "../../infrastructure/obsidian/DailyNoteOpenHook";
+import { LayoutReadyHook } from "../../infrastructure/obsidian/LayoutReadyHook";
+import { LayoutRelocator } from "../../infrastructure/obsidian/LayoutRelocator";
 import { CalendarFactory } from "./CalendarFactory";
 
 export class HookFactory {
@@ -13,5 +15,9 @@ export class HookFactory {
       this.app,
       this.calendarFactory.createEnsureTodayDailyNoteSectionsUseCase(),
     );
+  }
+
+  createLayoutReadyHook(): LayoutReadyHook {
+    return new LayoutReadyHook(this.app, new LayoutRelocator(this.app));
   }
 }
