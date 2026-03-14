@@ -14,9 +14,33 @@ export const commonEn = {
 	},
 
 	action: {
+		create: "Create",
 		confirm: "Execute",
 		cancel: "Cancel",
 		close: "Close",
+	},
+
+	noteCreation: {
+		menu: {
+			createProjectFolder: "Create Project Folder",
+			createProjectNote: "Create Note",
+		},
+
+		modal: {
+			projectFolderTitle: "Create Project Folder",
+			projectNoteTitle: "Create Note",
+			targetLabel: "Target folder",
+			titleLabel: "Title",
+			titlePlaceholder: "Enter title",
+		},
+
+		notice: {
+			titleRequired: "Title is required",
+			invalidTitle: "Title contains invalid characters",
+			projectFolderCreated: "Project folder created",
+			projectNoteCreated: "Note created",
+			createFailed: "Failed to create",
+		},
 	},
 
 	daily: {

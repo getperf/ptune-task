@@ -62,4 +62,29 @@
    Plugin UI
    ========================================================================== */
 
-/* Add ptune-task specific modal/view styles here as current features need them. */
+.long-text-input {
+  width: 100%;
+  max-width: 600px;
+}
+
+.filename-prefix,
+.filename-suffix {
+  font-family: monospace;
+  font-size: 0.9em;
+  color: var(--text-muted);
+}
+
+.filename-prefix {
+  margin-right: 4px;
+}
+
+.filename-suffix {
+  margin-left: 4px;
+}
+
+.ptune-note-create-target {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: var(--text-muted);
+  word-break: break-all;
+}

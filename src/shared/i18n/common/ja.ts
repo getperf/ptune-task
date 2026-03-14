@@ -14,9 +14,33 @@ export const commonJa = {
 	},
 
 	action: {
+		create: "作成",
 		confirm: "実行する",
 		cancel: "キャンセル",
 		close: "閉じる",
+	},
+
+	noteCreation: {
+		menu: {
+			createProjectFolder: "プロジェクトフォルダ作成",
+			createProjectNote: "ノート作成",
+		},
+
+		modal: {
+			projectFolderTitle: "プロジェクトフォルダ作成",
+			projectNoteTitle: "ノート作成",
+			targetLabel: "対象フォルダ",
+			titleLabel: "タイトル",
+			titlePlaceholder: "タイトルを入力",
+		},
+
+		notice: {
+			titleRequired: "タイトルが未入力です",
+			invalidTitle: "タイトルに無効な文字があります",
+			projectFolderCreated: "プロジェクトフォルダを作成しました",
+			projectNoteCreated: "ノートを作成しました",
+			createFailed: "作成に失敗しました",
+		},
 	},
 
 	daily: {
