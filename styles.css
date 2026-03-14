@@ -1,8 +1,65 @@
 /*
+ * ptune-task styles
+ *
+ * Keep this as a single file for Obsidian plugin packaging.
+ * Split concerns with section comments rather than multiple CSS files.
+ */
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+/* ==========================================================================
+   Layout: File Explorer
+   ========================================================================== */
 
-If your plugin does not need CSS, delete this file.
+.nav-folder-children {
+  margin-left: 1px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
 
-*/
+.nav-file-title,
+.nav-folder-title {
+  padding-top: 1px !important;
+  padding-bottom: 1px !important;
+  line-height: 1.1 !important;
+}
+
+/* ==========================================================================
+   Layout: Outline
+   ========================================================================== */
+
+.workspace-leaf-content[data-type="outline"] .tree-item-children {
+  margin-left: 1px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.workspace-leaf-content[data-type="outline"] .tree-item-self {
+  padding-top: 1px !important;
+  padding-bottom: 1px !important;
+  line-height: 1.1 !important;
+}
+
+.workspace-leaf-content[data-type="outline"] .tree-item-self .tree-item-inner {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ==========================================================================
+   Layout: Tags
+   ========================================================================== */
+
+.workspace-leaf-content[data-type="tag"] .tree-item-self {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  line-height: 1.1 !important;
+}
+
+.workspace-leaf-content[data-type="tag"] .tree-item-children {
+  margin-left: 1px !important;
+}
+
+/* ==========================================================================
+   Plugin UI
+   ========================================================================== */
+
+/* Add ptune-task specific modal/view styles here as current features need them. */
