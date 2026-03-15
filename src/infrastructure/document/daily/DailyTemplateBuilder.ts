@@ -9,6 +9,7 @@ export interface DailyTemplateOptions {
 }
 
 export class DailyTemplateBuilder {
+  private static readonly SECTION_SEPARATOR = "---";
 
   build(
     options: DailyTemplateOptions,
@@ -16,21 +17,39 @@ export class DailyTemplateBuilder {
 
     const md = MarkdownFile.createEmpty();
 
-    const heading = HeadingService.resolve("daily.section.planned.title");
+    const planned = HeadingService.resolve("daily.section.planned.title");
+    const timelog = HeadingService.resolve("daily.section.timelog.title");
+    const memo = HeadingService.resolve("daily.section.memo.title");
 
     md.root().appendChild({
-      title: heading.renderedTitle,
-      depth: heading.depth,
+      title: planned.renderedTitle,
+      depth: planned.depth,
       content: () =>
-        PlannedTaskSectionBuilder.build({
-          commentLine1: i18n.common.daily.planned.comment.line1,
-          commentLine2: i18n.common.daily.planned.comment.line2,
-          morningHabits: options.morningHabits,
-          eveningHabits: options.eveningHabits,
-          keepExistingHabits: false,
-        }),
+        `${this.buildPlannedSection(options)}\n\n${DailyTemplateBuilder.SECTION_SEPARATOR}`,
+    });
+
+    md.root().appendChild({
+      title: timelog.renderedTitle,
+      depth: timelog.depth,
+      content: () => DailyTemplateBuilder.SECTION_SEPARATOR,
+    });
+
+    md.root().appendChild({
+      title: memo.renderedTitle,
+      depth: memo.depth,
+      content: () => DailyTemplateBuilder.SECTION_SEPARATOR,
     });
 
     return md.toString();
+  }
+
+  private buildPlannedSection(options: DailyTemplateOptions): string {
+    return PlannedTaskSectionBuilder.build({
+      commentLine1: i18n.common.daily.planned.comment.line1,
+      commentLine2: i18n.common.daily.planned.comment.line2,
+      morningHabits: options.morningHabits,
+      eveningHabits: options.eveningHabits,
+      keepExistingHabits: false,
+    });
   }
 }
