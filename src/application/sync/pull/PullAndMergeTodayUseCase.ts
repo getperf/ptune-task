@@ -19,6 +19,8 @@ import { PtuneRuntime } from "../../../shared/PtuneRuntime";
 import { PlannedTaskSectionBuilder } from "../../planning/builders/PlannedTaskSectionBuilder";
 import { SyncPhase } from "../../../domain/task/SyncPhase";
 import { HabitService } from "../../../domain/task/HabitService";
+import type { TaskEntry } from "../../../domain/task/TaskEntry";
+import type { RawPayload } from "../../../infrastructure/conversion/task/json/JsonToEntries";
 
 export class PullAndMergeTodayUseCase {
   constructor(
@@ -31,9 +33,10 @@ export class PullAndMergeTodayUseCase {
   ) {}
 
   async execute(): Promise<{ note: DailyNote; created: boolean }> {
-    logger.info("PullAndMergeTodayUseCase started");
+    logger.debug("[UseCase:start] PullAndMergeTodayUseCase");
 
     const today = this.todayResolver.resolve();
+    logger.debug(`[UseCase] PullAndMergeTodayUseCase date=${today}`);
 
     let note = await this.repository.findByDate(today);
     let created = false;
@@ -48,17 +51,25 @@ export class PullAndMergeTodayUseCase {
     const adapter = new DailyNoteDocumentAdapter(note.content);
 
     const phase = adapter.getSyncPhase() ?? SyncPhase.Planning;
+    logger.debug(`[UseCase] PullAndMergeTodayUseCase phase=${phase} created=${created}`);
 
     const raw = await this.syncPort.pull({
       list: "_Today",
       includeCompleted: phase === SyncPhase.Working,
     });
 
-    const payload = JSON.parse(raw);
+    logger.debug(`[Sync] PullAndMergeTodayUseCase rawBytes=${raw.length}`);
+    const payload = JSON.parse(raw) as RawPayload;
+    logger.debug(
+      `[Sync] PullAndMergeTodayUseCase payload schema=${"schema_version" in payload ? payload.schema_version : "unknown"} tasks=${Array.isArray(payload) ? payload.length : payload.tasks?.length ?? 0}`,
+    );
 
     const habits = this.runtime.getHabitTasks();
 
     const habitSet = new Set([...habits.morning, ...habits.evening]);
+    logger.debug(
+      `[UseCase] PullAndMergeTodayUseCase habits morning=${habits.morning.length} evening=${habits.evening.length} unique=${habitSet.size}`,
+    );
 
     // --- Google entries ---
     const googleEntriesRaw = generateTaskEntries(payload);
@@ -69,13 +80,13 @@ export class PullAndMergeTodayUseCase {
     );
 
     logger.debug(
-      "googleEntries:",
-      googleEntries.map((e) => e.title),
+      `[UseCase] PullAndMergeTodayUseCase remoteEntries raw=${googleEntriesRaw.length} filtered=${googleEntries.length} roots=${this.countRootEntries(googleEntries)}`,
     );
     const googleTree = buildTaskTree(googleEntries);
 
     // --- Local parse ---
     const localJson = MarkdownToJsonUseCase.execute(note.content);
+    logger.debug(`[UseCase] PullAndMergeTodayUseCase localJsonBytes=${localJson.length}`);
 
     const taskDoc = TaskDocumentFactory.fromJson(localJson);
 
@@ -84,8 +95,7 @@ export class PullAndMergeTodayUseCase {
     const localEntries = HabitService.filterEntries(localEntriesRaw, habitSet);
 
     logger.debug(
-      "localEntries:",
-      localEntries.map((e) => e.title),
+      `[UseCase] PullAndMergeTodayUseCase localEntries raw=${localEntriesRaw.length} filtered=${localEntries.length} roots=${this.countRootEntries(localEntries)}`,
     );
     const localTree = buildTaskTree(localEntries);
 
@@ -94,33 +104,25 @@ export class PullAndMergeTodayUseCase {
 
     // --- Render ---
     const rendered = renderTaskTree(mergedTree);
-    logger.debug("rendered.taskListMarkdown:", rendered.taskListMarkdown);
+    logger.debug(
+      `[UseCase] PullAndMergeTodayUseCase rendered taskMarkdownBytes=${rendered.taskListMarkdown.length} taskKeys=${Object.keys(rendered.taskKeys).length}`,
+    );
     const isFirstPull = adapter.getTaskKeysCount() === 0;
+    logger.debug(`[UseCase] PullAndMergeTodayUseCase isFirstPull=${isFirstPull}`);
 
     // --- Habit detection ---
-    // const habits = this.runtime.getHabitTasks();
-    logger.debug("runtime habits:", habits);
-    // const habitSet = new Set([...habits.morning, ...habits.evening]);
-
     const hasHabit = localEntries.some((e) => habitSet.has(e.title));
+    logger.debug(`[UseCase] PullAndMergeTodayUseCase localHasHabit=${hasHabit}`);
 
     // --- Section build ---
-    // let sectionMarkdown: string;
     const sectionMarkdown = PlannedTaskSectionBuilder.buildForToday({
       tasksMarkdown: rendered.taskListMarkdown,
       runtime: this.runtime,
       keepExistingHabits: false,
     });
-    // if (hasHabit) {
-    //   sectionMarkdown = PlannedTaskSectionBuilder.buildForToday({
-    //     tasksMarkdown: rendered.taskListMarkdown,
-    //     keepExistingHabits: false,
-    //     runtime: this.runtime,
-    //   });
-    // } else {
-    //   sectionMarkdown = rendered.taskListMarkdown;
-    // }
-    logger.debug("sectionMarkdown(before replace):", sectionMarkdown);
+    logger.debug(
+      `[UseCase] PullAndMergeTodayUseCase sectionMarkdownBytes=${sectionMarkdown.length}`,
+    );
     adapter.replaceSection("daily.section.planned.title", sectionMarkdown);
 
     adapter.replaceTaskKeys(rendered.taskKeys);
@@ -129,8 +131,14 @@ export class PullAndMergeTodayUseCase {
 
     await this.repository.save(updated);
 
-    logger.info("PullAndMergeTodayUseCase completed");
+    logger.debug(
+      `[UseCase:end] PullAndMergeTodayUseCase date=${today} created=${created} remote=${googleEntries.length} local=${localEntries.length} taskKeys=${Object.keys(rendered.taskKeys).length}`,
+    );
 
     return { note: updated, created };
+  }
+
+  private countRootEntries(entries: Array<Pick<TaskEntry, "parentId">>): number {
+    return entries.filter((entry) => !entry.parentId).length;
   }
 }

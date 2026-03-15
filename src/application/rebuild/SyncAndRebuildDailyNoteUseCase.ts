@@ -17,6 +17,7 @@ import { MergeTaskTreeService } from "../sync/merge/MergeTaskTreeService";
 import { PullQuery } from "../sync/shared/dto/PullQuery";
 import { PtuneSyncPort } from "../sync/shared/ports/PtuneSyncPort";
 import { SyncPhase } from "../../domain/task/SyncPhase";
+import type { RawPayload } from "../../infrastructure/conversion/task/json/JsonToEntries";
 
 export class SyncAndRebuildDailyNoteUseCase {
   constructor(
@@ -28,9 +29,10 @@ export class SyncAndRebuildDailyNoteUseCase {
   ) {}
 
   async execute(): Promise<DailyNote> {
-    logger.info("SyncAndRebuildDailyNoteUseCase started");
+    logger.debug("[UseCase:start] SyncAndRebuildDailyNoteUseCase");
 
     const today = this.todayResolver.resolve();
+    logger.debug(`[UseCase] SyncAndRebuildDailyNoteUseCase date=${today}`);
 
     const note = await this.repository.findByDate(today);
 
@@ -42,7 +44,7 @@ export class SyncAndRebuildDailyNoteUseCase {
 
     const phase = adapter.getSyncPhase() ?? SyncPhase.Planning;
 
-    logger.debug(`Phase=${phase}`);
+    logger.debug(`[UseCase] SyncAndRebuildDailyNoteUseCase phase=${phase}`);
 
     const query: PullQuery = {
       list: "_Today",
@@ -51,19 +53,26 @@ export class SyncAndRebuildDailyNoteUseCase {
 
     // --- remote pull ---
     const raw = await this.syncPort.pull(query);
+    logger.debug(`[Sync] SyncAndRebuildDailyNoteUseCase rawBytes=${raw.length}`);
 
-    const payload = JSON.parse(raw);
-
-    logger.debug("payload=", payload);
+    const payload = JSON.parse(raw) as RawPayload;
+    logger.debug(
+      `[Sync] SyncAndRebuildDailyNoteUseCase payload schema=${"schema_version" in payload ? payload.schema_version : "unknown"} tasks=${Array.isArray(payload) ? payload.length : payload.tasks?.length ?? 0}`,
+    );
 
     const remoteEntries = generateTaskEntries(payload);
+    logger.debug(
+      `[UseCase] SyncAndRebuildDailyNoteUseCase remoteEntries count=${remoteEntries.length} roots=${this.countRootEntries(remoteEntries)}`,
+    );
 
     // --- local entries ---
     const localJson = MarkdownToJsonUseCase.execute(note.content);
-
-    const localParsed = JSON.parse(localJson);
-
-    const localEntries = (localParsed?.entries ?? []) as TaskEntry[];
+    logger.debug(`[UseCase] SyncAndRebuildDailyNoteUseCase localJsonBytes=${localJson.length}`);
+    const localPayload = JSON.parse(localJson) as RawPayload;
+    const localEntries = generateTaskEntries(localPayload);
+    logger.debug(
+      `[UseCase] SyncAndRebuildDailyNoteUseCase localEntries count=${localEntries.length} roots=${this.countRootEntries(localEntries)}`,
+    );
 
     // --- merge ---
     const localTree = buildTaskTree(localEntries);
@@ -73,6 +82,9 @@ export class SyncAndRebuildDailyNoteUseCase {
     const mergedTree = this.mergeService.merge(localTree, remoteTree);
 
     const rendered = renderTaskTree(mergedTree);
+    logger.debug(
+      `[UseCase] SyncAndRebuildDailyNoteUseCase rendered taskMarkdownBytes=${rendered.taskListMarkdown.length} taskKeys=${Object.keys(rendered.taskKeys).length}`,
+    );
 
     // --- section rebuild ---
     const sectionMarkdown = PlannedTaskSectionBuilder.buildForToday({
@@ -80,6 +92,9 @@ export class SyncAndRebuildDailyNoteUseCase {
       keepExistingHabits: true,
       runtime: this.runtime,
     });
+    logger.debug(
+      `[UseCase] SyncAndRebuildDailyNoteUseCase sectionMarkdownBytes=${sectionMarkdown.length}`,
+    );
 
     adapter.replaceSection("daily.section.planned.title", sectionMarkdown);
 
@@ -95,8 +110,14 @@ export class SyncAndRebuildDailyNoteUseCase {
 
     await this.repository.save(updated);
 
-    logger.info("SyncAndRebuildDailyNoteUseCase completed");
+    logger.debug(
+      `[UseCase:end] SyncAndRebuildDailyNoteUseCase date=${today} phase=${phase} remote=${remoteEntries.length} local=${localEntries.length} taskKeys=${Object.keys(rendered.taskKeys).length}`,
+    );
 
     return updated;
+  }
+
+  private countRootEntries(entries: Array<Pick<TaskEntry, "parentId">>): number {
+    return entries.filter((entry) => !entry.parentId).length;
   }
 }

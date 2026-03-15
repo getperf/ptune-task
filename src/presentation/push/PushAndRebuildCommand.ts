@@ -21,7 +21,7 @@ export class PushAndRebuildCommand {
   ) { }
 
   async execute(): Promise<void> {
-    logger.info("PushAndRebuildCommand started");
+    logger.debug("[Command:start] PushAndRebuildCommand");
 
     try {
       await this.presenter.saveActiveEditor();
@@ -37,6 +37,7 @@ export class PushAndRebuildCommand {
 
       const allowDelete =
         phase === SyncPhase.Planning;
+      logger.debug(`[Command] PushAndRebuildCommand phase=${phase} allowDelete=${allowDelete}`);
 
       const result =
         await this.syncUseCase.execute(allowDelete);
@@ -63,9 +64,9 @@ export class PushAndRebuildCommand {
       await this.presenter.refreshCalendar();
 
       this.presenter.showInfo("Push and rebuild completed.");
-      logger.info("PushAndRebuildCommand completed");
+      logger.debug(`[Command:end] PushAndRebuildCommand path=${updated.filePath}`);
     } catch (err) {
-      logger.error("PushAndRebuildCommand failed", err);
+      logger.error("[Command] PushAndRebuildCommand failed", err);
       this.presenter.showError(String(err));
     }
   }
@@ -76,7 +77,7 @@ export class PushAndRebuildCommand {
   private async getTodayNote(): Promise<DailyNote> {
 
     const today = this.todayResolver.resolve();
-    logger.debug(`Resolved today: ${today}`);
+    logger.debug(`[Command] PushAndRebuildCommand resolvedToday=${today}`);
 
     const note = await this.repository.findByDate(today);
 

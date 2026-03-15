@@ -16,17 +16,25 @@ export class DiffDailyNoteUseCase {
   ) {}
 
   async execute(): Promise<DiffExecutionResult> {
-    logger.info("Diff started");
+    logger.debug("[UseCase:start] DiffDailyNoteUseCase");
 
     const note = await this.repository.getActive();
     const payload = MarkdownToJsonUseCase.execute(note.content);
+    logger.debug(
+      `[UseCase] DiffDailyNoteUseCase activePath=${note.filePath} payloadBytes=${payload.length}`,
+    );
 
     const result = await this.syncPort.diff(payload);
 
     if (result.isValidationFailure()) {
-      logger.warn("Diff validation failed", result.errors);
+      logger.warn(
+        `[UseCase] DiffDailyNoteUseCase validationFailed errors=${result.errors.length}`,
+        result.errors,
+      );
     } else {
-      logger.info("Diff completed");
+      logger.debug(
+        `[UseCase:end] DiffDailyNoteUseCase create=${result.summary.create} update=${result.summary.update} delete=${result.summary.delete} errors=${result.summary.errors} warnings=${result.summary.warnings}`,
+      );
     }
 
     return { payload, result };

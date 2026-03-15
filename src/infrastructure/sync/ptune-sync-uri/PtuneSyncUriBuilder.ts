@@ -1,7 +1,7 @@
 import { PtuneSyncWorkDir } from "./PtuneSyncWorkDir";
 
 export class PtuneSyncUriBuilder {
-  constructor(private readonly workDir: PtuneSyncWorkDir) {}
+  constructor(private readonly workDir: PtuneSyncWorkDir) { }
 
   buildAuthStatus(): string {
     return this.build("auth/status");
@@ -30,7 +30,7 @@ export class PtuneSyncUriBuilder {
     return this.build("push", {
       input: inputPath,
       list,
-      allowDelete: allowDelete ? "true" : undefined,
+      "allow-delete": allowDelete ? "true" : undefined,
     });
   }
 

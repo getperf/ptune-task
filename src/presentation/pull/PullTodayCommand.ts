@@ -19,7 +19,7 @@ export class PullTodayCommand {
   ) {}
 
   async execute(): Promise<void> {
-    logger.info("PullTodayCommand started");
+    logger.debug("[Command:start] PullTodayCommand");
     try {
       await this.presenter.saveActiveEditor();
       const result = await this.useCase.execute();
@@ -30,9 +30,9 @@ export class PullTodayCommand {
       this.presenter.showInfo(
         result.created ? "Daily note created and pulled." : "Pull completed.",
       );
-      logger.info("PullTodayCommand completed");
+      logger.debug(`[Command:end] PullTodayCommand created=${result.created} path=${result.note.filePath}`);
     } catch (err) {
-      logger.error("PullTodayCommand failed", err);
+      logger.error("[Command] PullTodayCommand failed", err);
       this.presenter.showError(String(err));
     }
   }

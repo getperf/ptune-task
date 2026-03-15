@@ -21,15 +21,17 @@ export class PushSyncUseCase {
   ) { }
 
   async execute(allowDelete: boolean): Promise<DiffResult | false> {
-    logger.info("Sync started");
+    logger.debug(`[UseCase:start] PushSyncUseCase allowDelete=${allowDelete}`);
 
     const { payload, result } = await this.diffUseCase.execute();
 
-    logger.debug("Diff executed");
+    logger.debug(
+      `[UseCase] PushSyncUseCase diffReady payloadBytes=${payload.length} create=${result.summary.create} update=${result.summary.update} delete=${result.summary.delete} errors=${result.summary.errors} warnings=${result.summary.warnings}`,
+    );
 
     // 🔹 バリデーション失敗は例外にしない
     if (result.isValidationFailure()) {
-      logger.warn("Diff validation failure", result.errors);
+      logger.warn(`[UseCase] PushSyncUseCase validationFailure errors=${result.errors.length}`, result.errors);
       return result;
     }
 
@@ -38,20 +40,21 @@ export class PushSyncUseCase {
 
     // 🔹 errorsがあればpush不可
     if (result.hasErrors()) {
-      logger.warn("Diff contains errors", result.errors);
+      logger.warn(`[UseCase] PushSyncUseCase blockedByErrors errors=${result.errors.length}`, result.errors);
       return result;
     }
 
     const confirmed = await this.confirmPort.confirm(summary);
+    logger.debug(`[UseCase] PushSyncUseCase confirmed=${confirmed}`);
 
     if (!confirmed) {
-      logger.info("Sync cancelled by user");
+      logger.info("[UseCase:end] PushSyncUseCase cancelledByUser");
       return false;
     }
 
     await this.pushUseCase.execute(payload, allowDelete);
 
-    logger.info("Sync completed");
+    logger.debug("[UseCase:end] PushSyncUseCase pushed=true");
 
     return result;
   }
