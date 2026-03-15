@@ -10,6 +10,7 @@ import { CalendarFactory } from "./factories/CalendarFactory";
 import { HookFactory } from "./factories/HookFactory";
 import { NoteFactory } from "./factories/NoteFactory";
 import { PresentationFactory } from "./factories/PresentationFactory";
+import { ReviewFeatureFactory } from "./factories/ReviewFeatureFactory";
 import { SyncFactory } from "./factories/SyncFactory";
 import { DailyNoteOpenHook } from "../infrastructure/obsidian/DailyNoteOpenHook";
 import { LayoutReadyHook } from "../infrastructure/obsidian/LayoutReadyHook";
@@ -19,6 +20,7 @@ export class Container {
   private readonly runtime: PtuneRuntime;
   private readonly calendarFactory: CalendarFactory;
   private readonly noteFactory: NoteFactory;
+  private readonly reviewFeatureFactory: ReviewFeatureFactory;
   private readonly presentationFactory: PresentationFactory;
   private readonly syncFactory: SyncFactory;
   private readonly hookFactory: HookFactory;
@@ -27,6 +29,7 @@ export class Container {
     this.runtime = new PtuneRuntime(new ObsidianContext(app));
     this.calendarFactory = new CalendarFactory(app, this.runtime);
     this.noteFactory = new NoteFactory(app, this.runtime, this.calendarFactory);
+    this.reviewFeatureFactory = new ReviewFeatureFactory(app, this.runtime, this.calendarFactory);
     this.presentationFactory = new PresentationFactory(app);
     this.syncFactory = new SyncFactory(
       app,
@@ -71,6 +74,14 @@ export class Container {
 
   createNoteCreationFeature(): NoteCreationFeature {
     return this.noteFactory.createNoteCreationFeature();
+  }
+
+  createNoteReviewFeature() {
+    return this.reviewFeatureFactory.createNoteReviewFeature();
+  }
+
+  createDailyNotesReviewFeature() {
+    return this.reviewFeatureFactory.createDailyNotesReviewFeature();
   }
 
   createGenerateDailyReviewUseCase(): GenerateDailyReviewUseCase {

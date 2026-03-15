@@ -22,6 +22,50 @@ export const settingsEn = {
 		},
 	},
 
+	llm: {
+		sectionTitle: "LLM Settings",
+
+		provider: {
+			name: "Provider",
+			desc: "LLM provider used for summarization",
+			options: {
+				openai: "OpenAI",
+				claude: "Claude",
+				gemini: "Gemini",
+				custom: "Custom",
+			},
+		},
+
+		apiKey: {
+			name: "API Key",
+			desc: "LLM API key",
+			placeholder: "sk-...",
+		},
+
+		baseUrl: {
+			name: "Base URL",
+			desc: "Base API URL",
+			placeholder: "https://api.openai.com/v1",
+		},
+
+		model: {
+			name: "Model",
+			desc: "Model name for summarization",
+			placeholder: "gpt-5-mini",
+		},
+
+		temperature: {
+			name: "Temperature",
+			desc: "Sampling temperature for summarization",
+		},
+
+		maxTokens: {
+			name: "Max Tokens",
+			desc: "Maximum output tokens for summarization",
+			placeholder: "1200",
+		},
+	},
+
 	note: {
 		sectionTitle: "Note Settings",
 

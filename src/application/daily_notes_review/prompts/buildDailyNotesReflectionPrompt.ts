@@ -1,0 +1,10 @@
+export function buildDailyNotesReflectionPrompt(): string {
+  return [
+    "あなたは技術ノートのセンテンス要約アシスタントです。",
+    "入力は id と text を持つ JSON 配列です。",
+    "各 text を30文字程度の短い日本語に要約してください。",
+    "新しい情報の追加、推測、評価は禁止です。",
+    "出力は JSON 配列のみとし、各要素は {\"id\":\"...\",\"summary\":\"...\"} としてください。",
+    "id は入力値をそのまま使い、変更しないでください。",
+  ].join("\n");
+}

@@ -45,6 +45,42 @@ export const commonEn = {
 		},
 	},
 
+	noteReview: {
+		command: {
+			current: "Generate Note Summary",
+			menu: "Note Summary",
+		},
+		modal: {
+			title: "Note Summary",
+			summaryLabel: "Summary",
+			save: "Save",
+			regenerate: "Regenerate",
+		},
+		notice: {
+			saved: "Note summary saved",
+			failed: "Failed to generate note summary",
+			noActiveNote: "No active note",
+			apiKeyNotSet: "LLM API key is not configured",
+		},
+	},
+
+	dailyNotesReview: {
+		command: {
+			run: "Generate Daily Notes Review",
+		},
+		modal: {
+			title: "Generate Daily Notes Review",
+			dateLabel: "Target date",
+			run: "Generate",
+		},
+		notice: {
+			completed: "Daily notes review updated",
+			noNotes: "No created notes found for the selected date",
+			apiKeyNotSet: "LLM API key is not configured",
+			failed: "Failed to generate daily notes review",
+		},
+	},
+
 	daily: {
 		section: {
 			planned: { title: "Planned Tasks" },

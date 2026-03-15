@@ -42,6 +42,7 @@ export class NoteCreationUseCase {
     const folder = new ProjectFolder(
       joinPath(request.parentPath, `${prefix}_${request.title.trim()}`),
       normalizeOptionalText(request.taskKey),
+      this.buildTodayDailyNoteLink(),
     );
 
     if (this.repository.exists(folder.path)) {

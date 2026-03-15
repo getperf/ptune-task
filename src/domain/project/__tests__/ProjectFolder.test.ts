@@ -13,11 +13,12 @@ describe("ProjectFolder", () => {
   });
 
   test("splits prefixed folder names", () => {
-    const folder = new ProjectFolder("_project/001_alpha", "task__key");
+    const folder = new ProjectFolder("_project/001_alpha", "task__key", "[[_journal/2026-03-14|2026-03-14]]");
 
     expect(folder.prefix).toBe("001");
     expect(folder.title).toBe("alpha");
     expect(folder.indexNotePath).toBe("_project/001_alpha/index.md");
     expect(folder.taskKey).toBe("task__key");
+    expect(folder.dailynote).toBe("[[_journal/2026-03-14|2026-03-14]]");
   });
 });

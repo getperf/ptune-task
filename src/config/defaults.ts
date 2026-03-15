@@ -5,6 +5,14 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 
 	logLevel: "info",
 	enableLogFile: false,
+	llm: {
+		provider: "openai",
+		apiKey: "",
+		baseUrl: "https://api.openai.com/v1",
+		model: "gpt-5-mini",
+		temperature: 0.2,
+		maxTokens: 1200,
+	},
 
 	note: {
 		folderPrefix: "serial",

@@ -13,6 +13,10 @@ export class ProjectIndexBuilder {
       frontmatter.set("taskKey", folder.taskKey);
     }
 
+    if (folder.dailynote) {
+      frontmatter.set("dailynote", folder.dailynote);
+    }
+
     md.root().appendChild({
       title: folder.title,
       depth: 1,

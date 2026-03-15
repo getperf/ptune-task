@@ -5,6 +5,7 @@ import type { Lang } from "./types";
 import { i18n } from "../shared/i18n/I18n";
 
 import { renderBasicSettings } from "./SettingsTabBasic";
+import { renderLLMSettings } from "./SettingsTabLLM";
 import { renderNoteSettings } from "./SettingsTabNote";
 import { renderDailyNoteTaskSettings } from "./SettingsTabDailyNote";
 import { renderSnippetSettings } from "./SettingsTabSnippet";
@@ -51,6 +52,7 @@ export class PtuneSettingTab extends PluginSettingTab {
 			);
 
 		renderBasicSettings(containerEl);
+		renderLLMSettings(containerEl);
 
 		renderNoteSettings(containerEl);
 

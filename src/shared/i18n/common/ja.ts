@@ -45,6 +45,42 @@ export const commonJa = {
 		},
 	},
 
+	noteReview: {
+		command: {
+			current: "ノート要約を生成",
+			menu: "ノート要約",
+		},
+		modal: {
+			title: "ノート要約",
+			summaryLabel: "要約",
+			save: "保存",
+			regenerate: "再生成",
+		},
+		notice: {
+			saved: "ノート要約を保存しました",
+			failed: "ノート要約の生成に失敗しました",
+			noActiveNote: "アクティブなノートがありません",
+			apiKeyNotSet: "LLM の API キーが未設定です",
+		},
+	},
+
+	dailyNotesReview: {
+		command: {
+			run: "今日の振り返りを生成",
+		},
+		modal: {
+			title: "今日の振り返りを生成",
+			dateLabel: "対象日",
+			run: "生成",
+		},
+		notice: {
+			completed: "今日の振り返りを更新しました",
+			noNotes: "対象日の作成ノートが見つかりません",
+			apiKeyNotSet: "LLM の API キーが未設定です",
+			failed: "今日の振り返りの生成に失敗しました",
+		},
+	},
+
 	daily: {
 		section: {
 			planned: { title: "今日の予定タスク" },

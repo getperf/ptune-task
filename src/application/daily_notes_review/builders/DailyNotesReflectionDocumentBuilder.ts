@@ -1,0 +1,33 @@
+import { NoteSummaries } from "../../../domain/note/NoteSummaries";
+import { DailyNotesReflectionDocument, ReflectionProject, ReflectionSentence } from "../models/DailyNotesReflectionDocument";
+
+export class DailyNotesReflectionDocumentBuilder {
+  build(summaries: NoteSummaries): DailyNotesReflectionDocument {
+    const projects: ReflectionProject[] = summaries.getFolders().map((folder) => ({
+      projectTitle: this.resolveProjectTitle(folder.folderPath),
+      notes: folder.getNotes().map((note) => ({
+        noteTitle: note.noteTitle,
+        sentences: this.buildSentences(note.summary),
+      })),
+    }));
+
+    return new DailyNotesReflectionDocument(projects);
+  }
+
+  private buildSentences(summary: string | null): ReflectionSentence[] {
+    if (!summary?.trim()) {
+      return [{ text: "(summary missing)" }];
+    }
+
+    return summary
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
+      .map((line) => ({ text: line }));
+  }
+
+  private resolveProjectTitle(folderPath: string): string {
+    const last = folderPath.split("/").pop() ?? folderPath;
+    return last.replace(/^[^_]+_/, "");
+  }
+}

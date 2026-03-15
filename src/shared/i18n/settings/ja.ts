@@ -22,6 +22,50 @@ export const settingsJa = {
 		},
 	},
 
+	llm: {
+		sectionTitle: "LLM 設定",
+
+		provider: {
+			name: "プロバイダー",
+			desc: "要約生成に使う LLM プロバイダー",
+			options: {
+				openai: "OpenAI",
+				claude: "Claude",
+				gemini: "Gemini",
+				custom: "Custom",
+			},
+		},
+
+		apiKey: {
+			name: "API キー",
+			desc: "LLM API キー",
+			placeholder: "sk-...",
+		},
+
+		baseUrl: {
+			name: "Base URL",
+			desc: "API のベース URL",
+			placeholder: "https://api.openai.com/v1",
+		},
+
+		model: {
+			name: "モデル",
+			desc: "要約に使うモデル名",
+			placeholder: "gpt-5-mini",
+		},
+
+		temperature: {
+			name: "Temperature",
+			desc: "要約生成のゆらぎ",
+		},
+
+		maxTokens: {
+			name: "Max Tokens",
+			desc: "要約生成の最大トークン数",
+			placeholder: "1200",
+		},
+	},
+
 	note: {
 		sectionTitle: "ノート設定",
 

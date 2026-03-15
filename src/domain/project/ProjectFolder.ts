@@ -5,10 +5,12 @@ export class ProjectFolder {
 
   readonly path: string;
   readonly taskKey?: string;
+  readonly dailynote?: string;
 
-  constructor(path: string, taskKey?: string) {
+  constructor(path: string, taskKey?: string, dailynote?: string) {
     this.path = normalizePath(path);
     this.taskKey = taskKey;
+    this.dailynote = dailynote;
   }
 
   static isProjectRootPath(path: string): boolean {
