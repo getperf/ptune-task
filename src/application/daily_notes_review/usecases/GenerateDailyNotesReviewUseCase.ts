@@ -32,6 +32,8 @@ export type DailyNotesReviewProgress = {
 
 export type GenerateDailyNotesReviewOptions = {
   outputFormat?: ReviewOutputFormat;
+  enableSummaries?: boolean;
+  enableReflection?: boolean;
   onProgress?: (progress: DailyNotesReviewProgress) => void;
 };
 
@@ -67,20 +69,24 @@ export class GenerateDailyNotesReviewUseCase {
 
       let generatedCount = 0;
 
-      for (const file of files) {
-        if (await this.createdRepo.hasSummary(file)) {
-          continue;
-        }
+      const enableSummaries = options?.enableSummaries ?? true;
 
-        const summary = await this.noteSummaryGenerator.generate(file);
-        await this.noteRepo.saveSummary(file, summary);
-        generatedCount += 1;
-        options?.onProgress?.({
-          type: "summary_generated",
-          total: files.length,
-          completed: generatedCount,
-          path: file.path,
-        });
+      if (enableSummaries) {
+        for (const file of files) {
+          if (await this.createdRepo.hasSummary(file)) {
+            continue;
+          }
+
+          const summary = await this.noteSummaryGenerator.generate(file);
+          await this.noteRepo.saveSummary(file, summary);
+          generatedCount += 1;
+          options?.onProgress?.({
+            type: "summary_generated",
+            total: files.length,
+            completed: generatedCount,
+            path: file.path,
+          });
+        }
       }
 
       const summaries = await this.collectUseCase.execute(date);
@@ -97,8 +103,13 @@ export class GenerateDailyNotesReviewUseCase {
       const report = this.reportBuilder.build(
         summaries,
         options?.outputFormat ?? config.settings.review.noteSummaryOutputFormat,
+        {
+          includeSummaries: enableSummaries,
+        },
       );
-      const reflection = await this.buildReflection(summaries);
+      const reflection = (options?.enableReflection ?? true)
+        ? await this.buildReflection(summaries)
+        : "";
 
       const { note } = await this.createDailyNoteUseCase.execute(date);
       const updated = this.writer.write(note, report, reflection);

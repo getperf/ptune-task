@@ -54,13 +54,17 @@ describe("GenerateDailyReviewFlowUseCase", () => {
     });
   });
 
-  test("skips daily notes review when llm is unavailable", async () => {
+  test("runs daily notes review without llm summaries when llm is unavailable", async () => {
     const taskNote = new DailyNote("2026-03-16", "daily/2026-03-16.md", "");
     const taskReviewUseCase = {
       execute: jest.fn().mockResolvedValue({ note: taskNote, taskCount: 2 }),
     } as unknown as GenerateDailyReviewUseCase;
     const dailyNotesReviewUseCase = {
-      execute: jest.fn(),
+      execute: jest.fn().mockResolvedValue({
+        note: taskNote,
+        noteCount: 3,
+        generatedCount: 0,
+      }),
     } as unknown as GenerateDailyNotesReviewUseCase;
     const createDailyNoteUseCase = {
       execute: jest.fn(),
@@ -87,7 +91,14 @@ describe("GenerateDailyReviewFlowUseCase", () => {
       "2026-03-16",
       getDefaultTaskListId(),
     );
-    expect(dailyNotesReviewUseCase.execute).not.toHaveBeenCalled();
+    expect(dailyNotesReviewUseCase.execute).toHaveBeenCalledWith(
+      "2026-03-16",
+      expect.objectContaining({
+        outputFormat: "outline",
+        enableSummaries: false,
+        enableReflection: false,
+      }),
+    );
     expect(result).toEqual({
       note: taskNote,
       taskReview: {
@@ -95,10 +106,9 @@ describe("GenerateDailyReviewFlowUseCase", () => {
         taskCount: 2,
       },
       dailyNotesReview: {
-        executed: false,
-        noteCount: 0,
+        executed: true,
+        noteCount: 3,
         generatedCount: 0,
-        skippedReason: "llm-unavailable",
       },
     });
   });

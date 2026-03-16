@@ -2,27 +2,37 @@ import { NoteProjectFolder } from "../../../domain/note/NoteProjectFolder";
 import { NoteSummaries } from "../../../domain/note/NoteSummaries";
 import { ReviewOutputFormat } from "../../../config/types";
 
+export type DailyNotesReportBuildOptions = {
+  includeSummaries?: boolean;
+};
+
 export class DailyNotesReportBuilder {
-  build(summaries: NoteSummaries, outputFormat: ReviewOutputFormat): string {
+  build(
+    summaries: NoteSummaries,
+    outputFormat: ReviewOutputFormat,
+    options?: DailyNotesReportBuildOptions,
+  ): string {
     if (outputFormat === "xmind") {
-      return this.buildOutliner(summaries);
+      return this.buildOutliner(summaries, options);
     }
 
-    return this.buildOutliner(summaries);
+    return this.buildOutliner(summaries, options);
   }
 
-  private buildOutliner(summaries: NoteSummaries): string {
+  private buildOutliner(
+    summaries: NoteSummaries,
+    options?: DailyNotesReportBuildOptions,
+  ): string {
     const lines: string[] = [];
+    const includeSummaries = options?.includeSummaries ?? true;
 
     for (const folder of summaries.getFolders()) {
       lines.push(`- ${folderTitle(folder)}`);
 
       for (const note of folder.getNotes()) {
         lines.push(`  - [${escapeLinkLabel(note.noteTitle)}](${encodeLinkDestination(note.notePath)})`);
-        if (note.summary?.trim()) {
+        if (includeSummaries && note.summary?.trim()) {
           lines.push(formatSummaryLines(note.summary.trim(), "    "));
-        } else {
-          lines.push("    - (summary missing)");
         }
       }
 

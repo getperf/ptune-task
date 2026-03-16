@@ -18,6 +18,24 @@ export class DailyNoteDocumentAdapter {
     return this.md.findSection(matcher);
   }
 
+  removeSectionByMatcher(matcher: RegExp): boolean {
+    const section = this.md.findSection(matcher);
+
+    if (!section) {
+      return false;
+    }
+
+    const range = section.getRange();
+    const headingIndex = section.getIndex();
+
+    this.md.root().getTree().children.splice(
+      headingIndex,
+      range.contentEnd - headingIndex,
+    );
+
+    return true;
+  }
+
   // =========================================================
   // Section: READ
   // =========================================================

@@ -71,36 +71,13 @@ export class GenerateDailyReviewFlowUseCase {
         };
       }
 
-      if (!this.textGenerator.hasValidApiKey()) {
-        onProgress?.({ type: "daily_notes_review_skipped", reason: "llm-unavailable" });
-        logger.debug(
-          `[UseCase:end] GenerateDailyReviewFlowUseCase date=${options.date} taskCount=${taskReviewResult?.taskCount ?? 0} notesReview=skipped reason=llm-unavailable`,
-        );
-
-        return {
-          note: taskReviewResult?.note ?? (await this.resolveDailyNote(options.date)),
-          taskReview: taskReviewResult
-            ? {
-                executed: true,
-                taskCount: taskReviewResult.taskCount,
-              }
-            : {
-                executed: false,
-                taskCount: 0,
-              },
-          dailyNotesReview: {
-            executed: false,
-            noteCount: 0,
-            generatedCount: 0,
-            skippedReason: "llm-unavailable",
-          },
-        };
-      }
-
       let targetCount = 0;
       onProgress?.({ type: "daily_notes_review_started", date: options.date, targetCount });
+      const llmAvailable = this.textGenerator.hasValidApiKey();
       const dailyNotesReviewOptions: GenerateDailyNotesReviewOptions = {
         outputFormat: options.dailyNotesReviewFormat,
+        enableSummaries: llmAvailable,
+        enableReflection: llmAvailable,
         onProgress: (progress) => {
           if (progress.type === "targets_resolved") {
             targetCount = progress.total;
