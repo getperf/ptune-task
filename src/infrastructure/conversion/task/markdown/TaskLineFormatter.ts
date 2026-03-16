@@ -1,5 +1,3 @@
-import { logger } from "../../../../shared/logger/loggerInstance";
-
 export type TaskLineFormatMode = "strict" | "relaxed";
 
 export interface TaskLineFormatInput {
@@ -29,7 +27,7 @@ export class TaskLineFormatter {
     }
 
     // 3. pomodoro
-    if (input.pomodoroPlanned != null) {
+    if (input.pomodoroPlanned != null && input.pomodoroPlanned > 0) {
       parts.push(`🍅x${input.pomodoroPlanned}`);
     }
 
