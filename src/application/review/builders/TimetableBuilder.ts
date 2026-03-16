@@ -2,32 +2,17 @@ import { ReviewTaskNode } from "../models/ReviewTaskNode";
 import { ReviewTaskTree } from "../models/ReviewTaskTree";
 import { ReviewFlagLabelResolver } from "../services/ReviewFlagLabelResolver";
 
-type RemarkEntry = {
-  marker: string;
-  text: string;
-};
-
 export class TimetableBuilder {
   constructor(private readonly flagResolver: ReviewFlagLabelResolver) {}
 
   build(tree: ReviewTaskTree): string {
     const lines = [
-      "| 状態 | タイトル | 計画🍅 | 実績✅ | 開始 | 完了 |",
-      "| --- | --- | --- | --- | --- | --- |",
+      "| 状態 | タイトル | 計画🍅 | 実績✅ | 開始 | 完了 | 備考 |",
+      "| --- | --- | --- | --- | --- | --- | --- |",
     ];
-    const remarks: RemarkEntry[] = [];
-
-    let remarkIndex = 0;
 
     const visit = (node: ReviewTaskNode, depth: number) => {
-      const remark = this.buildRemark(node, ++remarkIndex);
-      if (!remark) {
-        remarkIndex -= 1;
-      } else {
-        remarks.push(remark);
-      }
-
-      lines.push(this.renderRow(node, depth, remark?.marker));
+      lines.push(this.renderRow(node, depth));
 
       for (const child of node.children) {
         visit(child, depth + 1);
@@ -38,26 +23,13 @@ export class TimetableBuilder {
       visit(root, 0);
     }
 
-    if (remarks.length > 0) {
-      lines.push("");
-      lines.push("備考");
-      lines.push(
-        ...remarks.map((remark) => `- ${remark.marker} ${this.escapeCell(remark.text)}`),
-      );
-    }
-
     return lines.join("\n").trim();
   }
 
-  private renderRow(
-    node: ReviewTaskNode,
-    depth: number,
-    remarkMarker?: string,
-  ): string {
+  private renderRow(node: ReviewTaskNode, depth: number): string {
     const title = [
       this.formatIndent(depth),
       this.escapeCell(node.title),
-      remarkMarker ? ` ${remarkMarker}` : "",
     ].join("");
 
     return [
@@ -68,10 +40,11 @@ export class TimetableBuilder {
       ` ${this.formatPomodoro(node.pomodoroActual ?? undefined)} |`,
       ` ${this.formatTime(node.started ?? undefined)} |`,
       ` ${this.formatTime(node.completed ?? undefined)} |`,
+      ` ${this.formatRemark(node)} |`,
     ].join("");
   }
 
-  private buildRemark(node: ReviewTaskNode, index: number): RemarkEntry | null {
+  private formatRemark(node: ReviewTaskNode): string {
     const parts: string[] = [];
 
     if (node.goal) {
@@ -90,13 +63,10 @@ export class TimetableBuilder {
     }
 
     if (parts.length === 0) {
-      return null;
+      return "";
     }
 
-    return {
-      marker: `[*${index}]`,
-      text: parts.join(" / "),
-    };
+    return this.escapeCell(parts.join(" / "));
   }
 
   private resolveStatusIcon(status?: string): string {

@@ -9,7 +9,7 @@ describe("TimetableBuilder", () => {
     i18n.init("ja");
   });
 
-  test("builds markdown table with remarks", () => {
+  test("builds markdown table with remark column", () => {
     const tree = new ReviewTaskTree([
       new ReviewTaskNode({
         id: "1",
@@ -37,19 +37,15 @@ describe("TimetableBuilder", () => {
 
     expect(builder.build(tree)).toBe(
       [
-        "| 状態 | タイトル | 計画🍅 | 実績✅ | 開始 | 完了 |",
-        "| --- | --- | --- | --- | --- | --- |",
-        "| ✅ | 変更調査 [*1] | 2.0 | 1.5 | 08:10 | 09:00 |",
-        "|  | &nbsp;&nbsp;&nbsp;&nbsp;ユースケース [*2] | 1.0 |  |  |  |",
-        "",
-        "備考",
-        "- [*1] 🎯ユースケース整理 / ⚠未解決",
-        "- [*2] ⚠止め忘れ",
+        "| 状態 | タイトル | 計画🍅 | 実績✅ | 開始 | 完了 | 備考 |",
+        "| --- | --- | --- | --- | --- | --- | --- |",
+        "| ✅ | 変更調査 | 2.0 | 1.5 | 08:10 | 09:00 | 🎯ユースケース整理 / ⚠未解決 |",
+        "|  | &nbsp;&nbsp;&nbsp;&nbsp;ユースケース | 1.0 |  |  |  | ⚠止め忘れ |",
       ].join("\n"),
     );
   });
 
-  test("omits remarks section when there is no extra metadata", () => {
+  test("keeps remark column empty when there is no extra metadata", () => {
     const tree = new ReviewTaskTree([
       new ReviewTaskNode({
         id: "1",
@@ -63,9 +59,9 @@ describe("TimetableBuilder", () => {
 
     expect(builder.build(tree)).toBe(
       [
-        "| 状態 | タイトル | 計画🍅 | 実績✅ | 開始 | 完了 |",
-        "| --- | --- | --- | --- | --- | --- |",
-        "|  | 実装 | 2.0 | 2.2 |  |  |",
+        "| 状態 | タイトル | 計画🍅 | 実績✅ | 開始 | 完了 | 備考 |",
+        "| --- | --- | --- | --- | --- | --- | --- |",
+        "|  | 実装 | 2.0 | 2.2 |  |  |  |",
       ].join("\n"),
     );
   });
