@@ -1,5 +1,6 @@
 export type LogLevel = "debug" | "info" | "warn" | "error" | "none";
 export type LlmProvider = "openai" | "claude" | "gemini" | "custom";
+export type ReviewOutputFormat = "outline" | "xmind";
 
 export interface LlmSettings {
 	provider: LlmProvider;
@@ -22,14 +23,13 @@ export interface SnippetSettings {
 }
 
 export type SentenceMode = "none" | "llm";
-export type NoteSummaryOutputFormat = "outliner" | "xmind";
-export type TaskReviewOutputFormat = "outline" | "xmind";
 
 export interface ReviewSettings {
 	sentenceMode: SentenceMode;
-	noteSummaryOutputFormat: NoteSummaryOutputFormat;
-	notesReviewEnabled: boolean;
-	taskReviewOutputFormat: TaskReviewOutputFormat;
+	noteSummaryOutputFormat: ReviewOutputFormat;
+	taskReviewEnabledDefault: boolean;
+	notesReviewEnabledDefault: boolean;
+	taskReviewOutputFormat: ReviewOutputFormat;
 }
 
 export type Lang = "ja" | "en";

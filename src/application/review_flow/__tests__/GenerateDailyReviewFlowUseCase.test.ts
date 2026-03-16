@@ -1,46 +1,49 @@
 import { DailyNote } from "../../../domain/daily/DailyNote";
+import { CreateDailyNoteUseCase } from "../../calendar/usecases/CreateDailyNoteUseCase";
 import { GenerateDailyNotesReviewUseCase } from "../../daily_notes_review/usecases/GenerateDailyNotesReviewUseCase";
 import { TextGenerationPort } from "../../llm/ports/TextGenerationPort";
 import { GenerateDailyReviewUseCase } from "../../review/usecases/GenerateDailyReviewUseCase";
 import { getDefaultTaskListId } from "../../sync/shared/DefaultTaskListId";
-import { ReviewFlowOptionsResolver } from "../services/ReviewFlowOptionsResolver";
 import { GenerateDailyReviewFlowUseCase } from "../usecases/GenerateDailyReviewFlowUseCase";
 
 describe("GenerateDailyReviewFlowUseCase", () => {
-  test("skips daily notes review when disabled", async () => {
-    const taskNote = new DailyNote("2026-03-16", "daily/2026-03-16.md", "");
+  test("can skip both reviews independently", async () => {
+    const note = new DailyNote("2026-03-16", "daily/2026-03-16.md", "");
     const taskReviewUseCase = {
-      execute: jest.fn().mockResolvedValue({ note: taskNote, taskCount: 3 }),
+      execute: jest.fn(),
     } as unknown as GenerateDailyReviewUseCase;
     const dailyNotesReviewUseCase = {
       execute: jest.fn(),
     } as unknown as GenerateDailyNotesReviewUseCase;
-    const optionsResolver = {
-      resolve: jest.fn().mockReturnValue({
-        notesReviewEnabled: false,
-        taskReviewOutputFormat: "outline",
-      }),
-    } as unknown as ReviewFlowOptionsResolver;
+    const createDailyNoteUseCase = {
+      execute: jest.fn().mockResolvedValue({ note, created: false }),
+    } as unknown as CreateDailyNoteUseCase;
     const textGenerator = {
-      hasValidApiKey: jest.fn().mockReturnValue(false),
+      hasValidApiKey: jest.fn().mockReturnValue(true),
     } as unknown as TextGenerationPort;
 
     const useCase = new GenerateDailyReviewFlowUseCase(
       taskReviewUseCase,
       dailyNotesReviewUseCase,
-      optionsResolver,
+      createDailyNoteUseCase,
       textGenerator,
     );
 
-    const result = await useCase.execute("2026-03-16");
+    const result = await useCase.execute({
+      date: "2026-03-16",
+      taskReviewEnabled: false,
+      dailyNotesReviewEnabled: false,
+      dailyNotesReviewFormat: "outline",
+    });
 
-    expect(taskReviewUseCase.execute).toHaveBeenCalledWith(getDefaultTaskListId());
+    expect(taskReviewUseCase.execute).not.toHaveBeenCalled();
     expect(dailyNotesReviewUseCase.execute).not.toHaveBeenCalled();
+    expect(createDailyNoteUseCase.execute).toHaveBeenCalledWith("2026-03-16");
     expect(result).toEqual({
-      note: taskNote,
+      note,
       taskReview: {
-        executed: true,
-        taskCount: 3,
+        executed: false,
+        taskCount: 0,
       },
       dailyNotesReview: {
         executed: false,
@@ -59,12 +62,9 @@ describe("GenerateDailyReviewFlowUseCase", () => {
     const dailyNotesReviewUseCase = {
       execute: jest.fn(),
     } as unknown as GenerateDailyNotesReviewUseCase;
-    const optionsResolver = {
-      resolve: jest.fn().mockReturnValue({
-        notesReviewEnabled: true,
-        taskReviewOutputFormat: "outline",
-      }),
-    } as unknown as ReviewFlowOptionsResolver;
+    const createDailyNoteUseCase = {
+      execute: jest.fn(),
+    } as unknown as CreateDailyNoteUseCase;
     const textGenerator = {
       hasValidApiKey: jest.fn().mockReturnValue(false),
     } as unknown as TextGenerationPort;
@@ -72,12 +72,21 @@ describe("GenerateDailyReviewFlowUseCase", () => {
     const useCase = new GenerateDailyReviewFlowUseCase(
       taskReviewUseCase,
       dailyNotesReviewUseCase,
-      optionsResolver,
+      createDailyNoteUseCase,
       textGenerator,
     );
 
-    const result = await useCase.execute("2026-03-16");
+    const result = await useCase.execute({
+      date: "2026-03-16",
+      taskReviewEnabled: true,
+      dailyNotesReviewEnabled: true,
+      dailyNotesReviewFormat: "outline",
+    });
 
+    expect(taskReviewUseCase.execute).toHaveBeenCalledWith(
+      "2026-03-16",
+      getDefaultTaskListId(),
+    );
     expect(dailyNotesReviewUseCase.execute).not.toHaveBeenCalled();
     expect(result).toEqual({
       note: taskNote,
@@ -94,7 +103,7 @@ describe("GenerateDailyReviewFlowUseCase", () => {
     });
   });
 
-  test("runs daily notes review when enabled and llm is available", async () => {
+  test("runs daily notes review with selected format", async () => {
     const taskNote = new DailyNote("2026-03-16", "daily/2026-03-16.md", "task");
     const finalNote = new DailyNote("2026-03-16", "daily/2026-03-16.md", "final");
     const taskReviewUseCase = {
@@ -107,12 +116,9 @@ describe("GenerateDailyReviewFlowUseCase", () => {
         generatedCount: 3,
       }),
     } as unknown as GenerateDailyNotesReviewUseCase;
-    const optionsResolver = {
-      resolve: jest.fn().mockReturnValue({
-        notesReviewEnabled: true,
-        taskReviewOutputFormat: "outline",
-      }),
-    } as unknown as ReviewFlowOptionsResolver;
+    const createDailyNoteUseCase = {
+      execute: jest.fn(),
+    } as unknown as CreateDailyNoteUseCase;
     const textGenerator = {
       hasValidApiKey: jest.fn().mockReturnValue(true),
     } as unknown as TextGenerationPort;
@@ -120,13 +126,23 @@ describe("GenerateDailyReviewFlowUseCase", () => {
     const useCase = new GenerateDailyReviewFlowUseCase(
       taskReviewUseCase,
       dailyNotesReviewUseCase,
-      optionsResolver,
+      createDailyNoteUseCase,
       textGenerator,
     );
 
-    const result = await useCase.execute("2026-03-16");
+    const result = await useCase.execute({
+      date: "2026-03-16",
+      taskReviewEnabled: true,
+      dailyNotesReviewEnabled: true,
+      dailyNotesReviewFormat: "xmind",
+    });
 
-    expect(dailyNotesReviewUseCase.execute).toHaveBeenCalledWith("2026-03-16");
+    expect(dailyNotesReviewUseCase.execute).toHaveBeenCalledWith(
+      "2026-03-16",
+      expect.objectContaining({
+        outputFormat: "xmind",
+      }),
+    );
     expect(result).toEqual({
       note: finalNote,
       taskReview: {

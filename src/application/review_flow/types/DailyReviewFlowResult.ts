@@ -4,10 +4,15 @@ export type DailyNotesReviewSkippedReason = "disabled" | "llm-unavailable";
 
 export type DailyReviewFlowResult = {
   note: DailyNote;
-  taskReview: {
-    executed: true;
-    taskCount: number;
-  };
+  taskReview:
+    | {
+        executed: true;
+        taskCount: number;
+      }
+    | {
+        executed: false;
+        taskCount: 0;
+      };
   dailyNotesReview:
     | {
         executed: true;

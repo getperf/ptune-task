@@ -70,6 +70,7 @@ export class Container {
   createReviewCommand(): ReviewCommand {
     return new ReviewCommand(
       this.calendarFactory.createTodayResolver(),
+      new ReviewFlowOptionsResolver(),
       this.createGenerateDailyReviewFlowUseCase(),
       this.presentationFactory.createObsidianPresenter(),
     );
@@ -99,6 +100,7 @@ export class Container {
     return new GenerateDailyReviewUseCase(
       this.syncFactory.createSyncPort(),
       this.runtime.dailyNoteRepository,
+      this.calendarFactory.createCreateDailyNoteUseCase(),
     );
   }
 
@@ -127,7 +129,7 @@ export class Container {
     return new GenerateDailyReviewFlowUseCase(
       this.createGenerateDailyReviewUseCase(),
       this.createGenerateDailyNotesReviewUseCase(llm),
-      new ReviewFlowOptionsResolver(),
+      this.calendarFactory.createCreateDailyNoteUseCase(),
       llm,
     );
   }

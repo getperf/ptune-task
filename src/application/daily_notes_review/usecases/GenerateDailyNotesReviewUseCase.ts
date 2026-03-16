@@ -15,11 +15,24 @@ import { NoteSummaries } from "../../../domain/note/NoteSummaries";
 import { TextGenerationPort } from "../../llm/ports/TextGenerationPort";
 import { config } from "../../../config/config";
 import { logger } from "../../../shared/logger/loggerInstance";
+import { ReviewOutputFormat } from "../../../config/types";
 
 export type GenerateDailyNotesReviewResult = {
   note?: DailyNote;
   noteCount: number;
   generatedCount: number;
+};
+
+export type DailyNotesReviewProgress = {
+  type: "targets_resolved" | "summary_generated";
+  total: number;
+  completed: number;
+  path?: string;
+};
+
+export type GenerateDailyNotesReviewOptions = {
+  outputFormat?: ReviewOutputFormat;
+  onProgress?: (progress: DailyNotesReviewProgress) => void;
 };
 
 export class GenerateDailyNotesReviewUseCase {
@@ -37,12 +50,20 @@ export class GenerateDailyNotesReviewUseCase {
     private readonly reflectionBuilder = new DailyNotesReflectionBuilder(),
   ) {}
 
-  async execute(date: string): Promise<GenerateDailyNotesReviewResult> {
+  async execute(
+    date: string,
+    options?: GenerateDailyNotesReviewOptions,
+  ): Promise<GenerateDailyNotesReviewResult> {
     logger.debug(`[UseCase:start] GenerateDailyNotesReviewUseCase date=${date}`);
 
     try {
       const files = this.createdRepo.findByDate(date);
       logger.debug(`[UseCase] GenerateDailyNotesReviewUseCase targets date=${date} count=${files.length}`);
+      options?.onProgress?.({
+        type: "targets_resolved",
+        total: files.length,
+        completed: 0,
+      });
 
       let generatedCount = 0;
 
@@ -54,6 +75,12 @@ export class GenerateDailyNotesReviewUseCase {
         const summary = await this.noteSummaryGenerator.generate(file);
         await this.noteRepo.saveSummary(file, summary);
         generatedCount += 1;
+        options?.onProgress?.({
+          type: "summary_generated",
+          total: files.length,
+          completed: generatedCount,
+          path: file.path,
+        });
       }
 
       const summaries = await this.collectUseCase.execute(date);
@@ -69,7 +96,7 @@ export class GenerateDailyNotesReviewUseCase {
 
       const report = this.reportBuilder.build(
         summaries,
-        config.settings.review.noteSummaryOutputFormat,
+        options?.outputFormat ?? config.settings.review.noteSummaryOutputFormat,
       );
       const reflection = await this.buildReflection(summaries);
 

@@ -118,6 +118,38 @@ export const commonEn = {
 		},
 	},
 
+	reviewFlow: {
+		setup: {
+			title: "Run Review",
+			dateLabel: "Target date",
+			taskReviewLabel: "Task review",
+			notesReviewLabel: "Daily notes review",
+			notesReviewFormatLabel: "Notes review format",
+			run: "Run",
+			atLeastOneRequired: "Select at least one review option.",
+			options: {
+				outline: "outline",
+				xmind: "xmind",
+			},
+		},
+		progress: {
+			title: "Running Review",
+			running: "Running...",
+			completed: "Review completed. Closing shortly",
+			failed: "An error occurred",
+			events: {
+				started: "Review started",
+				taskReviewStarted: "Task review started",
+				taskReviewSkipped: "Task review skipped",
+				taskReviewCompleted: "Task review completed",
+				notesReviewStarted: "Daily notes review started",
+				notesReviewSkipped: "Daily notes review skipped",
+				notesReviewProgress: "Generating note summaries",
+				notesReviewCompleted: "Daily notes review completed",
+			},
+		},
+	},
+
 	push: {
 		confirm: {
 			planning: {

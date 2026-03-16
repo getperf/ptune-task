@@ -1,4 +1,5 @@
 import { ReviewQuery } from "../../sync/shared/dto/ReviewQuery";
+import { CreateDailyNoteUseCase } from "../../calendar/usecases/CreateDailyNoteUseCase";
 import { DailyNoteRepository } from "../../../infrastructure/repository/DailyNoteRepository";
 import { ReviewSectionWriter } from "../../../infrastructure/document/review/ReviewSectionWriter";
 import { ReviewTaskDto } from "../dto/ReviewTaskDto";
@@ -24,9 +25,10 @@ export class GenerateDailyReviewUseCase {
   constructor(
     private readonly ptuneSync: PtuneSyncPort,
     private readonly repository: DailyNoteRepository,
+    private readonly createDailyNoteUseCase: CreateDailyNoteUseCase,
   ) {}
 
-  async execute(list: string): Promise<GenerateReviewResult> {
+  async execute(date: string, list: string): Promise<GenerateReviewResult> {
     logger.info("GenerateDailyReviewUseCase started");
 
     // 1) review 取得
@@ -37,7 +39,7 @@ export class GenerateDailyReviewUseCase {
     const tree = ReviewTaskTree.fromDtos(tasks);
 
     // 2) アクティブノート取得
-    const note = await this.repository.getActive();
+    const { note } = await this.createDailyNoteUseCase.execute(date);
 
     // 3) セクション生成＆適用
     const now = new Date().toLocaleTimeString("ja-JP", {

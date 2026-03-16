@@ -99,6 +99,24 @@ export const settingsEn = {
 		},
 	},
 
+	review: {
+		sectionTitle: "Review Settings",
+
+		notesReviewEnabledDefault: {
+			name: "Daily notes review",
+			desc: "Enable daily notes review by default when running the review command",
+		},
+
+		noteSummaryOutputFormat: {
+			name: "Notes review format",
+			desc: "Default output format for daily notes review",
+			options: {
+				outline: "outline",
+				xmind: "xmind",
+			},
+		},
+	},
+
 	dailyNoteTask: {
 		sectionTitle: "Daily Task Settings",
 

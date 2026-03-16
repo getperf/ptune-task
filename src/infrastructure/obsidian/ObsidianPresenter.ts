@@ -9,7 +9,7 @@ export class ObsidianPresenter
   implements PullTodayPresenter, PushPresenter, ReviewPresenter {
   private static readonly DETAIL_MODAL_THRESHOLD = 160;
 
-  constructor(private readonly app: App) { }
+  constructor(readonly app: App) { }
 
   showInfo(message: string): void {
     new Notice(message);

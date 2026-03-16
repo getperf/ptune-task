@@ -1,6 +1,8 @@
-import { TaskReviewOutputFormat } from "../../../config/types";
+import { ReviewOutputFormat } from "../../../config/types";
 
 export type ReviewFlowOptions = {
-  notesReviewEnabled: boolean;
-  taskReviewOutputFormat: TaskReviewOutputFormat;
+  taskReviewEnabledDefault: boolean;
+  notesReviewEnabledDefault: boolean;
+  taskReviewOutputFormat: ReviewOutputFormat;
+  noteSummaryOutputFormat: ReviewOutputFormat;
 };

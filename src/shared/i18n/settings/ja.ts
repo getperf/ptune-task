@@ -99,6 +99,24 @@ export const settingsJa = {
 		},
 	},
 
+	review: {
+		sectionTitle: "レビュー設定",
+
+		notesReviewEnabledDefault: {
+			name: "当日作成ノートレビュー",
+			desc: "レビューコマンド実行時の既定で、当日作成ノートレビューを有効にします",
+		},
+
+		noteSummaryOutputFormat: {
+			name: "ノートレビュー形式",
+			desc: "当日作成ノートレビューの既定出力形式",
+			options: {
+				outline: "outline",
+				xmind: "xmind",
+			},
+		},
+	},
+
 	dailyNoteTask: {
 		sectionTitle: "日次タスク設定",
 

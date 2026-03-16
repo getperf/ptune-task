@@ -116,6 +116,38 @@ export const commonJa = {
 		},
 	},
 
+	reviewFlow: {
+		setup: {
+			title: "レビューを実行",
+			dateLabel: "対象日",
+			taskReviewLabel: "タスクレビュー",
+			notesReviewLabel: "当日作成ノートレビュー",
+			notesReviewFormatLabel: "ノートレビュー形式",
+			run: "実行",
+			atLeastOneRequired: "少なくとも1つのレビューを選択してください",
+			options: {
+				outline: "outline",
+				xmind: "xmind",
+			},
+		},
+		progress: {
+			title: "レビュー実行中",
+			running: "実行中...",
+			completed: "レビューが完了しました。まもなく閉じます",
+			failed: "エラーが発生しました",
+			events: {
+				started: "レビューを開始しました",
+				taskReviewStarted: "タスクレビューを開始しました",
+				taskReviewSkipped: "タスクレビューをスキップしました",
+				taskReviewCompleted: "タスクレビューが完了しました",
+				notesReviewStarted: "当日作成ノートレビューを開始しました",
+				notesReviewSkipped: "当日作成ノートレビューをスキップしました",
+				notesReviewProgress: "ノート要約を生成中",
+				notesReviewCompleted: "当日作成ノートレビューが完了しました",
+			},
+		},
+	},
+
 	push: {
 		confirm: {
 			planning: {

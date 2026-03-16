@@ -1,41 +1,67 @@
 import { logger } from "../../../shared/logger/loggerInstance";
-import { GenerateDailyNotesReviewUseCase } from "../../daily_notes_review/usecases/GenerateDailyNotesReviewUseCase";
+import { CreateDailyNoteUseCase } from "../../calendar/usecases/CreateDailyNoteUseCase";
+import {
+  GenerateDailyNotesReviewUseCase,
+  GenerateDailyNotesReviewOptions,
+} from "../../daily_notes_review/usecases/GenerateDailyNotesReviewUseCase";
 import { TextGenerationPort } from "../../llm/ports/TextGenerationPort";
 import { GenerateDailyReviewUseCase } from "../../review/usecases/GenerateDailyReviewUseCase";
 import { getDefaultTaskListId } from "../../sync/shared/DefaultTaskListId";
-import { ReviewFlowOptionsResolver } from "../services/ReviewFlowOptionsResolver";
+import { DailyReviewFlowProgressEvent } from "../types/DailyReviewFlowProgressEvent";
 import { DailyReviewFlowResult } from "../types/DailyReviewFlowResult";
+import { ReviewFlowRunOptions } from "../types/ReviewFlowRunOptions";
 
 export class GenerateDailyReviewFlowUseCase {
   constructor(
     private readonly taskReviewUseCase: GenerateDailyReviewUseCase,
     private readonly dailyNotesReviewUseCase: GenerateDailyNotesReviewUseCase,
-    private readonly optionsResolver: ReviewFlowOptionsResolver,
+    private readonly createDailyNoteUseCase: CreateDailyNoteUseCase,
     private readonly textGenerator: TextGenerationPort,
   ) {}
 
-  async execute(date: string): Promise<DailyReviewFlowResult> {
-    logger.debug(`[UseCase:start] GenerateDailyReviewFlowUseCase date=${date}`);
+  async execute(
+    options: ReviewFlowRunOptions,
+    onProgress?: (event: DailyReviewFlowProgressEvent) => void,
+  ): Promise<DailyReviewFlowResult> {
+    logger.debug(`[UseCase:start] GenerateDailyReviewFlowUseCase date=${options.date}`);
 
     try {
-      const options = this.optionsResolver.resolve();
-      logger.debug(
-        `[UseCase] GenerateDailyReviewFlowUseCase options date=${date} notesReviewEnabled=${options.notesReviewEnabled} taskReviewOutputFormat=${options.taskReviewOutputFormat}`,
-      );
+      onProgress?.({ type: "started", date: options.date });
+      logger.debug(`[UseCase] GenerateDailyReviewFlowUseCase options date=${options.date} taskReviewEnabled=${options.taskReviewEnabled} notesReviewEnabled=${options.dailyNotesReviewEnabled} notesReviewFormat=${options.dailyNotesReviewFormat}`);
 
-      const taskReviewResult = await this.taskReviewUseCase.execute(getDefaultTaskListId());
+      let taskReviewResult: Awaited<ReturnType<GenerateDailyReviewUseCase["execute"]>> | null = null;
 
-      if (!options.notesReviewEnabled) {
+      if (options.taskReviewEnabled) {
+        onProgress?.({ type: "task_review_started", date: options.date });
+        taskReviewResult = await this.taskReviewUseCase.execute(
+          options.date,
+          getDefaultTaskListId(),
+        );
+        onProgress?.({
+          type: "task_review_completed",
+          taskCount: taskReviewResult.taskCount,
+        });
+      } else {
+        onProgress?.({ type: "task_review_skipped" });
+      }
+
+      if (!options.dailyNotesReviewEnabled) {
+        onProgress?.({ type: "daily_notes_review_skipped", reason: "disabled" });
         logger.debug(
-          `[UseCase:end] GenerateDailyReviewFlowUseCase date=${date} taskCount=${taskReviewResult.taskCount} notesReview=skipped reason=disabled`,
+          `[UseCase:end] GenerateDailyReviewFlowUseCase date=${options.date} taskCount=${taskReviewResult?.taskCount ?? 0} notesReview=skipped reason=disabled`,
         );
 
         return {
-          note: taskReviewResult.note,
-          taskReview: {
-            executed: true,
-            taskCount: taskReviewResult.taskCount,
-          },
+          note: taskReviewResult?.note ?? (await this.resolveDailyNote(options.date)),
+          taskReview: taskReviewResult
+            ? {
+                executed: true,
+                taskCount: taskReviewResult.taskCount,
+              }
+            : {
+                executed: false,
+                taskCount: 0,
+              },
           dailyNotesReview: {
             executed: false,
             noteCount: 0,
@@ -46,16 +72,22 @@ export class GenerateDailyReviewFlowUseCase {
       }
 
       if (!this.textGenerator.hasValidApiKey()) {
+        onProgress?.({ type: "daily_notes_review_skipped", reason: "llm-unavailable" });
         logger.debug(
-          `[UseCase:end] GenerateDailyReviewFlowUseCase date=${date} taskCount=${taskReviewResult.taskCount} notesReview=skipped reason=llm-unavailable`,
+          `[UseCase:end] GenerateDailyReviewFlowUseCase date=${options.date} taskCount=${taskReviewResult?.taskCount ?? 0} notesReview=skipped reason=llm-unavailable`,
         );
 
         return {
-          note: taskReviewResult.note,
-          taskReview: {
-            executed: true,
-            taskCount: taskReviewResult.taskCount,
-          },
+          note: taskReviewResult?.note ?? (await this.resolveDailyNote(options.date)),
+          taskReview: taskReviewResult
+            ? {
+                executed: true,
+                taskCount: taskReviewResult.taskCount,
+              }
+            : {
+                executed: false,
+                taskCount: 0,
+              },
           dailyNotesReview: {
             executed: false,
             noteCount: 0,
@@ -65,18 +97,55 @@ export class GenerateDailyReviewFlowUseCase {
         };
       }
 
-      const dailyNotesReviewResult = await this.dailyNotesReviewUseCase.execute(date);
+      let targetCount = 0;
+      onProgress?.({ type: "daily_notes_review_started", date: options.date, targetCount });
+      const dailyNotesReviewOptions: GenerateDailyNotesReviewOptions = {
+        outputFormat: options.dailyNotesReviewFormat,
+        onProgress: (progress) => {
+          if (progress.type === "targets_resolved") {
+            targetCount = progress.total;
+            onProgress?.({
+              type: "daily_notes_review_started",
+              date: options.date,
+              targetCount,
+            });
+            return;
+          }
+
+          onProgress?.({
+            type: "daily_notes_review_progress",
+            completed: progress.completed,
+            total: progress.total,
+            path: progress.path ?? "",
+          });
+        },
+      };
+      const dailyNotesReviewResult = await this.dailyNotesReviewUseCase.execute(
+        options.date,
+        dailyNotesReviewOptions,
+      );
+      onProgress?.({
+        type: "daily_notes_review_completed",
+        noteCount: dailyNotesReviewResult.noteCount,
+        generatedCount: dailyNotesReviewResult.generatedCount,
+      });
 
       logger.debug(
-        `[UseCase:end] GenerateDailyReviewFlowUseCase date=${date} taskCount=${taskReviewResult.taskCount} noteCount=${dailyNotesReviewResult.noteCount} generated=${dailyNotesReviewResult.generatedCount}`,
+        `[UseCase:end] GenerateDailyReviewFlowUseCase date=${options.date} taskCount=${taskReviewResult?.taskCount ?? 0} noteCount=${dailyNotesReviewResult.noteCount} generated=${dailyNotesReviewResult.generatedCount}`,
       );
+      onProgress?.({ type: "completed" });
 
       return {
-        note: dailyNotesReviewResult.note ?? taskReviewResult.note,
-        taskReview: {
-          executed: true,
-          taskCount: taskReviewResult.taskCount,
-        },
+        note: dailyNotesReviewResult.note ?? taskReviewResult?.note ?? (await this.resolveDailyNote(options.date)),
+        taskReview: taskReviewResult
+          ? {
+              executed: true,
+              taskCount: taskReviewResult.taskCount,
+            }
+          : {
+              executed: false,
+              taskCount: 0,
+            },
         dailyNotesReview: {
           executed: true,
           noteCount: dailyNotesReviewResult.noteCount,
@@ -84,8 +153,12 @@ export class GenerateDailyReviewFlowUseCase {
         },
       };
     } catch (error) {
+      onProgress?.({
+        type: "failed",
+        message: this.resolveErrorMessage(error),
+      });
       logger.warn(
-        `[UseCase] GenerateDailyReviewFlowUseCase failed date=${date} message=${this.resolveErrorMessage(error)}`,
+        `[UseCase] GenerateDailyReviewFlowUseCase failed date=${options.date} message=${this.resolveErrorMessage(error)}`,
         error,
       );
       throw error;
@@ -102,5 +175,10 @@ export class GenerateDailyReviewFlowUseCase {
     }
 
     return "unknown";
+  }
+
+  private async resolveDailyNote(date: string) {
+    const { note } = await this.createDailyNoteUseCase.execute(date);
+    return note;
   }
 }

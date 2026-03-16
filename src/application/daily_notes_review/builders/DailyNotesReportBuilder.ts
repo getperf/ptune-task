@@ -1,8 +1,9 @@
 import { NoteProjectFolder } from "../../../domain/note/NoteProjectFolder";
 import { NoteSummaries } from "../../../domain/note/NoteSummaries";
+import { ReviewOutputFormat } from "../../../config/types";
 
 export class DailyNotesReportBuilder {
-  build(summaries: NoteSummaries, outputFormat: "outliner" | "xmind"): string {
+  build(summaries: NoteSummaries, outputFormat: ReviewOutputFormat): string {
     if (outputFormat === "xmind") {
       return this.buildOutliner(summaries);
     }
@@ -35,13 +36,6 @@ export class DailyNotesReportBuilder {
 function folderTitle(folder: NoteProjectFolder): string {
   const last = folder.folderPath.split("/").pop() ?? folder.folderPath;
   return last.replace(/^[^_]+_/, "");
-}
-
-function indent(value: string, prefix: string): string {
-  return value
-    .split("\n")
-    .map((line) => `${prefix}${line}`)
-    .join("\n");
 }
 
 function formatSummaryLines(value: string, prefix: string): string {
