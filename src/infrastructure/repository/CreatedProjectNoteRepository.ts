@@ -1,12 +1,14 @@
 import { App, TFile } from "obsidian";
 import { MarkdownFile } from "md-ast-core";
 import { ProjectFolder } from "../../domain/project/ProjectFolder";
+import { logger } from "../../shared/logger/loggerInstance";
 
 export class CreatedProjectNoteRepository {
   constructor(private readonly app: App) {}
 
   findByDate(date: string): TFile[] {
-    return this.app.vault.getMarkdownFiles().filter((file) => {
+    const threshold = this.buildLooseThreshold(date);
+    const candidates = this.app.vault.getMarkdownFiles().filter((file) => {
       if (!file.path.startsWith(`${ProjectFolder.rootDir}/`)) {
         return false;
       }
@@ -15,28 +17,47 @@ export class CreatedProjectNoteRepository {
         return false;
       }
 
+      return file.stat.ctime >= threshold;
+    });
+
+    logger.debug(
+      `[Repository] CreatedProjectNoteRepository.findByDate prefilter date=${date} candidates=${candidates.length}`,
+    );
+
+    const matched = candidates.filter((file) => {
       const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
       const dailynote = typeof frontmatter?.dailynote === "string"
         ? frontmatter.dailynote
         : null;
 
-      if (dailynote?.includes(date)) {
-        return true;
+      if (!dailynote) {
+        return false;
       }
 
-      const createdAt = typeof frontmatter?.createdAt === "string"
-        ? frontmatter.createdAt
-        : typeof frontmatter?.created === "string"
-          ? frontmatter.created
-          : null;
-
-      return createdAt?.startsWith(date) ?? false;
+      return this.extractDateKeyFromDailyNote(dailynote) === date;
     });
+
+    logger.debug(
+      `[Repository] CreatedProjectNoteRepository.findByDate matched date=${date} count=${matched.length}`,
+    );
+
+    return matched;
   }
 
   async hasSummary(file: TFile): Promise<boolean> {
     const text = await this.app.vault.read(file);
     const summary = MarkdownFile.parse(text).getFrontmatter().get<string>("summary");
     return typeof summary === "string" && summary.trim().length > 0;
+  }
+
+  private buildLooseThreshold(date: string): number {
+    const target = new Date(`${date}T00:00:00`);
+    target.setDate(target.getDate() - 1);
+    return target.getTime();
+  }
+
+  private extractDateKeyFromDailyNote(value: string): string | null {
+    const match = value.match(/\d{4}-\d{2}-\d{2}/);
+    return match?.[0] ?? null;
   }
 }
