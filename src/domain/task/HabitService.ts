@@ -40,6 +40,21 @@ export class HabitService {
     return lines.filter((l) => !this.isHabitLine(l, habitSet));
   }
 
+  static collectExistingHabits(lines: string[], habits: string[]): string[] {
+    const habitSet = new Set(habits);
+    const titles = new Set<string>();
+
+    for (const line of lines) {
+      const title = this.extractTitle(line);
+
+      if (habitSet.has(title)) {
+        titles.add(title);
+      }
+    }
+
+    return habits.filter((habit) => titles.has(habit));
+  }
+
   static buildHabitLines(habits: string[]): string[] {
     return habits.map((h) => `- [ ] ${h}`);
   }

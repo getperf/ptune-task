@@ -22,6 +22,7 @@ import { HabitService } from "../../../domain/task/HabitService";
 import type { TaskEntry } from "../../../domain/task/TaskEntry";
 import type { RawPayload } from "../../../infrastructure/conversion/task/json/JsonToEntries";
 import { getDefaultTaskListId } from "../shared/DefaultTaskListId";
+import { i18n } from "../../../shared/i18n/I18n";
 
 export class PullAndMergeTodayUseCase {
   constructor(
@@ -108,17 +109,27 @@ export class PullAndMergeTodayUseCase {
     logger.debug(
       `[UseCase] PullAndMergeTodayUseCase rendered taskMarkdownBytes=${rendered.taskListMarkdown.length} taskKeys=${Object.keys(rendered.taskKeys).length}`,
     );
-    const isFirstPull = adapter.getTaskKeysCount() === 0;
-    logger.debug(`[UseCase] PullAndMergeTodayUseCase isFirstPull=${isFirstPull}`);
-
-    // --- Habit detection ---
-    const hasHabit = localEntries.some((e) => habitSet.has(e.title));
-    logger.debug(`[UseCase] PullAndMergeTodayUseCase localHasHabit=${hasHabit}`);
+    const plannedSectionMarkdown = adapter.getSectionMarkdown("daily.section.planned.title");
+    const plannedLines = plannedSectionMarkdown.split("\n");
+    const existingMorningHabits = HabitService.collectExistingHabits(
+      plannedLines,
+      habits.morning,
+    );
+    const existingEveningHabits = HabitService.collectExistingHabits(
+      plannedLines,
+      habits.evening,
+    );
+    logger.debug(
+      `[UseCase] PullAndMergeTodayUseCase existingHabits morning=${existingMorningHabits.length} evening=${existingEveningHabits.length}`,
+    );
 
     // --- Section build ---
-    const sectionMarkdown = PlannedTaskSectionBuilder.buildForToday({
+    const sectionMarkdown = PlannedTaskSectionBuilder.build({
+      commentLine1: i18n.common.daily.planned.comment.line1,
+      commentLine2: i18n.common.daily.planned.comment.line2,
       tasksMarkdown: rendered.taskListMarkdown,
-      runtime: this.runtime,
+      morningHabits: existingMorningHabits,
+      eveningHabits: existingEveningHabits,
       keepExistingHabits: false,
     });
     logger.debug(
