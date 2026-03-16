@@ -13,10 +13,7 @@ export class ConfigService {
 		const data =
 			(await plugin.loadData()) as Partial<PluginSettings> | null;
 
-		this.settings = {
-			...DEFAULT_SETTINGS,
-			...data,
-		};
+		this.settings = mergeSettings(DEFAULT_SETTINGS, data);
 	}
 
 	async save() {
@@ -28,4 +25,56 @@ export class ConfigService {
 	getSettings(): PluginSettings {
 		return this.settings;
 	}
+}
+
+function mergeSettings(
+	defaults: PluginSettings,
+	data: Partial<PluginSettings> | null,
+): PluginSettings {
+	if (!data) {
+		return defaults;
+	}
+
+	const mergedDailyNoteTask = defaults.dailyNoteTask
+		? {
+			...defaults.dailyNoteTask,
+			...(data.dailyNoteTask ?? {}),
+			habit: {
+				...defaults.dailyNoteTask.habit,
+				...(data.dailyNoteTask?.habit ?? {}),
+			},
+			tagSuggestions:
+				data.dailyNoteTask?.tagSuggestions ?? defaults.dailyNoteTask.tagSuggestions,
+			goalSuggestions:
+				data.dailyNoteTask?.goalSuggestions ?? defaults.dailyNoteTask.goalSuggestions,
+			subTaskTemplates:
+				data.dailyNoteTask?.subTaskTemplates ?? defaults.dailyNoteTask.subTaskTemplates,
+		}
+		: data.dailyNoteTask;
+
+	return {
+		...defaults,
+		...data,
+		llm: {
+			...defaults.llm,
+			...(data.llm ?? {}),
+		},
+		note: {
+			...defaults.note,
+			...(data.note ?? {}),
+		},
+		snippet: {
+			...defaults.snippet,
+			...(data.snippet ?? {}),
+		},
+		review: {
+			...defaults.review,
+			...(data.review ?? {}),
+		},
+		habitTasks: {
+			...defaults.habitTasks,
+			...(data.habitTasks ?? {}),
+		},
+		dailyNoteTask: mergedDailyNoteTask,
+	};
 }

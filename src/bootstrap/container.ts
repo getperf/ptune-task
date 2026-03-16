@@ -1,5 +1,11 @@
 import { App } from "obsidian";
+import { GenerateDailyReviewFlowUseCase } from "../application/review_flow/usecases/GenerateDailyReviewFlowUseCase";
 import { GenerateDailyReviewUseCase } from "../application/review/usecases/GenerateDailyReviewUseCase";
+import { GenerateDailyNotesReviewUseCase } from "../application/daily_notes_review/usecases/GenerateDailyNotesReviewUseCase";
+import { DailyNotesReportBuilder } from "../application/daily_notes_review/builders/DailyNotesReportBuilder";
+import { CollectCreatedNotesUseCase } from "../application/note_scan/usecases/CollectCreatedNotesUseCase";
+import { NoteSummaryGenerator } from "../application/note_review/services/NoteSummaryGenerator";
+import { ReviewFlowOptionsResolver } from "../application/review_flow/services/ReviewFlowOptionsResolver";
 import { ObsidianContext } from "../infrastructure/obsidian/ObsidianContext";
 import { PullTodayCommand } from "../presentation/pull/PullTodayCommand";
 import { PushAndRebuildCommand } from "../presentation/push/PushAndRebuildCommand";
@@ -15,6 +21,10 @@ import { SyncFactory } from "./factories/SyncFactory";
 import { DailyNoteOpenHook } from "../infrastructure/obsidian/DailyNoteOpenHook";
 import { LayoutReadyHook } from "../infrastructure/obsidian/LayoutReadyHook";
 import { PtuneSyncUriAuthService } from "../infrastructure/sync/ptune-sync-uri/PtuneSyncUriAuthService";
+import { DailyNotesReviewWriter } from "../infrastructure/document/review/DailyNotesReviewWriter";
+import { LlmClient } from "../infrastructure/llm/LlmClient";
+import { CreatedProjectNoteRepository } from "../infrastructure/repository/CreatedProjectNoteRepository";
+import { ProjectNoteFrontmatterRepository } from "../infrastructure/repository/ProjectNoteFrontmatterRepository";
 
 export class Container {
   private readonly runtime: PtuneRuntime;
@@ -59,7 +69,8 @@ export class Container {
 
   createReviewCommand(): ReviewCommand {
     return new ReviewCommand(
-      this.createGenerateDailyReviewUseCase(),
+      this.calendarFactory.createTodayResolver(),
+      this.createGenerateDailyReviewFlowUseCase(),
       this.presentationFactory.createObsidianPresenter(),
     );
   }
@@ -88,6 +99,36 @@ export class Container {
     return new GenerateDailyReviewUseCase(
       this.syncFactory.createSyncPort(),
       this.runtime.dailyNoteRepository,
+    );
+  }
+
+  createGenerateDailyNotesReviewUseCase(
+    llm = new LlmClient(),
+  ): GenerateDailyNotesReviewUseCase {
+    const noteRepo = new ProjectNoteFrontmatterRepository(this.app);
+    const createdRepo = new CreatedProjectNoteRepository(this.app);
+
+    return new GenerateDailyNotesReviewUseCase(
+      this.calendarFactory.createCreateDailyNoteUseCase(),
+      this.runtime.dailyNoteRepository,
+      new CollectCreatedNotesUseCase(createdRepo, noteRepo),
+      createdRepo,
+      noteRepo,
+      new NoteSummaryGenerator(llm, noteRepo),
+      llm,
+      new DailyNotesReviewWriter(),
+      new DailyNotesReportBuilder(),
+    );
+  }
+
+  createGenerateDailyReviewFlowUseCase(): GenerateDailyReviewFlowUseCase {
+    const llm = new LlmClient();
+
+    return new GenerateDailyReviewFlowUseCase(
+      this.createGenerateDailyReviewUseCase(),
+      this.createGenerateDailyNotesReviewUseCase(llm),
+      new ReviewFlowOptionsResolver(),
+      llm,
     );
   }
 

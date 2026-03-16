@@ -13,6 +13,7 @@ import { MarkdownToJsonUseCase } from "../planning/usecases/MarkdownToJsonUseCas
 
 import { PlannedTaskSectionBuilder } from "../planning/builders/PlannedTaskSectionBuilder";
 import { MergeTaskTreeService } from "../sync/merge/MergeTaskTreeService";
+import { getDefaultTaskListId } from "../sync/shared/DefaultTaskListId";
 
 import { PullQuery } from "../sync/shared/dto/PullQuery";
 import { PtuneSyncPort } from "../sync/shared/ports/PtuneSyncPort";
@@ -47,7 +48,7 @@ export class SyncAndRebuildDailyNoteUseCase {
     logger.debug(`[UseCase] SyncAndRebuildDailyNoteUseCase phase=${phase}`);
 
     const query: PullQuery = {
-      list: "_Today",
+      list: getDefaultTaskListId(),
       includeCompleted: phase === SyncPhase.Working,
     };
 

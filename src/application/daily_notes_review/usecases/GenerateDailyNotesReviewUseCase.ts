@@ -10,10 +10,17 @@ import { ProjectNoteFrontmatterRepository } from "../../../infrastructure/reposi
 import { CreatedProjectNoteRepository } from "../../../infrastructure/repository/CreatedProjectNoteRepository";
 import { DailyNotesReviewWriter } from "../../../infrastructure/document/review/DailyNotesReviewWriter";
 import { DailyNoteRepository } from "../../../infrastructure/repository/DailyNoteRepository";
+import { DailyNote } from "../../../domain/daily/DailyNote";
 import { NoteSummaries } from "../../../domain/note/NoteSummaries";
 import { TextGenerationPort } from "../../llm/ports/TextGenerationPort";
 import { config } from "../../../config/config";
 import { logger } from "../../../shared/logger/loggerInstance";
+
+export type GenerateDailyNotesReviewResult = {
+  note?: DailyNote;
+  noteCount: number;
+  generatedCount: number;
+};
 
 export class GenerateDailyNotesReviewUseCase {
   constructor(
@@ -30,7 +37,7 @@ export class GenerateDailyNotesReviewUseCase {
     private readonly reflectionBuilder = new DailyNotesReflectionBuilder(),
   ) {}
 
-  async execute(date: string): Promise<{ noteCount: number; generatedCount: number }> {
+  async execute(date: string): Promise<GenerateDailyNotesReviewResult> {
     logger.debug(`[UseCase:start] GenerateDailyNotesReviewUseCase date=${date}`);
 
     try {
@@ -54,6 +61,7 @@ export class GenerateDailyNotesReviewUseCase {
       if (summaries.getAll().length === 0) {
         logger.debug(`[UseCase:end] GenerateDailyNotesReviewUseCase date=${date} notes=0 generated=${generatedCount}`);
         return {
+          note: undefined,
           noteCount: 0,
           generatedCount,
         };
@@ -72,6 +80,7 @@ export class GenerateDailyNotesReviewUseCase {
       logger.debug(`[UseCase:end] GenerateDailyNotesReviewUseCase date=${date} notes=${summaries.getAll().length} generated=${generatedCount}`);
 
       return {
+        note: updated,
         noteCount: summaries.getAll().length,
         generatedCount,
       };

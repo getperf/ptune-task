@@ -1,4 +1,5 @@
 import { logger } from "../../../shared/logger/loggerInstance";
+import { getDefaultTaskListId } from "../shared/DefaultTaskListId";
 import { PtuneSyncPort } from "../shared/ports/PtuneSyncPort";
 
 export class ApplyPushUseCase {
@@ -8,7 +9,7 @@ export class ApplyPushUseCase {
     logger.info("Push started");
 
     try {
-      await this.syncPort.push(payload, { list: "_Today", allowDelete });
+      await this.syncPort.push(payload, { list: getDefaultTaskListId(), allowDelete });
 
       logger.info("Push completed");
     } catch (error) {

@@ -28,6 +28,8 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 	review: {
 		sentenceMode: "llm",
 		noteSummaryOutputFormat: "xmind",
+		notesReviewEnabled: true,
+		taskReviewOutputFormat: "outline",
 	},
 
 	habitTasks: {

@@ -21,6 +21,7 @@ import { SyncPhase } from "../../../domain/task/SyncPhase";
 import { HabitService } from "../../../domain/task/HabitService";
 import type { TaskEntry } from "../../../domain/task/TaskEntry";
 import type { RawPayload } from "../../../infrastructure/conversion/task/json/JsonToEntries";
+import { getDefaultTaskListId } from "../shared/DefaultTaskListId";
 
 export class PullAndMergeTodayUseCase {
   constructor(
@@ -54,7 +55,7 @@ export class PullAndMergeTodayUseCase {
     logger.debug(`[UseCase] PullAndMergeTodayUseCase phase=${phase} created=${created}`);
 
     const raw = await this.syncPort.pull({
-      list: "_Today",
+      list: getDefaultTaskListId(),
       includeCompleted: phase === SyncPhase.Working,
     });
 

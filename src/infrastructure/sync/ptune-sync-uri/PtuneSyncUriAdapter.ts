@@ -5,6 +5,7 @@ import {
 import { PullQuery } from "../../../application/sync/shared/dto/PullQuery";
 import { PushQuery } from "../../../application/sync/shared/dto/PushQuery";
 import { ReviewQuery } from "../../../application/sync/shared/dto/ReviewQuery";
+import { getDefaultTaskListId } from "../../../application/sync/shared/DefaultTaskListId";
 import { PtuneSyncPort } from "../../../application/sync/shared/ports/PtuneSyncPort";
 import { PtuneSyncUriClient } from "./PtuneSyncUriClient";
 
@@ -40,7 +41,7 @@ export class PtuneSyncUriAdapter implements PtuneSyncPort {
 
   async diff(payload: string): Promise<DiffResult> {
     const envelope = await this.client.diff<DiffData>(payload, {
-      list: "_Today",
+      list: getDefaultTaskListId(),
     });
 
     const summary = envelope.data?.summary ?? {

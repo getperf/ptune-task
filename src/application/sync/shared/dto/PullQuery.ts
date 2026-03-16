@@ -1,5 +1,7 @@
 // src/application/sync/PullQuery.ts
 
+import { getDefaultTaskListId } from "../DefaultTaskListId";
+
 export class PullQuery {
   readonly list: string;
   readonly date?: string;
@@ -15,6 +17,6 @@ export class PullQuery {
   }
 
   static today(): PullQuery {
-    return new PullQuery("_Today");
+    return new PullQuery(getDefaultTaskListId());
   }
 }

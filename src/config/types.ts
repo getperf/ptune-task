@@ -23,10 +23,13 @@ export interface SnippetSettings {
 
 export type SentenceMode = "none" | "llm";
 export type NoteSummaryOutputFormat = "outliner" | "xmind";
+export type TaskReviewOutputFormat = "outline" | "xmind";
 
 export interface ReviewSettings {
 	sentenceMode: SentenceMode;
 	noteSummaryOutputFormat: NoteSummaryOutputFormat;
+	notesReviewEnabled: boolean;
+	taskReviewOutputFormat: TaskReviewOutputFormat;
 }
 
 export type Lang = "ja" | "en";

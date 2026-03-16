@@ -39,6 +39,23 @@ describe("ConfigService", () => {
 		});
 	});
 
+	test("load(): nested review settings preserve defaults", async () => {
+		const service = new ConfigService();
+
+		const plugin = createPluginMock({
+			review: {
+				sentenceMode: "none",
+			},
+		}) as unknown as Plugin;
+
+		await service.load(plugin);
+
+		expect(service.getSettings().review).toEqual({
+			...DEFAULT_SETTINGS.review,
+			sentenceMode: "none",
+		});
+	});
+
 	test("save(): saveData called", async () => {
 		const service = new ConfigService();
 
