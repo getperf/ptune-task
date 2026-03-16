@@ -1,31 +1,33 @@
-import { ReviewFlagLabelResolver } from "../services/ReviewFlagLabelResolver";
 import { ReviewTaskNode } from "../models/ReviewTaskNode";
 import { ReviewTaskTree } from "../models/ReviewTaskTree";
+import { ReviewFlagLabelResolver } from "../services/ReviewFlagLabelResolver";
+
+type RemarkEntry = {
+  marker: string;
+  text: string;
+};
 
 export class TimetableBuilder {
   constructor(private readonly flagResolver: ReviewFlagLabelResolver) {}
 
   build(tree: ReviewTaskTree): string {
-    const lines: string[] = [];
+    const lines = [
+      "| 状態 | タイトル | 計画🍅 | 実績✅ | 開始 | 完了 |",
+      "| --- | --- | --- | --- | --- | --- |",
+    ];
+    const remarks: RemarkEntry[] = [];
+
+    let remarkIndex = 0;
 
     const visit = (node: ReviewTaskNode, depth: number) => {
-      const indent = "  ".repeat(depth);
+      const remark = this.buildRemark(node, ++remarkIndex);
+      if (!remark) {
+        remarkIndex -= 1;
+      } else {
+        remarks.push(remark);
+      }
 
-      const statusIcon = this.resolveStatusIcon(node.status ?? undefined);
-      const timeRange = this.formatTimeRange(
-        node.started ?? undefined,
-        node.completed ?? undefined,
-      );
-      const timePart = timeRange ? `${timeRange} ` : "";
-      const pomodoro = this.formatPomodoro(
-        node.pomodoroPlanned ?? undefined,
-        node.pomodoroActual ?? undefined,
-      );
-      const meta = this.formatMeta(node);
-
-      lines.push(
-        `${indent}- ${statusIcon} ${timePart}${node.title}${pomodoro}${meta}`,
-      );
+      lines.push(this.renderRow(node, depth, remark?.marker));
 
       for (const child of node.children) {
         visit(child, depth + 1);
@@ -36,10 +38,40 @@ export class TimetableBuilder {
       visit(root, 0);
     }
 
+    if (remarks.length > 0) {
+      lines.push("");
+      lines.push("備考");
+      lines.push(
+        ...remarks.map((remark) => `- ${remark.marker} ${this.escapeCell(remark.text)}`),
+      );
+    }
+
     return lines.join("\n").trim();
   }
 
-  private formatMeta(node: ReviewTaskNode): string {
+  private renderRow(
+    node: ReviewTaskNode,
+    depth: number,
+    remarkMarker?: string,
+  ): string {
+    const title = [
+      this.formatIndent(depth),
+      this.escapeCell(node.title),
+      remarkMarker ? ` ${remarkMarker}` : "",
+    ].join("");
+
+    return [
+      "|",
+      ` ${this.resolveStatusIcon(node.status ?? undefined)} |`,
+      ` ${title} |`,
+      ` ${this.formatPomodoro(node.pomodoroPlanned ?? undefined)} |`,
+      ` ${this.formatPomodoro(node.pomodoroActual ?? undefined)} |`,
+      ` ${this.formatTime(node.started ?? undefined)} |`,
+      ` ${this.formatTime(node.completed ?? undefined)} |`,
+    ].join("");
+  }
+
+  private buildRemark(node: ReviewTaskNode, index: number): RemarkEntry | null {
     const parts: string[] = [];
 
     if (node.goal) {
@@ -57,61 +89,50 @@ export class TimetableBuilder {
       }
     }
 
-    return parts.length === 0 ? "" : ` | ${parts.join(" | ")}`;
+    if (parts.length === 0) {
+      return null;
+    }
+
+    return {
+      marker: `[*${index}]`,
+      text: parts.join(" / "),
+    };
   }
 
   private resolveStatusIcon(status?: string): string {
-    if (!status) return " ";
     if (status === "completed") return "✅";
-    if (status === "needsAction") return "⏳";
-    return "•";
+    return "";
   }
 
-  private formatTimeRange(started?: string, completed?: string): string {
-    if (!started && !completed) return "";
-    const start = this.formatTime(started);
-    const end = this.formatTime(completed);
-    return `${start}-${end}`;
+  private formatIndent(depth: number): string {
+    if (depth <= 0) {
+      return "";
+    }
+
+    return "&nbsp;&nbsp;&nbsp;&nbsp;".repeat(depth);
   }
 
   private formatTime(value?: string): string {
-    if (!value) return "--:--";
+    if (!value) return "";
     if (/^\d{2}:\d{2}$/.test(value)) return value;
 
     const date = new Date(value);
-    if (isNaN(date.getTime())) return "--:--";
+    if (isNaN(date.getTime())) return "";
 
     const hh = String(date.getHours()).padStart(2, "0");
     const mm = String(date.getMinutes()).padStart(2, "0");
     return `${hh}:${mm}`;
   }
 
-  private formatPomodoro(planned?: number, actual?: number): string {
-    const p = planned ?? 0;
-    const a = actual ?? 0;
-
-    // 両方 0 → 非表示
-    if (p === 0 && a === 0) {
+  private formatPomodoro(value?: number): string {
+    if (!value) {
       return "";
     }
 
-    // planned > 0 && actual === 0 → plannedのみ表示
-    if (p > 0 && a === 0) {
-      return ` 🍅${p}`;
-    }
+    return (Math.round(value * 10) / 10).toFixed(1);
+  }
 
-    // planned > 0 && actual > 0 → 両方表示
-    if (p > 0 && a > 0) {
-      const actualDisplay = (Math.round(a * 10) / 10).toFixed(1);
-      return ` 🍅${p}/${actualDisplay}`;
-    }
-
-    // planned 0 && actual > 0 → 実績のみ
-    if (p === 0 && a > 0) {
-      const actualDisplay = (Math.round(a * 10) / 10).toFixed(1);
-      return ` 🍅-/${actualDisplay}`;
-    }
-
-    return "";
+  private escapeCell(value: string): string {
+    return value.replace(/\|/g, "\\|");
   }
 }
