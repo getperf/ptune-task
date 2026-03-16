@@ -40,7 +40,7 @@ export class PushAndRebuildCommand {
       logger.debug(`[Command] PushAndRebuildCommand phase=${phase} allowDelete=${allowDelete}`);
 
       const result =
-        await this.syncUseCase.execute(allowDelete);
+        await this.syncUseCase.execute(phase, allowDelete);
 
       if (result === false) {
         this.presenter.showInfo("Push cancelled.");

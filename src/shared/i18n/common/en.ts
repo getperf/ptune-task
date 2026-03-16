@@ -117,4 +117,22 @@ export const commonEn = {
 			unknown: "Unknown",
 		},
 	},
+
+	push: {
+		confirm: {
+			planning: {
+				title: "Sync with replacement",
+				message: "Existing daily tasks will be deleted before re-registering. Past completed and unfinished tasks may also be deleted.",
+			},
+			working: {
+				title: "Sync differences",
+				message: "Differences will be added or updated. No deletions will be sent.",
+			},
+			summary: {
+				create: "Create",
+				update: "Update",
+				delete: "Delete",
+			},
+		},
+	},
 } as const;

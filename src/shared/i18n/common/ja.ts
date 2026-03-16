@@ -115,4 +115,22 @@ export const commonJa = {
 			unknown: "不明",
 		},
 	},
+
+	push: {
+		confirm: {
+			planning: {
+				title: "洗い替えで同期します",
+				message: "既存の当日タスクを削除してから再登録します。過去の完了・未完了タスクも削除対象になります。",
+			},
+			working: {
+				title: "差分を同期します",
+				message: "差分を追加または更新します。削除は行いません。",
+			},
+			summary: {
+				create: "Create",
+				update: "Update",
+				delete: "Delete",
+			},
+		},
+	},
 } as const;

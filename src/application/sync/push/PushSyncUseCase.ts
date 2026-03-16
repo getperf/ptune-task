@@ -1,16 +1,13 @@
 import { logger } from "../../../shared/logger/loggerInstance";
+import { SyncPhase } from "../../../domain/task/SyncPhase";
 import { DiffResult } from "../shared/dto/DiffResult";
 import { DiffDailyNoteUseCase } from "../diff/DiffDailyNoteUseCase";
 import { ApplyPushUseCase } from "./ApplyPushUseCase";
+import { PushConfirmationSummaryBuilder } from "./PushConfirmationSummaryBuilder";
+import { PushConfirmationSummary } from "./dto/PushConfirmationSummary";
 
 export interface ConfirmPort {
-  confirm(summary: {
-    create: number;
-    update: number;
-    delete: number;
-    errors: number;
-    warnings: number;
-  }): Promise<boolean>;
+  confirm(summary: PushConfirmationSummary): Promise<boolean>;
 }
 
 export class PushSyncUseCase {
@@ -18,10 +15,14 @@ export class PushSyncUseCase {
     private readonly diffUseCase: DiffDailyNoteUseCase,
     private readonly pushUseCase: ApplyPushUseCase,
     private readonly confirmPort: ConfirmPort,
+    private readonly summaryBuilder = new PushConfirmationSummaryBuilder(),
   ) { }
 
-  async execute(allowDelete: boolean): Promise<DiffResult | false> {
-    logger.debug(`[UseCase:start] PushSyncUseCase allowDelete=${allowDelete}`);
+  async execute(
+    phase: SyncPhase,
+    allowDelete: boolean,
+  ): Promise<DiffResult | false> {
+    logger.debug(`[UseCase:start] PushSyncUseCase phase=${phase} allowDelete=${allowDelete}`);
 
     const { payload, result } = await this.diffUseCase.execute();
 
@@ -44,7 +45,8 @@ export class PushSyncUseCase {
       return result;
     }
 
-    const confirmed = await this.confirmPort.confirm(summary);
+    const confirmation = this.summaryBuilder.build(phase, summary);
+    const confirmed = await this.confirmPort.confirm(confirmation);
     logger.debug(`[UseCase] PushSyncUseCase confirmed=${confirmed}`);
 
     if (!confirmed) {

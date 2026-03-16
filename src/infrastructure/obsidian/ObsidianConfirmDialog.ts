@@ -1,5 +1,6 @@
 import { App, Modal } from "obsidian";
 import { ConfirmPort } from "../../application/sync/push/PushSyncUseCase";
+import { i18n } from "../../shared/i18n/I18n";
 
 type ConfirmSummary = Parameters<ConfirmPort["confirm"]>[0];
 
@@ -26,18 +27,27 @@ class ConfirmModal extends Modal {
 
   onOpen(): void {
     const { contentEl } = this;
+    const common = i18n.common;
 
-    contentEl.createEl("p", { text: `Create: ${this.summary.create}` });
-    contentEl.createEl("p", { text: `Update: ${this.summary.update}` });
-    contentEl.createEl("p", { text: `Delete: ${this.summary.delete}` });
+    contentEl.createEl("h3", { text: this.summary.title });
+    contentEl.createEl("p", { text: this.summary.message });
+    contentEl.createEl("p", {
+      text: `${common.push.confirm.summary.create}: ${this.summary.diff.create}`,
+    });
+    contentEl.createEl("p", {
+      text: `${common.push.confirm.summary.update}: ${this.summary.diff.update}`,
+    });
+    contentEl.createEl("p", {
+      text: `${common.push.confirm.summary.delete}: ${this.summary.diff.delete}`,
+    });
 
     const btnDiv = contentEl.createDiv({ cls: "modal-button-container" });
 
-    btnDiv.createEl("button", { text: "Yes" }).addEventListener("click", () => {
+    btnDiv.createEl("button", { text: common.action.confirm }).addEventListener("click", () => {
       this.done(true);
     });
 
-    btnDiv.createEl("button", { text: "No" }).addEventListener("click", () => {
+    btnDiv.createEl("button", { text: common.action.cancel }).addEventListener("click", () => {
       this.done(false);
     });
   }
