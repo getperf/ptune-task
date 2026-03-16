@@ -1,26 +1,27 @@
 import { TaskTreeNode } from "../../../infrastructure/conversion/task/tree/TaskTreeBuilder";
+import { TaskKeyService } from "../../../infrastructure/conversion/task/tree/TaskKeyService";
+
+type TreeIndex = {
+  byId: Map<string, TaskTreeNode>;
+  byKey: Map<string, TaskTreeNode>;
+  keyByNode: Map<TaskTreeNode, string>;
+};
 
 export class MergeTaskTreeService {
   merge(local: TaskTreeNode[], google: TaskTreeNode[]): TaskTreeNode[] {
-    const googleById = new Map<string, TaskTreeNode>();
-    const localById = new Map<string, TaskTreeNode>();
-
-    for (const g of this.flatten(google)) {
-      googleById.set(g.entry.id, g);
-    }
-
-    for (const l of this.flatten(local)) {
-      localById.set(l.entry.id, l);
-    }
+    const googleIndex = this.buildIndex(google);
+    const localIndex = this.buildIndex(local);
 
     const result: TaskTreeNode[] = [];
 
     // ① ローカル順で処理
     for (const localRoot of local) {
-      const googleMatch = googleById.get(localRoot.entry.id);
+      const googleMatch = this.findMatch(localRoot, localIndex, googleIndex);
 
       if (googleMatch) {
-        result.push(this.mergeNode(localRoot, googleMatch, googleById));
+        result.push(
+          this.mergeNode(localRoot, googleMatch, localIndex, googleIndex),
+        );
       } else {
         // 未登録ローカル
         result.push(localRoot);
@@ -29,7 +30,7 @@ export class MergeTaskTreeService {
 
     // ② Googleにのみ存在する root を末尾に追加
     for (const googleRoot of google) {
-      if (!localById.has(googleRoot.entry.id)) {
+      if (!this.findMatch(googleRoot, googleIndex, localIndex)) {
         result.push(googleRoot);
       }
     }
@@ -40,17 +41,18 @@ export class MergeTaskTreeService {
   private mergeNode(
     localNode: TaskTreeNode,
     googleNode: TaskTreeNode,
-    googleById: Map<string, TaskTreeNode>,
+    localIndex: TreeIndex,
+    googleIndex: TreeIndex,
   ): TaskTreeNode {
     const mergedChildren: TaskTreeNode[] = [];
 
     // ローカル順で子を処理
     for (const localChild of localNode.children) {
-      const googleChild = googleById.get(localChild.entry.id);
+      const googleChild = this.findMatch(localChild, localIndex, googleIndex);
 
       if (googleChild) {
         mergedChildren.push(
-          this.mergeNode(localChild, googleChild, googleById),
+          this.mergeNode(localChild, googleChild, localIndex, googleIndex),
         );
       } else {
         mergedChildren.push(localChild);
@@ -59,9 +61,7 @@ export class MergeTaskTreeService {
 
     // Googleのみ存在する子を追加
     for (const googleChild of googleNode.children) {
-      const exists = localNode.children.find(
-        (c) => c.entry.id === googleChild.entry.id,
-      );
+      const exists = this.findMatch(googleChild, googleIndex, localIndex);
 
       if (!exists) {
         mergedChildren.push(googleChild);
@@ -80,16 +80,39 @@ export class MergeTaskTreeService {
     };
   }
 
-  private flatten(nodes: TaskTreeNode[]): TaskTreeNode[] {
-    const result: TaskTreeNode[] = [];
-    const stack = [...nodes];
+  private findMatch(
+    node: TaskTreeNode,
+    source: TreeIndex,
+    target: TreeIndex,
+  ): TaskTreeNode | undefined {
+    const key = source.keyByNode.get(node);
 
-    while (stack.length) {
-      const node = stack.pop()!;
-      result.push(node);
-      stack.push(...node.children);
+    return target.byId.get(node.entry.id) ?? (key ? target.byKey.get(key) : undefined);
+  }
+
+  private buildIndex(nodes: TaskTreeNode[]): TreeIndex {
+    const byId = new Map<string, TaskTreeNode>();
+    const byKey = new Map<string, TaskTreeNode>();
+    const keyByNode = new Map<TaskTreeNode, string>();
+
+    const visit = (node: TaskTreeNode, parentTitle: string | null) => {
+      const key = parentTitle
+        ? TaskKeyService.buildChildKey(parentTitle, node.entry.title)
+        : TaskKeyService.buildRootKey(node.entry.title);
+
+      byId.set(node.entry.id, node);
+      byKey.set(key, node);
+      keyByNode.set(node, key);
+
+      for (const child of node.children) {
+        visit(child, node.entry.title);
+      }
+    };
+
+    for (const root of nodes) {
+      visit(root, null);
     }
 
-    return result;
+    return { byId, byKey, keyByNode };
   }
 }
