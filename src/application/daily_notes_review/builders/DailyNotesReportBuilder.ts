@@ -1,6 +1,5 @@
 import { NoteProjectFolder } from "../../../domain/note/NoteProjectFolder";
 import { NoteSummaries } from "../../../domain/note/NoteSummaries";
-import { ReviewOutputFormat } from "../../../config/types";
 
 export type DailyNotesReportBuildOptions = {
   includeSummaries?: boolean;
@@ -9,13 +8,8 @@ export type DailyNotesReportBuildOptions = {
 export class DailyNotesReportBuilder {
   build(
     summaries: NoteSummaries,
-    outputFormat: ReviewOutputFormat,
     options?: DailyNotesReportBuildOptions,
   ): string {
-    if (outputFormat === "xmind") {
-      return this.buildOutliner(summaries, options);
-    }
-
     return this.buildOutliner(summaries, options);
   }
 

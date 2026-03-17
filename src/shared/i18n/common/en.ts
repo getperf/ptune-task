@@ -100,9 +100,28 @@ export const commonEn = {
 
 		planned: {
 			comment: {
-				line1: "Please fill in today's tasks before starting work.",
-				line2: "After filling, export via Google Tasks to sync with ptune mobile app.",
+				line1: "At the start of the morning, create today's task list (pull unfinished tasks → review → push to apply).",
+				line2: "During the day, use push to update changes incrementally.",
 			},
+		},
+
+		reviewpoint: {
+			comment: {
+				outline: [
+					"The following items are reflection materials extracted from today's note summaries.",
+					"Merge duplicates, align the level of detail, and add missing context before finalizing the reflection points.",
+				],
+				xmind: [
+					"[Reflection workflow with XMind]",
+					"1. Open the editing XMind file below.",
+					"2. Copy everything under \"Input (for XMind)\" and paste it into XMind.",
+					"3. Reorganize the structure, level of detail, and wording in XMind.",
+					"4. Paste the organized result back into \"Output (XMind editing result)\".",
+				],
+			},
+			xmindFileLinkLabel: "Open the editing XMind file",
+			xmindInputHeading: "Input (for XMind)",
+			xmindOutputHeading: "Output (XMind editing result)",
 		},
 	},
 
@@ -124,7 +143,7 @@ export const commonEn = {
 			dateLabel: "Target date",
 			taskReviewLabel: "Task review",
 			notesReviewLabel: "Daily notes review",
-			notesReviewFormatLabel: "Notes review format",
+			reviewPointFormatLabel: "Reflection point format",
 			run: "Run",
 			atLeastOneRequired: "Select at least one review option.",
 			options: {
@@ -154,11 +173,13 @@ export const commonEn = {
 		confirm: {
 			planning: {
 				title: "Sync with replacement",
-				message: "Existing daily tasks will be deleted before re-registering. Past completed and unfinished tasks may also be deleted.",
+				message:
+					"Existing daily tasks will be deleted before re-registering. Past completed and unfinished tasks may also be deleted.",
 			},
 			working: {
 				title: "Sync differences",
-				message: "Differences will be added or updated. No deletions will be sent.",
+				message:
+					"Differences will be added or updated. No deletions will be sent.",
 			},
 			summary: {
 				create: "Create",

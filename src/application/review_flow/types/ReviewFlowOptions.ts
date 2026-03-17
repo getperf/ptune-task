@@ -4,5 +4,5 @@ export type ReviewFlowOptions = {
   taskReviewEnabledDefault: boolean;
   notesReviewEnabledDefault: boolean;
   taskReviewOutputFormat: ReviewOutputFormat;
-  noteSummaryOutputFormat: ReviewOutputFormat;
+  reviewPointOutputFormat: ReviewOutputFormat;
 };

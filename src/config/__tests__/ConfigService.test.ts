@@ -56,6 +56,20 @@ describe("ConfigService", () => {
 		});
 	});
 
+	test("load(): reviewPointOutputFormat falls back to legacy noteSummaryOutputFormat", async () => {
+		const service = new ConfigService();
+
+		const plugin = createPluginMock({
+			review: {
+				noteSummaryOutputFormat: "xmind",
+			},
+		}) as unknown as Plugin;
+
+		await service.load(plugin);
+
+		expect(service.getSettings().review.reviewPointOutputFormat).toBe("xmind");
+	});
+
 	test("save(): saveData called", async () => {
 		const service = new ConfigService();
 

@@ -33,7 +33,7 @@ describe("GenerateDailyReviewFlowUseCase", () => {
       date: "2026-03-16",
       taskReviewEnabled: false,
       dailyNotesReviewEnabled: false,
-      dailyNotesReviewFormat: "outline",
+      reviewPointOutputFormat: "outline",
     });
 
     expect(taskReviewUseCase.execute).not.toHaveBeenCalled();
@@ -84,7 +84,7 @@ describe("GenerateDailyReviewFlowUseCase", () => {
       date: "2026-03-16",
       taskReviewEnabled: true,
       dailyNotesReviewEnabled: true,
-      dailyNotesReviewFormat: "outline",
+      reviewPointOutputFormat: "outline",
     });
 
     expect(taskReviewUseCase.execute).toHaveBeenCalledWith(
@@ -94,7 +94,7 @@ describe("GenerateDailyReviewFlowUseCase", () => {
     expect(dailyNotesReviewUseCase.execute).toHaveBeenCalledWith(
       "2026-03-16",
       expect.objectContaining({
-        outputFormat: "outline",
+        reviewPointOutputFormat: "outline",
         enableSummaries: false,
         enableReflection: false,
       }),
@@ -144,13 +144,13 @@ describe("GenerateDailyReviewFlowUseCase", () => {
       date: "2026-03-16",
       taskReviewEnabled: true,
       dailyNotesReviewEnabled: true,
-      dailyNotesReviewFormat: "xmind",
+      reviewPointOutputFormat: "xmind",
     });
 
     expect(dailyNotesReviewUseCase.execute).toHaveBeenCalledWith(
       "2026-03-16",
       expect.objectContaining({
-        outputFormat: "xmind",
+        reviewPointOutputFormat: "xmind",
       }),
     );
     expect(result).toEqual({

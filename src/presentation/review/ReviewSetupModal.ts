@@ -17,7 +17,7 @@ export class ReviewSetupModal extends Modal {
       date: options.date,
       taskReviewEnabled: options.taskReviewEnabled,
       dailyNotesReviewEnabled: options.dailyNotesReviewEnabled,
-      dailyNotesReviewFormat: options.dailyNotesReviewFormat,
+      reviewPointOutputFormat: options.reviewPointOutputFormat,
     };
   }
 
@@ -65,17 +65,17 @@ export class ReviewSetupModal extends Modal {
       );
 
     new Setting(contentEl)
-      .setName(t.notesReviewFormatLabel)
+      .setName(t.reviewPointFormatLabel)
       .addDropdown((dropdown) =>
         dropdown
           .addOptions({
             outline: t.options.outline,
             xmind: t.options.xmind,
           })
-          .setValue(this.state.dailyNotesReviewFormat)
+          .setValue(this.state.reviewPointOutputFormat)
           .onChange((value) => {
             if (value === "outline" || value === "xmind") {
-              this.state.dailyNotesReviewFormat = value;
+              this.state.reviewPointOutputFormat = value;
             }
           }),
       );

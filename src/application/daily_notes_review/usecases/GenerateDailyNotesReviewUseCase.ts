@@ -16,6 +16,7 @@ import { TextGenerationPort } from "../../llm/ports/TextGenerationPort";
 import { config } from "../../../config/config";
 import { logger } from "../../../shared/logger/loggerInstance";
 import { ReviewOutputFormat } from "../../../config/types";
+import { ReviewPointXMindTemplateService } from "../../../infrastructure/review/ReviewPointXMindTemplateService";
 
 export type GenerateDailyNotesReviewResult = {
   note?: DailyNote;
@@ -31,7 +32,7 @@ export type DailyNotesReviewProgress = {
 };
 
 export type GenerateDailyNotesReviewOptions = {
-  outputFormat?: ReviewOutputFormat;
+  reviewPointOutputFormat?: ReviewOutputFormat;
   enableSummaries?: boolean;
   enableReflection?: boolean;
   onProgress?: (progress: DailyNotesReviewProgress) => void;
@@ -48,6 +49,7 @@ export class GenerateDailyNotesReviewUseCase {
     private readonly textGenerator: TextGenerationPort,
     private readonly writer: DailyNotesReviewWriter,
     private readonly reportBuilder: DailyNotesReportBuilder,
+    private readonly reviewPointXMindTemplateService?: ReviewPointXMindTemplateService,
     private readonly reflectionDocumentBuilder = new DailyNotesReflectionDocumentBuilder(),
     private readonly reflectionBuilder = new DailyNotesReflectionBuilder(),
   ) {}
@@ -100,18 +102,17 @@ export class GenerateDailyNotesReviewUseCase {
         };
       }
 
-      const report = this.reportBuilder.build(
-        summaries,
-        options?.outputFormat ?? config.settings.review.noteSummaryOutputFormat,
-        {
-          includeSummaries: enableSummaries,
-        },
-      );
-      const reflection = (options?.enableReflection ?? true)
-        ? await this.buildReflection(summaries)
-        : "";
-
+      const report = this.reportBuilder.build(summaries, {
+        includeSummaries: enableSummaries,
+      });
       const { note } = await this.createDailyNoteUseCase.execute(date);
+      const reflection = (options?.enableReflection ?? true)
+        ? await this.buildReflection(
+            summaries,
+            note,
+            options?.reviewPointOutputFormat ?? config.settings.review.reviewPointOutputFormat,
+          )
+        : "";
       const updated = this.writer.write(note, report, reflection);
       await this.dailyNoteRepository.save(updated);
 
@@ -131,11 +132,21 @@ export class GenerateDailyNotesReviewUseCase {
     }
   }
 
-  private async buildReflection(summaries: NoteSummaries): Promise<string> {
+  private async buildReflection(
+    summaries: NoteSummaries,
+    note: DailyNote,
+    outputFormat: ReviewOutputFormat,
+  ): Promise<string> {
     const doc = this.reflectionDocumentBuilder.build(summaries);
+    let xmindFileLink: string | undefined;
+
+    if (outputFormat === "xmind" && this.reviewPointXMindTemplateService) {
+      const xmindFile = await this.reviewPointXMindTemplateService.ensureForDailyNote(note);
+      xmindFileLink = xmindFile.markdownLinkPath;
+    }
 
     if (config.settings.review.sentenceMode !== "llm") {
-      return this.reflectionBuilder.build(doc);
+      return this.reflectionBuilder.build(doc, outputFormat, { xmindFileLink });
     }
 
     const adapter = new SentenceSummaryAdapter(doc);
@@ -145,7 +156,7 @@ export class GenerateDailyNotesReviewUseCase {
     );
 
     if (sentenceInputs.length === 0) {
-      return this.reflectionBuilder.build(doc);
+      return this.reflectionBuilder.build(doc, outputFormat, { xmindFileLink });
     }
 
     const reflection = await this.textGenerator.generate(
@@ -157,7 +168,7 @@ export class GenerateDailyNotesReviewUseCase {
       adapter.apply(reflection);
     }
 
-    return this.reflectionBuilder.build(doc);
+    return this.reflectionBuilder.build(doc, outputFormat, { xmindFileLink });
   }
 
   private resolveErrorMessage(error: unknown): string {

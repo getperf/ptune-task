@@ -5,5 +5,5 @@ export type ReviewFlowDialogOptions = {
   dateCandidates: string[];
   taskReviewEnabled: boolean;
   dailyNotesReviewEnabled: boolean;
-  dailyNotesReviewFormat: ReviewOutputFormat;
+  reviewPointOutputFormat: ReviewOutputFormat;
 };

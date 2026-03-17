@@ -36,7 +36,7 @@ export class ReviewCommand {
       dateCandidates: this.buildRecentDates(today, 7),
       taskReviewEnabled: defaults.taskReviewEnabledDefault,
       dailyNotesReviewEnabled: defaults.notesReviewEnabledDefault,
-      dailyNotesReviewFormat: defaults.noteSummaryOutputFormat,
+      reviewPointOutputFormat: defaults.reviewPointOutputFormat,
     };
 
     new ReviewSetupModal(

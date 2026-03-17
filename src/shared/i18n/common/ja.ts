@@ -98,9 +98,28 @@ export const commonJa = {
 
 		planned: {
 			comment: {
-				line1: "作業開始時に1日のタスクリストを記入してください。",
-				line2: "記入後、エクスポートコマンドで Google Tasks 経由で ptune スマホアプリと連携します",
+				line1: "作業開始時に1日のタスクリストを記入してください。朝の開始時に予定タスクを作成（pullで未完了を取り込み→整理→pushで反映）。",
+				line2: "日中の追加・変更はpushで差分更新します。",
 			},
+		},
+
+		reviewpoint: {
+			comment: {
+				outline: [
+					"下記は当日のノート要約から抽出した振り返り素材です。",
+					"重複を整理し、粒度をそろえ、必要な補足を追記して振り返りポイントとして整えてください。",
+				],
+				xmind: [
+					"[XMind による振り返り手順]",
+					"1. 次の編集用 XMind ファイルを開いてください。",
+					"2. 「インプット（XMind 用）」の内容をすべてコピーして XMind に貼り付けてください。",
+					"3. XMind 上で構造、粒度、表現を整理してください。",
+					"4. 整理した結果を「アウトプット（XMind 編集結果）」に貼り戻してください。",
+				],
+			},
+			xmindFileLinkLabel: "編集用 XMind ファイルを開く",
+			xmindInputHeading: "インプット（XMind 用）",
+			xmindOutputHeading: "アウトプット（XMind 編集結果）",
 		},
 	},
 
@@ -122,7 +141,7 @@ export const commonJa = {
 			dateLabel: "対象日",
 			taskReviewLabel: "タスクレビュー",
 			notesReviewLabel: "当日作成ノートレビュー",
-			notesReviewFormatLabel: "ノートレビュー形式",
+			reviewPointFormatLabel: "振り返りポイント形式",
 			run: "実行",
 			atLeastOneRequired: "少なくとも1つのレビューを選択してください",
 			options: {
@@ -152,7 +171,8 @@ export const commonJa = {
 		confirm: {
 			planning: {
 				title: "洗い替えで同期します",
-				message: "既存の当日タスクを削除してから再登録します。過去の完了・未完了タスクも削除対象になります。",
+				message:
+					"既存の当日タスクを削除してから再登録します。過去の完了・未完了タスクも削除対象になります。",
 			},
 			working: {
 				title: "差分を同期します",

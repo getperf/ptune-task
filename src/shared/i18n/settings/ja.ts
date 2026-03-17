@@ -107,9 +107,9 @@ export const settingsJa = {
 			desc: "レビューコマンド実行時の既定で、当日作成ノートレビューを有効にします",
 		},
 
-		noteSummaryOutputFormat: {
-			name: "ノートレビュー形式",
-			desc: "当日作成ノートレビューの既定出力形式",
+		reviewPointOutputFormat: {
+			name: "振り返りポイント形式",
+			desc: "当日作成ノートレビュー内の振り返りポイントの既定出力形式",
 			options: {
 				outline: "outline",
 				xmind: "xmind",

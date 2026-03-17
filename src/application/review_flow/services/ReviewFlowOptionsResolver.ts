@@ -6,7 +6,7 @@ export class ReviewFlowOptionsResolver {
     return {
       taskReviewEnabledDefault: config.settings.review.taskReviewEnabledDefault,
       notesReviewEnabledDefault: config.settings.review.notesReviewEnabledDefault,
-      noteSummaryOutputFormat: config.settings.review.noteSummaryOutputFormat,
+      reviewPointOutputFormat: config.settings.review.reviewPointOutputFormat,
       taskReviewOutputFormat: config.settings.review.taskReviewOutputFormat,
     };
   }

@@ -25,6 +25,7 @@ import { DailyNotesReviewWriter } from "../infrastructure/document/review/DailyN
 import { LlmClient } from "../infrastructure/llm/LlmClient";
 import { CreatedProjectNoteRepository } from "../infrastructure/repository/CreatedProjectNoteRepository";
 import { ProjectNoteFrontmatterRepository } from "../infrastructure/repository/ProjectNoteFrontmatterRepository";
+import { ReviewPointXMindTemplateService } from "../infrastructure/review/ReviewPointXMindTemplateService";
 
 export class Container {
   private readonly runtime: PtuneRuntime;
@@ -120,6 +121,7 @@ export class Container {
       llm,
       new DailyNotesReviewWriter(),
       new DailyNotesReportBuilder(),
+      new ReviewPointXMindTemplateService(this.app),
     );
   }
 

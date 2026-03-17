@@ -5,8 +5,8 @@ import { GenerateDailyNotesReviewUseCase } from "../usecases/GenerateDailyNotesR
 
 describe("GenerateDailyNotesReviewUseCase", () => {
   test("writes note list without summaries or reflection when llm-dependent output is disabled", async () => {
-    const originalFormat = config.settings.review.noteSummaryOutputFormat;
-    config.settings.review.noteSummaryOutputFormat = "outline";
+    const originalFormat = config.settings.review.reviewPointOutputFormat;
+    config.settings.review.reviewPointOutputFormat = "outline";
 
     try {
       const createdFiles = [{ path: "_project/331_push時の差分ロジック見直し/01_新規作成で親見出し追加.md" }];
@@ -46,6 +46,9 @@ describe("GenerateDailyNotesReviewUseCase", () => {
       const writer = {
         write: jest.fn().mockReturnValue(updated),
       };
+      const reviewPointXMindTemplateService = {
+        ensureForDailyNote: jest.fn(),
+      };
       const reportBuilder = {
         build: jest.fn().mockReturnValue(
           [
@@ -65,19 +68,20 @@ describe("GenerateDailyNotesReviewUseCase", () => {
         textGenerator as never,
         writer as never,
         reportBuilder as never,
+        reviewPointXMindTemplateService as never,
       );
 
       const result = await useCase.execute("2026-03-16", {
-        outputFormat: "outline",
+        reviewPointOutputFormat: "outline",
         enableSummaries: false,
         enableReflection: false,
       });
 
       expect(noteSummaryGenerator.generate).not.toHaveBeenCalled();
       expect(textGenerator.generate).not.toHaveBeenCalled();
+      expect(reviewPointXMindTemplateService.ensureForDailyNote).not.toHaveBeenCalled();
       expect(reportBuilder.build).toHaveBeenCalledWith(
         summaries,
-        "outline",
         { includeSummaries: false },
       );
       expect(writer.write).toHaveBeenCalledWith(
@@ -95,7 +99,92 @@ describe("GenerateDailyNotesReviewUseCase", () => {
         generatedCount: 0,
       });
     } finally {
-      config.settings.review.noteSummaryOutputFormat = originalFormat;
+      config.settings.review.reviewPointOutputFormat = originalFormat;
+    }
+  });
+
+  test("creates xmind template link when review point format is xmind", async () => {
+    const originalFormat = config.settings.review.reviewPointOutputFormat;
+    const originalSentenceMode = config.settings.review.sentenceMode;
+    config.settings.review.reviewPointOutputFormat = "xmind";
+    config.settings.review.sentenceMode = "none";
+
+    try {
+      const summaries = new NoteSummaries();
+      summaries.add({
+        noteFolder: "_project/331_push時の差分ロジック見直し",
+        notePath: "_project/331_push時の差分ロジック見直し/01_新規作成で親見出し追加.md",
+        noteTitle: "新規作成で親見出し追加",
+        summary: "親見出しの追加手順を確認した",
+      });
+
+      const note = new DailyNote("2026-03-16", "_journal/2026/03/2026-03-16.md", "before");
+      const updated = note.withContent("after");
+
+      const createDailyNoteUseCase = {
+        execute: jest.fn().mockResolvedValue({ note, created: false }),
+      };
+      const dailyNoteRepository = {
+        save: jest.fn().mockResolvedValue(undefined),
+      };
+      const collectUseCase = {
+        execute: jest.fn().mockResolvedValue(summaries),
+      };
+      const createdRepo = {
+        findByDate: jest.fn().mockReturnValue([{ path: summaries.getAll()[0].notePath }]),
+        hasSummary: jest.fn(),
+      };
+      const noteRepo = {
+        saveSummary: jest.fn(),
+      };
+      const noteSummaryGenerator = {
+        generate: jest.fn(),
+      };
+      const textGenerator = {
+        generate: jest.fn(),
+      };
+      const writer = {
+        write: jest.fn().mockReturnValue(updated),
+      };
+      const reportBuilder = {
+        build: jest.fn().mockReturnValue("- push時の差分ロジック見直し"),
+      };
+      const reviewPointXMindTemplateService = {
+        ensureForDailyNote: jest.fn().mockResolvedValue({
+          vaultPath: "_journal/2026/03/2026-03-16_reviewpoint.xmind",
+          markdownLinkPath: "_journal/2026/03/2026-03-16_reviewpoint.xmind",
+          created: true,
+        }),
+      };
+
+      const useCase = new GenerateDailyNotesReviewUseCase(
+        createDailyNoteUseCase as never,
+        dailyNoteRepository as never,
+        collectUseCase as never,
+        createdRepo as never,
+        noteRepo as never,
+        noteSummaryGenerator as never,
+        textGenerator as never,
+        writer as never,
+        reportBuilder as never,
+        reviewPointXMindTemplateService as never,
+      );
+
+      await useCase.execute("2026-03-16", {
+        reviewPointOutputFormat: "xmind",
+        enableSummaries: false,
+        enableReflection: true,
+      });
+
+      expect(reviewPointXMindTemplateService.ensureForDailyNote).toHaveBeenCalledWith(note);
+      expect(writer.write).toHaveBeenCalledWith(
+        note,
+        "- push時の差分ロジック見直し",
+        expect.stringContaining("[編集用 XMind ファイルを開く](_journal/2026/03/2026-03-16_reviewpoint.xmind)"),
+      );
+    } finally {
+      config.settings.review.reviewPointOutputFormat = originalFormat;
+      config.settings.review.sentenceMode = originalSentenceMode;
     }
   });
 });

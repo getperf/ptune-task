@@ -27,6 +27,7 @@ export type SentenceMode = "none" | "llm";
 export interface ReviewSettings {
 	sentenceMode: SentenceMode;
 	noteSummaryOutputFormat: ReviewOutputFormat;
+	reviewPointOutputFormat: ReviewOutputFormat;
 	taskReviewEnabledDefault: boolean;
 	notesReviewEnabledDefault: boolean;
 	taskReviewOutputFormat: ReviewOutputFormat;

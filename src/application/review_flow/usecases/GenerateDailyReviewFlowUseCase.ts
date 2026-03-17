@@ -27,7 +27,7 @@ export class GenerateDailyReviewFlowUseCase {
 
     try {
       onProgress?.({ type: "started", date: options.date });
-      logger.debug(`[UseCase] GenerateDailyReviewFlowUseCase options date=${options.date} taskReviewEnabled=${options.taskReviewEnabled} notesReviewEnabled=${options.dailyNotesReviewEnabled} notesReviewFormat=${options.dailyNotesReviewFormat}`);
+      logger.debug(`[UseCase] GenerateDailyReviewFlowUseCase options date=${options.date} taskReviewEnabled=${options.taskReviewEnabled} notesReviewEnabled=${options.dailyNotesReviewEnabled} reviewPointFormat=${options.reviewPointOutputFormat}`);
 
       let taskReviewResult: Awaited<ReturnType<GenerateDailyReviewUseCase["execute"]>> | null = null;
 
@@ -75,7 +75,7 @@ export class GenerateDailyReviewFlowUseCase {
       onProgress?.({ type: "daily_notes_review_started", date: options.date, targetCount });
       const llmAvailable = this.textGenerator.hasValidApiKey();
       const dailyNotesReviewOptions: GenerateDailyNotesReviewOptions = {
-        outputFormat: options.dailyNotesReviewFormat,
+        reviewPointOutputFormat: options.reviewPointOutputFormat,
         enableSummaries: llmAvailable,
         enableReflection: llmAvailable,
         onProgress: (progress) => {

@@ -14,7 +14,7 @@ describe("DailyNotesReportBuilder", () => {
     const builder = new DailyNotesReportBuilder();
 
     expect(
-      builder.build(summaries, "outline", { includeSummaries: false }),
+      builder.build(summaries, { includeSummaries: false }),
     ).toBe(
       [
         "- push時の差分ロジック見直し",

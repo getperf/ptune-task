@@ -20,21 +20,21 @@ export function renderReviewSettings(containerEl: HTMLElement) {
     );
 
   new Setting(containerEl)
-    .setName(t.noteSummaryOutputFormat.name)
-    .setDesc(t.noteSummaryOutputFormat.desc)
+    .setName(t.reviewPointOutputFormat.name)
+    .setDesc(t.reviewPointOutputFormat.desc)
     .addDropdown((dropdown) =>
       dropdown
         .addOptions({
-          outline: t.noteSummaryOutputFormat.options.outline,
-          xmind: t.noteSummaryOutputFormat.options.xmind,
+          outline: t.reviewPointOutputFormat.options.outline,
+          xmind: t.reviewPointOutputFormat.options.xmind,
         })
-        .setValue(config.settings.review.noteSummaryOutputFormat)
+        .setValue(config.settings.review.reviewPointOutputFormat)
         .onChange(async (value) => {
           if (value !== "outline" && value !== "xmind") {
             return;
           }
 
-          config.settings.review.noteSummaryOutputFormat = value;
+          config.settings.review.reviewPointOutputFormat = value;
           await config.save();
         }),
     );

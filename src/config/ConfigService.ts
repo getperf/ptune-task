@@ -51,6 +51,17 @@ function mergeSettings(
 				data.dailyNoteTask?.subTaskTemplates ?? defaults.dailyNoteTask.subTaskTemplates,
 		}
 		: data.dailyNoteTask;
+	const mergedReview = {
+		...defaults.review,
+		...(data.review ?? {}),
+	};
+
+	if (
+		data.review?.reviewPointOutputFormat === undefined
+		&& data.review?.noteSummaryOutputFormat !== undefined
+	) {
+		mergedReview.reviewPointOutputFormat = data.review.noteSummaryOutputFormat;
+	}
 
 	return {
 		...defaults,
@@ -67,10 +78,7 @@ function mergeSettings(
 			...defaults.snippet,
 			...(data.snippet ?? {}),
 		},
-		review: {
-			...defaults.review,
-			...(data.review ?? {}),
-		},
+		review: mergedReview,
 		habitTasks: {
 			...defaults.habitTasks,
 			...(data.habitTasks ?? {}),
