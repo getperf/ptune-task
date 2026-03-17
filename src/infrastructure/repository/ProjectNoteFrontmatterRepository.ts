@@ -1,6 +1,7 @@
 import { App, TFile } from "obsidian";
 import { MarkdownFile } from "md-ast-core";
 import { NoteSummary } from "../../domain/note/NoteSummary";
+import { normalizeNoteSummaryText } from "../../domain/note/normalizeNoteSummaryText";
 
 export class ProjectNoteFrontmatterRepository {
   constructor(private readonly app: App) {}
@@ -33,7 +34,7 @@ export class ProjectNoteFrontmatterRepository {
   async saveSummary(file: TFile, summary: string): Promise<void> {
     const text = await this.app.vault.read(file);
     const md = MarkdownFile.parse(text);
-    md.getFrontmatter().set("summary", summary.trim());
+    md.getFrontmatter().set("summary", normalizeNoteSummaryText(summary));
     await this.app.vault.modify(file, md.toString());
   }
 }

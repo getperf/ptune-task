@@ -1,4 +1,5 @@
 import { NoteSummaries } from "../../../domain/note/NoteSummaries";
+import { splitNoteSummaryIntoSentences } from "../../../domain/note/splitNoteSummaryIntoSentences";
 import { DailyNotesReflectionDocument, ReflectionProject, ReflectionSentence } from "../models/DailyNotesReflectionDocument";
 
 export class DailyNotesReflectionDocumentBuilder {
@@ -19,11 +20,7 @@ export class DailyNotesReflectionDocumentBuilder {
       return [{ text: "(summary missing)" }];
     }
 
-    return summary
-      .split("\n")
-      .map((line) => line.trim())
-      .filter((line) => line.length > 0)
-      .map((line) => ({ text: line }));
+    return splitNoteSummaryIntoSentences(summary).map((line) => ({ text: line }));
   }
 
   private resolveProjectTitle(folderPath: string): string {
