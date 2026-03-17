@@ -6,4 +6,7 @@ export type PromptDictionary = {
   noteSummary: {
     system: PromptText;
   };
+  dailyNotesReflection: {
+    system: PromptText;
+  };
 };

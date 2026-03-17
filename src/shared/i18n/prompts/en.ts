@@ -15,4 +15,17 @@ export const promptsEn = {
       ],
     },
   },
+  dailyNotesReflection: {
+    system: {
+      lines: [
+        "You are an assistant that summarizes technical note sentences.",
+        "The input is a JSON array with id and text fields.",
+        "Summarize each text into a short sentence of about 30 characters in Japanese.",
+        "Do not add new information, speculate, or evaluate.",
+        "Return only a JSON array, and each element must be {\"id\":\"...\",\"summary\":\"...\"}.",
+        "Keep each id exactly as provided in the input.",
+        "Do not output code fences, explanations, introductions, or trailing notes.",
+      ],
+    },
+  },
 } satisfies PromptDictionary;
