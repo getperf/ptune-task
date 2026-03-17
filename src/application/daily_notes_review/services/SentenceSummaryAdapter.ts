@@ -1,4 +1,5 @@
 import { DailyNotesReflectionDocument, ReflectionSentence } from "../models/DailyNotesReflectionDocument";
+import { logger } from "../../../shared/logger/loggerInstance";
 
 type SentenceInput = {
   id: string;
@@ -32,8 +33,12 @@ export class SentenceSummaryAdapter {
   apply(outputText: string): void {
     let results: SentenceOutput[];
     try {
-      results = JSON.parse(this.normalizeJson(outputText)) as SentenceOutput[];
-    } catch {
+      results = JSON.parse(this.extractJsonArray(outputText)) as SentenceOutput[];
+    } catch (error) {
+      logger.warn(
+        `[Service] SentenceSummaryAdapter.apply parseFailed chars=${outputText.length}`,
+        error,
+      );
       return;
     }
 
@@ -43,12 +48,22 @@ export class SentenceSummaryAdapter {
         .map((result) => [result.id, result.summary.trim()]),
     );
 
+    logger.debug(
+      `[Service] SentenceSummaryAdapter.apply parsed results=${results.length} usable=${map.size}`,
+    );
+
+    let applied = 0;
     for (const { id, sentence } of this.indexed) {
       const summary = map.get(id);
       if (summary) {
         sentence.text = summary;
+        applied += 1;
       }
     }
+
+    logger.debug(
+      `[Service] SentenceSummaryAdapter.apply applied=${applied} indexed=${this.indexed.length}`,
+    );
   }
 
   private collect(): IndexedSentence[] {
@@ -69,11 +84,20 @@ export class SentenceSummaryAdapter {
     return result;
   }
 
-  private normalizeJson(value: string): string {
-    return value
+  private extractJsonArray(value: string): string {
+    const normalized = value
       .trim()
       .replace(/^```json\s*/i, "")
       .replace(/^```\s*/i, "")
       .replace(/```$/i, "");
+
+    const first = normalized.indexOf("[");
+    const last = normalized.lastIndexOf("]");
+
+    if (first >= 0 && last >= first) {
+      return normalized.slice(first, last + 1);
+    }
+
+    return normalized;
   }
 }

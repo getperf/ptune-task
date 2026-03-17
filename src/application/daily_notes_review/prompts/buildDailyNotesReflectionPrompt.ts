@@ -6,5 +6,6 @@ export function buildDailyNotesReflectionPrompt(): string {
     "新しい情報の追加、推測、評価は禁止です。",
     "出力は JSON 配列のみとし、各要素は {\"id\":\"...\",\"summary\":\"...\"} としてください。",
     "id は入力値をそのまま使い、変更しないでください。",
+    "コードブロック、説明文、前置き、後書きは出力しないでください。",
   ].join("\n");
 }

@@ -170,7 +170,12 @@ export class GenerateDailyNotesReviewUseCase {
     );
 
     if (reflection?.trim()) {
+      logger.debug(
+        `[UseCase] GenerateDailyNotesReviewUseCase reflectionResponse chars=${reflection.length}`,
+      );
       adapter.apply(reflection);
+    } else {
+      logger.warn("[UseCase] GenerateDailyNotesReviewUseCase reflectionResponse empty");
     }
 
     return this.reflectionBuilder.build(doc, outputFormat, { xmindFileLink });
