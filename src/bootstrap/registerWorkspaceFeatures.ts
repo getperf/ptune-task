@@ -7,5 +7,4 @@ export function registerWorkspaceFeatures(
 ): void {
   container.createNoteCreationFeature().start(plugin);
   container.createNoteReviewFeature().start(plugin);
-  container.createDailyNotesReviewFeature().start(plugin);
 }

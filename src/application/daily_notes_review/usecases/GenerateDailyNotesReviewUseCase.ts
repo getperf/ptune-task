@@ -25,7 +25,7 @@ export type GenerateDailyNotesReviewResult = {
 };
 
 export type DailyNotesReviewProgress = {
-  type: "targets_resolved" | "summary_generated";
+  type: "targets_resolved" | "summary_generated" | "writing_report";
   total: number;
   completed: number;
   path?: string;
@@ -104,6 +104,11 @@ export class GenerateDailyNotesReviewUseCase {
 
       const report = this.reportBuilder.build(summaries, {
         includeSummaries: enableSummaries,
+      });
+      options?.onProgress?.({
+        type: "writing_report",
+        total: summaries.getAll().length,
+        completed: generatedCount,
       });
       const { note } = await this.createDailyNoteUseCase.execute(date);
       const reflection = (options?.enableReflection ?? true)

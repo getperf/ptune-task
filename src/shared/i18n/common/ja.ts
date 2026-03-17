@@ -64,23 +64,6 @@ export const commonJa = {
 		},
 	},
 
-	dailyNotesReview: {
-		command: {
-			run: "今日の振り返りを生成",
-		},
-		modal: {
-			title: "今日の振り返りを生成",
-			dateLabel: "対象日",
-			run: "生成",
-		},
-		notice: {
-			completed: "今日の振り返りを更新しました",
-			noNotes: "対象日の作成ノートが見つかりません",
-			apiKeyNotSet: "LLM の API キーが未設定です",
-			failed: "今日の振り返りの生成に失敗しました",
-		},
-	},
-
 	daily: {
 		section: {
 			planned: { title: "今日の予定タスク" },

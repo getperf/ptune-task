@@ -40,7 +40,7 @@ export class Container {
     this.runtime = new PtuneRuntime(new ObsidianContext(app));
     this.calendarFactory = new CalendarFactory(app, this.runtime);
     this.noteFactory = new NoteFactory(app, this.runtime, this.calendarFactory);
-    this.reviewFeatureFactory = new ReviewFeatureFactory(app, this.runtime, this.calendarFactory);
+    this.reviewFeatureFactory = new ReviewFeatureFactory(app);
     this.presentationFactory = new PresentationFactory(app);
     this.syncFactory = new SyncFactory(
       app,
@@ -91,10 +91,6 @@ export class Container {
 
   createNoteReviewFeature() {
     return this.reviewFeatureFactory.createNoteReviewFeature();
-  }
-
-  createDailyNotesReviewFeature() {
-    return this.reviewFeatureFactory.createDailyNotesReviewFeature();
   }
 
   createGenerateDailyReviewUseCase(): GenerateDailyReviewUseCase {

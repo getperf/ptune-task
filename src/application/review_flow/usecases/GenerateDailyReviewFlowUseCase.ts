@@ -72,7 +72,6 @@ export class GenerateDailyReviewFlowUseCase {
       }
 
       let targetCount = 0;
-      onProgress?.({ type: "daily_notes_review_started", date: options.date, targetCount });
       const llmAvailable = this.textGenerator.hasValidApiKey();
       const dailyNotesReviewOptions: GenerateDailyNotesReviewOptions = {
         reviewPointOutputFormat: options.reviewPointOutputFormat,

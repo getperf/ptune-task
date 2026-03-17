@@ -112,7 +112,7 @@ export class ReviewSetupModal extends Modal {
       return;
     }
 
-    await this.onSubmit({ ...this.state });
     this.close();
+    await this.onSubmit({ ...this.state });
   }
 }
