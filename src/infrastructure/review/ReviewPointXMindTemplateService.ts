@@ -10,7 +10,7 @@ export type ReviewPointXMindTemplate = {
 
 export class ReviewPointXMindTemplateService {
   private static readonly PLUGIN_ID = "ptune-task";
-  private static readonly TEMPLATE_PATH = "archived/ptune-log/assets/template_analysis.xmind";
+  private static readonly TEMPLATE_PATH = "assets/template_analysis.xmind";
 
   constructor(private readonly app: App) {}
 

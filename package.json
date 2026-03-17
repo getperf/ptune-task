@@ -7,6 +7,8 @@
 	"scripts": {
 		"dev": "node esbuild.config.mjs --watch",
 		"build": "node esbuild.config.mjs",
+		"prepare-dist": "node scripts/prepare-dist.mjs",
+		"package": "npm run build && npm run prepare-dist && node scripts/make-zip.mjs",
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
 		"lint": "eslint src tests",
 		"test": "jest"
