@@ -46,8 +46,17 @@ export class CreatedProjectNoteRepository {
 
   async hasSummary(file: TFile): Promise<boolean> {
     const text = await this.app.vault.read(file);
-    const summary = MarkdownFile.parse(text).getFrontmatter().get<string>("summary");
-    return typeof summary === "string" && summary.trim().length > 0;
+    const summary = MarkdownFile.parse(text).getFrontmatter().get("summary");
+
+    if (typeof summary === "string") {
+      return summary.trim().length > 0;
+    }
+
+    if (Array.isArray(summary)) {
+      return summary.some((line) => typeof line === "string" && line.trim().length > 0);
+    }
+
+    return false;
   }
 
   private buildLooseThreshold(date: string): number {

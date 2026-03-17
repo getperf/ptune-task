@@ -2,13 +2,17 @@ import { NoteSummaries } from "../../../domain/note/NoteSummaries";
 import { DailyNotesReflectionDocumentBuilder } from "../builders/DailyNotesReflectionDocumentBuilder";
 
 describe("DailyNotesReflectionDocumentBuilder", () => {
-  test("splits normalized note summary into sentences for reflection", () => {
+  test("uses summary sentence list for reflection", () => {
     const summaries = new NoteSummaries();
     summaries.add({
       noteFolder: "_project/331_push時の差分ロジック見直し",
       notePath: "_project/331_push時の差分ロジック見直し/01_新規作成で親見出し追加.md",
       noteTitle: "新規作成で親見出し追加",
-      summary: "移行方針を確認した。 xmind 連携案を整理した。\nテンプレート複製案を追加した。",
+      summarySentences: [
+        "移行方針を確認した。",
+        "xmind 連携案を整理した。",
+        "テンプレート複製案を追加した。",
+      ],
     });
 
     const doc = new DailyNotesReflectionDocumentBuilder().build(summaries);
@@ -20,7 +24,7 @@ describe("DailyNotesReflectionDocumentBuilder", () => {
     ]);
   });
 
-  test("splits japanese summaries without spaces after punctuation", () => {
+  test("falls back to legacy string parsing for old summaries", () => {
     const summaries = new NoteSummaries();
     summaries.add({
       noteFolder: "_project/334_MindMap形式レポートプロト",

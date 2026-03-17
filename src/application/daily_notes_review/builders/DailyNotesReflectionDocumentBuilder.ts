@@ -1,5 +1,5 @@
 import { NoteSummaries } from "../../../domain/note/NoteSummaries";
-import { splitNoteSummaryIntoSentences } from "../../../domain/note/splitNoteSummaryIntoSentences";
+import { resolveNoteSummarySentences } from "../../../domain/note/resolveNoteSummarySentences";
 import { DailyNotesReflectionDocument, ReflectionProject, ReflectionSentence } from "../models/DailyNotesReflectionDocument";
 
 export class DailyNotesReflectionDocumentBuilder {
@@ -8,19 +8,21 @@ export class DailyNotesReflectionDocumentBuilder {
       projectTitle: this.resolveProjectTitle(folder.folderPath),
       notes: folder.getNotes().map((note) => ({
         noteTitle: note.noteTitle,
-        sentences: this.buildSentences(note.summary),
+        sentences: this.buildSentences(note),
       })),
     }));
 
     return new DailyNotesReflectionDocument(projects);
   }
 
-  private buildSentences(summary: string | null): ReflectionSentence[] {
-    if (!summary?.trim()) {
+  private buildSentences(note: { summary?: string | null; summarySentences?: readonly string[] | null }): ReflectionSentence[] {
+    const sentences = resolveNoteSummarySentences(note);
+
+    if (sentences.length === 0) {
       return [{ text: "(summary missing)" }];
     }
 
-    return splitNoteSummaryIntoSentences(summary).map((line) => ({ text: line }));
+    return sentences.map((line) => ({ text: line }));
   }
 
   private resolveProjectTitle(folderPath: string): string {

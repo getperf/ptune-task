@@ -7,7 +7,7 @@ import { NoteSummaryFormatter } from "./NoteSummaryFormatter";
 
 export class NoteSummaryGenerator {
   private static readonly MAX_INPUT_CHARS = 12000;
-  private static readonly EMPTY_BODY_SUMMARY = "本文の記述なし。";
+  private static readonly EMPTY_BODY_SUMMARY = ["本文の記述なし。"];
   private readonly formatter = new NoteSummaryFormatter();
 
   constructor(
@@ -15,7 +15,7 @@ export class NoteSummaryGenerator {
     private readonly repository: ProjectNoteFrontmatterRepository,
   ) {}
 
-  async generate(file: TFile): Promise<string> {
+  async generate(file: TFile): Promise<string[]> {
     logger.debug(`[Service] NoteSummaryGenerator.generate start path=${file.path}`);
 
     const body = await this.repository.readBody(file);
@@ -31,7 +31,7 @@ export class NoteSummaryGenerator {
     );
     const formatted = this.formatter.format(output?.trim() ?? "");
 
-    if (!formatted) {
+    if (formatted.length === 0) {
       throw new Error(`Empty summary generated for ${file.path}`);
     }
 
