@@ -6,6 +6,15 @@ import { i18n } from "../../shared/i18n/I18n";
 export class ReviewSetupModal extends Modal {
   private readonly state: ReviewFlowRunOptions;
   private errorEl?: HTMLElement;
+  private readonly blockBackdropClick = (event: MouseEvent): void => {
+    if (event.target !== this.containerEl) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+  };
 
   constructor(
     app: App,
@@ -25,6 +34,7 @@ export class ReviewSetupModal extends Modal {
     const t = i18n.common.reviewFlow.setup;
     const { contentEl } = this;
 
+    this.containerEl.addEventListener("click", this.blockBackdropClick, true);
     contentEl.createEl("h2", { text: t.title });
     this.errorEl = contentEl.createEl("p");
 
@@ -99,7 +109,12 @@ export class ReviewSetupModal extends Modal {
   }
 
   onClose(): void {
+    this.containerEl.removeEventListener("click", this.blockBackdropClick, true);
     this.contentEl.empty();
+  }
+
+  onEscape(): void {
+    // Keep the setup modal open until the user explicitly submits or cancels.
   }
 
   private async submit(): Promise<void> {

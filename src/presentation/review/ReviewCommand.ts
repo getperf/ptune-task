@@ -8,7 +8,7 @@ import { GenerateDailyReviewFlowUseCase } from "../../application/review_flow/us
 import { ReviewFlowOptionsResolver } from "../../application/review_flow/services/ReviewFlowOptionsResolver";
 import { logger } from "../../shared/logger/loggerInstance";
 import { DailyNote } from "../../domain/daily/DailyNote";
-import { ReviewProgressModal } from "./ReviewProgressModal";
+import { ReviewProgressController } from "./ReviewProgressController";
 import { ReviewSetupModal } from "./ReviewSetupModal";
 
 export interface ReviewPresenter {
@@ -50,8 +50,8 @@ export class ReviewCommand {
 
   private async run(options: ReviewFlowRunOptions): Promise<void> {
     logger.info(`[Command] ReviewCommand started date=${options.date}`);
-    const progressModal = new ReviewProgressModal(this.presenter.app);
-    progressModal.open();
+    const progress = new ReviewProgressController(this.presenter.app, options.date);
+    progress.open();
 
     try {
       await this.presenter.saveActiveEditor();
@@ -59,20 +59,20 @@ export class ReviewCommand {
       const result = await this.useCase.execute(
         options,
         (event: DailyReviewFlowProgressEvent) => {
-          progressModal.handleEvent(event);
+          progress.handleEvent(event);
         },
       );
 
       await this.presenter.openNote(result.note);
       await this.presenter.refreshCalendar();
 
-      progressModal.markCompleted();
+      progress.markCompleted();
       this.presenter.showInfo(this.buildMessage(result));
 
       logger.info(`[Command] ReviewCommand completed date=${options.date}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      progressModal.markFailed(message);
+      progress.markFailed(message);
       logger.error(`[Command] ReviewCommand failed date=${options.date}`, err);
     }
   }
