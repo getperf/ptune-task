@@ -14,25 +14,27 @@ export class ReviewSectionWriter {
   appendReview(tree: ReviewTaskTree, timeLabel: string): void {
     const review = HeadingService.resolve("daily.section.review.title");
 
-    // 1) 親：タイムログ／メモを ensure
     const timelog = this.adapter.findOrCreateSection(
       "daily.section.timelog.title",
     );
 
-    // 2) 既存 review 探索
     const existingReview =
       this.adapter.findSectionByMatcher(HeadingMatcher.review(review.baseTitle));
-    const anchor = existingReview ?? timelog;
-    const position = existingReview ? "before" : "after";
 
-    // 3) review 見出し追加
-    anchor.prependChild({
-      title: `${review.renderedTitle}(${timeLabel})`,
-      depth: review.depth,
-      content: () => "",
-    });
+    if (existingReview) {
+      existingReview.insertBefore({
+        title: `${review.renderedTitle}(${timeLabel})`,
+        depth: review.depth,
+        content: () => "",
+      });
+    } else {
+      timelog.appendChild({
+        title: `${review.renderedTitle}(${timeLabel})`,
+        depth: review.depth,
+        content: () => "",
+      });
+    }
 
-    // 4) 直近 review を取得
     const reviewSection = this.adapter.findSectionByMatcher(
       hdrAllowPrefixWith(review.baseTitle, "\\(" + timeLabel + "\\)"),
     );
@@ -41,7 +43,6 @@ export class ReviewSectionWriter {
       throw new Error("Failed to locate newly appended review section");
     }
 
-    // 5) レポート群をレンダラに委譲（文書描画責務）
     this.renderer.render(reviewSection, tree);
   }
 }
