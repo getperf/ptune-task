@@ -26,6 +26,9 @@ import { LlmClient } from "../infrastructure/llm/LlmClient";
 import { CreatedProjectNoteRepository } from "../infrastructure/repository/CreatedProjectNoteRepository";
 import { ProjectNoteFrontmatterRepository } from "../infrastructure/repository/ProjectNoteFrontmatterRepository";
 import { ReviewPointXMindTemplateService } from "../infrastructure/review/ReviewPointXMindTemplateService";
+import { SetupChecklistService } from "../application/setup/services/SetupChecklistService";
+import { NoteSetupHelper } from "../infrastructure/setup/NoteSetupHelper";
+import { SetupWizardDialog } from "../presentation/setup/SetupWizardDialog";
 
 export class Container {
   private readonly runtime: PtuneRuntime;
@@ -134,5 +137,13 @@ export class Container {
 
   createAuthService(): PtuneSyncUriAuthService {
     return this.syncFactory.createAuthService();
+  }
+
+  createSetupWizardDialog(): SetupWizardDialog {
+    return new SetupWizardDialog(
+      this.app,
+      new SetupChecklistService(this.app, this.createAuthService()),
+      new NoteSetupHelper(this.app),
+    );
   }
 }

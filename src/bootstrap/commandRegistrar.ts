@@ -1,5 +1,6 @@
 import { Notice, Plugin } from "obsidian";
 import { Container } from "./container";
+import { i18n } from "../shared/i18n/I18n";
 
 export function registerAllCommands(plugin: Plugin, container: Container): void {
   plugin.addCommand({
@@ -43,6 +44,14 @@ export function registerAllCommands(plugin: Plugin, container: Container): void 
       } catch {
         new Notice("Not authenticated. Please login.");
       }
+    },
+  });
+
+  plugin.addCommand({
+    id: "setup-wizard",
+    name: i18n.common.setup.command.open,
+    callback: () => {
+      container.createSetupWizardDialog().open();
     },
   });
 }

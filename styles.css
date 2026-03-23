@@ -168,3 +168,37 @@
 .ptune-details-notice-actions .setting-item-control {
   margin-left: auto;
 }
+
+.ptune-setup-modal .modal {
+  width: min(88vw, 760px);
+}
+
+.ptune-setup-modal .modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.ptune-setup-modal .setting-item {
+  padding-top: 0.45rem;
+  padding-bottom: 0.45rem;
+}
+
+.ptune-setup-modal .setting-item-name {
+  font-size: var(--font-ui-medium);
+}
+
+.ptune-setup-modal .setting-item-description {
+  font-size: var(--font-ui-smaller);
+  line-height: 1.35;
+}
+
+.ptune-setup-title {
+  margin: 0 0 0.35rem;
+}
+
+.ptune-setup-section-title {
+  margin: 0.8rem 0 0.2rem;
+  font-size: var(--font-ui-medium);
+  line-height: 1.3;
+}
