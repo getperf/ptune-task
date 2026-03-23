@@ -1,6 +1,7 @@
 export type LogLevel = "debug" | "info" | "warn" | "error" | "none";
 export type LlmProvider = "openai" | "claude" | "gemini" | "custom";
 export type ReviewOutputFormat = "outline" | "xmind";
+export type SyncBackend = "ptune-task" | "ptune-sync-skel";
 
 export interface LlmSettings {
 	provider: LlmProvider;
@@ -49,6 +50,7 @@ export interface DailyNoteTaskSettings {
 
 export interface PluginSettings {
 	language: Lang;
+	syncBackend: SyncBackend;
 
 	logLevel: LogLevel;
 	enableLogFile: boolean;

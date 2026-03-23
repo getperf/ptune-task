@@ -7,8 +7,9 @@ import { PtuneSyncUriLauncher } from "./PtuneSyncUriLauncher";
 import { PtuneSyncStatusWatcher } from "./PtuneSyncStatusWatcher";
 import { PtuneSyncInputFileWriter } from "./PtuneSyncInputFileWriter";
 import { PtuneSyncWorkDir } from "./PtuneSyncWorkDir";
+import { PtuneSyncClient } from "../shared/PtuneSyncClient";
 
-export class PtuneSyncUriClient {
+export class PtuneSyncUriClient implements PtuneSyncClient {
   private inFlight = false;
 
   constructor(

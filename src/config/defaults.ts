@@ -2,6 +2,7 @@ import { PluginSettings } from "./types";
 
 export const DEFAULT_SETTINGS: PluginSettings = {
 	language: "ja",
+	syncBackend: "ptune-task",
 
 	logLevel: "info",
 	enableLogFile: false,

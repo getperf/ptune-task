@@ -1,4 +1,4 @@
-import { PtuneSyncUriClient } from "./PtuneSyncUriClient";
+import { PtuneSyncClient } from "../shared/PtuneSyncClient";
 
 type AuthData = {
   auth: {
@@ -9,7 +9,7 @@ type AuthData = {
 };
 
 export class PtuneSyncUriAuthService {
-  constructor(private readonly client: PtuneSyncUriClient) {}
+  constructor(private readonly client: PtuneSyncClient) {}
 
   async status(): Promise<{ authenticated: boolean; email: string | null }> {
     const envelope = await this.client.authStatus<AuthData>();

@@ -7,7 +7,7 @@ import { PushQuery } from "../../../application/sync/shared/dto/PushQuery";
 import { ReviewQuery } from "../../../application/sync/shared/dto/ReviewQuery";
 import { getDefaultTaskListId } from "../../../application/sync/shared/DefaultTaskListId";
 import { PtuneSyncPort } from "../../../application/sync/shared/ports/PtuneSyncPort";
-import { PtuneSyncUriClient } from "./PtuneSyncUriClient";
+import { PtuneSyncClient } from "../shared/PtuneSyncClient";
 
 type ExportLikeResult = {
   schema_version: number;
@@ -17,7 +17,7 @@ type ExportLikeResult = {
 };
 
 export class PtuneSyncUriAdapter implements PtuneSyncPort {
-  constructor(private readonly client: PtuneSyncUriClient) {}
+  constructor(private readonly client: PtuneSyncClient) {}
 
   async pull(query: PullQuery): Promise<string> {
     const envelope = await this.client.pull<ExportLikeResult>(query);
