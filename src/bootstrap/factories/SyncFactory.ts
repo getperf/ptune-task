@@ -90,7 +90,7 @@ export class SyncFactory {
         return new PtuneSyncSkelUriClient(this.createLegacyUriClient());
       case "ptune-task":
       default:
-        return new PtuneTaskUriClient(this.createLegacyUriClient());
+        return new PtuneTaskUriClient(this.app, this.createLegacyUriClient());
     }
   }
 

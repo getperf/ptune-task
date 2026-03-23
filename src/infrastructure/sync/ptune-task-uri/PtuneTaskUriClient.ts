@@ -1,17 +1,51 @@
 import { PullQuery } from "../../../application/sync/shared/dto/PullQuery";
 import { PushQuery } from "../../../application/sync/shared/dto/PushQuery";
 import { ReviewQuery } from "../../../application/sync/shared/dto/ReviewQuery";
+import { App } from "obsidian";
 import { logger } from "../../../shared/logger/loggerInstance";
 import { PtuneSyncStatusEnvelope } from "../ptune-sync-uri/PtuneSyncStatusEnvelope";
 import { PtuneSyncUriClient } from "../ptune-sync-uri/PtuneSyncUriClient";
+import { PtuneSyncUriLauncher } from "../ptune-sync-uri/PtuneSyncUriLauncher";
 import { PtuneSyncClient } from "../shared/PtuneSyncClient";
+import { PtuneTaskRequestFileWriter } from "./PtuneTaskRequestFileWriter";
+import { PtuneTaskStatusWatcher } from "./PtuneTaskStatusWatcher";
+import { PtuneTaskUriBuilder } from "./PtuneTaskUriBuilder";
+import { PtuneTaskWorkDir } from "./PtuneTaskWorkDir";
 
 export class PtuneTaskUriClient implements PtuneSyncClient {
-  constructor(private readonly client: PtuneSyncUriClient) {}
+  private readonly workDir: PtuneTaskWorkDir;
+  private readonly writer: PtuneTaskRequestFileWriter;
+  private readonly builder: PtuneTaskUriBuilder;
+  private readonly launcher: PtuneSyncUriLauncher;
+  private readonly watcher: PtuneTaskStatusWatcher;
 
-  authStatus<TData>(): Promise<PtuneSyncStatusEnvelope<TData>> {
-    logger.debug("[Sync] [PtuneTaskUriClient] authStatus delegated to legacy URI client");
-    return this.client.authStatus<TData>();
+  constructor(
+    app: App,
+    private readonly client: PtuneSyncUriClient,
+  ) {
+    this.workDir = new PtuneTaskWorkDir(app);
+    this.writer = new PtuneTaskRequestFileWriter(app, this.workDir);
+    this.builder = new PtuneTaskUriBuilder();
+    this.launcher = new PtuneSyncUriLauncher();
+    this.watcher = new PtuneTaskStatusWatcher(app, this.workDir);
+  }
+
+  async authStatus<TData>(): Promise<PtuneSyncStatusEnvelope<TData>> {
+    const prepared = await this.writer.write("auth-status");
+    const uri = this.builder.buildAuthStatus(prepared.requestId, prepared.requestFile);
+
+    logger.info(
+      `[Sync] [PtuneTaskUriClient] authStatus start requestId=${prepared.requestId}`,
+    );
+    logger.debug(
+      `[Sync] [PtuneTaskUriClient] authStatus requestFile=${prepared.requestFile} statusFile=${prepared.statusFile}`,
+    );
+    logger.debug(`[Sync] [PtuneTaskUriClient] authStatus uri=${uri}`);
+
+    const baseline = new Date();
+    await this.launcher.launch(uri);
+    await this.watcher.waitForAccepted<TData>(prepared.requestId, baseline);
+    return this.watcher.waitForCompletion<TData>(prepared.requestId, baseline);
   }
 
   authLogin<TData>(): Promise<PtuneSyncStatusEnvelope<TData>> {
