@@ -29,16 +29,45 @@ describe("DailyNotesReflectionBuilder", () => {
     expect(markdown).toContain("\t新規作成で親見出し追加");
     expect(markdown).toContain("**アウトプット（XMind 編集結果）**");
   });
+
+  test("escapes angle brackets in outline reflection text", () => {
+    const builder = new DailyNotesReflectionBuilder();
+    const markdown = builder.build(
+      new DailyNotesReflectionDocumentBuilder().build(
+        buildSummaries({
+          noteFolder: "_project/337_PtuneSync移行準備",
+          notePath: "_project/337_PtuneSync移行準備/01_リトライ調査.md",
+          noteTitle: "ProtocolDispatcher の <XXX> 対応",
+          summary: "ProtocolDispatcher の <XXX> は補助にとどめる",
+        }),
+      ),
+      "outline",
+    );
+
+    expect(markdown).toContain("- PtuneSync移行準備");
+    expect(markdown).toContain("  - ProtocolDispatcher の &lt;XXX&gt; 対応");
+    expect(markdown).toContain("    - ProtocolDispatcher の &lt;XXX&gt; は補助にとどめる");
+  });
 });
 
 function buildDocument() {
-  const summaries = new NoteSummaries();
-  summaries.add({
+  return new DailyNotesReflectionDocumentBuilder().build(buildSummaries());
+}
+
+function buildSummaries(
+  note: {
+    noteFolder: string;
+    notePath: string;
+    noteTitle: string;
+    summary: string;
+  } = {
     noteFolder: "_project/331_push時の差分ロジック見直し",
     notePath: "_project/331_push時の差分ロジック見直し/01_新規作成で親見出し追加.md",
     noteTitle: "新規作成で親見出し追加",
     summary: "親見出しの追加手順を確認した",
-  });
-
-  return new DailyNotesReflectionDocumentBuilder().build(summaries);
+  },
+): NoteSummaries {
+  const summaries = new NoteSummaries();
+  summaries.add(note);
+  return summaries;
 }

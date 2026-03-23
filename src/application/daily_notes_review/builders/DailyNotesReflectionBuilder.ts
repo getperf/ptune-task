@@ -1,6 +1,7 @@
 import { DailyNotesReflectionDocument } from "../models/DailyNotesReflectionDocument";
 import { ReviewOutputFormat } from "../../../config/types";
 import { i18n } from "../../../shared/i18n/I18n";
+import { escapeMarkdownDisplayText } from "./escapeMarkdownDisplayText";
 
 export type DailyNotesReflectionBuildOptions = {
   xmindFileLink?: string;
@@ -60,13 +61,13 @@ export class DailyNotesReflectionBuilder {
     const lines: string[] = [];
 
     for (const project of doc.projects) {
-      lines.push(`- ${project.projectTitle}`);
+      lines.push(`- ${escapeMarkdownDisplayText(project.projectTitle)}`);
 
       for (const note of project.notes) {
-        lines.push(`  - ${note.noteTitle}`);
+        lines.push(`  - ${escapeMarkdownDisplayText(note.noteTitle)}`);
 
         for (const sentence of note.sentences) {
-          lines.push(`    - ${sentence.text}`);
+          lines.push(`    - ${escapeMarkdownDisplayText(sentence.text)}`);
         }
       }
     }

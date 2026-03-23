@@ -1,6 +1,7 @@
 import { NoteProjectFolder } from "../../../domain/note/NoteProjectFolder";
 import { NoteSummaries } from "../../../domain/note/NoteSummaries";
 import { resolveNoteSummarySentences } from "../../../domain/note/resolveNoteSummarySentences";
+import { escapeMarkdownDisplayText } from "./escapeMarkdownDisplayText";
 
 export type DailyNotesReportBuildOptions = {
   includeSummaries?: boolean;
@@ -22,7 +23,7 @@ export class DailyNotesReportBuilder {
     const includeSummaries = options?.includeSummaries ?? true;
 
     for (const folder of summaries.getFolders()) {
-      lines.push(`- ${folderTitle(folder)}`);
+      lines.push(`- ${escapeMarkdownDisplayText(folderTitle(folder))}`);
 
       for (const note of folder.getNotes()) {
         lines.push(`  - [${escapeLinkLabel(note.noteTitle)}](${encodeLinkDestination(note.notePath)})`);
@@ -48,11 +49,13 @@ function folderTitle(folder: NoteProjectFolder): string {
 
 function formatMergedSummary(note: { summary?: string | null; summarySentences?: readonly string[] | null }): string | null {
   const sentences = resolveNoteSummarySentences(note);
-  return sentences.length > 0 ? sentences.join(" ") : null;
+  return sentences.length > 0
+    ? escapeMarkdownDisplayText(sentences.join(" "))
+    : null;
 }
 
 function escapeLinkLabel(value: string): string {
-  return value.replace(/[[\]]/g, "\\$&");
+  return escapeMarkdownDisplayText(value).replace(/[[\]]/g, "\\$&");
 }
 
 function encodeLinkDestination(value: string): string {

@@ -45,4 +45,24 @@ describe("DailyNotesReportBuilder", () => {
       ].join("\n"),
     );
   });
+
+  test("escapes angle brackets in rendered report text", () => {
+    const summaries = new NoteSummaries();
+    summaries.add({
+      noteFolder: "_project/337_PtuneSync移行準備",
+      notePath: "_project/337_PtuneSync移行準備/01_リトライ調査.md",
+      noteTitle: "ProtocolDispatcher の <XXX> 対応",
+      summary: "ProtocolDispatcher の <XXX> は補助にとどめる。",
+    });
+
+    const builder = new DailyNotesReportBuilder();
+
+    expect(builder.build(summaries)).toBe(
+      [
+        "- PtuneSync移行準備",
+        "  - [ProtocolDispatcher の &lt;XXX&gt; 対応](_project/337_PtuneSync%E7%A7%BB%E8%A1%8C%E6%BA%96%E5%82%99/01_%E3%83%AA%E3%83%88%E3%83%A9%E3%82%A4%E8%AA%BF%E6%9F%BB.md)",
+        "    - ProtocolDispatcher の &lt;XXX&gt; は補助にとどめる。",
+      ].join("\n"),
+    );
+  });
 });
