@@ -2,7 +2,7 @@ import { App, normalizePath } from "obsidian";
 import { logger } from "../../../shared/logger/loggerInstance";
 import { PtuneTaskWorkDir } from "./PtuneTaskWorkDir";
 
-type PtuneTaskCommand = "auth-status";
+type PtuneTaskCommand = "auth-status" | "auth-login";
 
 export class PtuneTaskRequestFileWriter {
   constructor(

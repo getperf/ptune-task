@@ -8,6 +8,7 @@ export class PtuneTaskStatusWatcher {
   private readonly pollIntervalMs = 500;
   private readonly startupTimeoutMs = 3000;
   private readonly completionTimeoutMs = 90000;
+  private readonly authLoginTimeoutMs = 300000;
 
   constructor(
     private readonly app: App,
@@ -28,7 +29,22 @@ export class PtuneTaskStatusWatcher {
     requestId: string,
     baseline: Date,
   ): Promise<PtuneSyncStatusEnvelope<TData>> {
-    return this.waitFor(requestId, baseline, this.completionTimeoutMs, (envelope) =>
+    return this.waitForCompletionWithTimeout(requestId, baseline, this.completionTimeoutMs);
+  }
+
+  async waitForAuthLoginCompletion<TData>(
+    requestId: string,
+    baseline: Date,
+  ): Promise<PtuneSyncStatusEnvelope<TData>> {
+    return this.waitForCompletionWithTimeout(requestId, baseline, this.authLoginTimeoutMs);
+  }
+
+  private async waitForCompletionWithTimeout<TData>(
+    requestId: string,
+    baseline: Date,
+    timeoutMs: number,
+  ): Promise<PtuneSyncStatusEnvelope<TData>> {
+    return this.waitFor(requestId, baseline, timeoutMs, (envelope) =>
       envelope.phase === "completed"
       || envelope.status === "success"
       || envelope.status === "error");

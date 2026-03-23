@@ -1,8 +1,16 @@
 export class PtuneTaskUriBuilder {
   buildAuthStatus(requestId: string, requestFile: string): string {
+    return this.buildRunUri("auth/status", requestId, requestFile);
+  }
+
+  buildAuthLogin(requestId: string, requestFile: string): string {
+    return this.buildRunUri("auth/login", requestId, requestFile);
+  }
+
+  private buildRunUri(path: string, requestId: string, requestFile: string): string {
     const search = new URLSearchParams();
     search.set("request_id", requestId);
     search.set("request_file", requestFile);
-    return `net.getperf.ptune.googleoauth:/run/auth/status?${search.toString()}`;
+    return `net.getperf.ptune.googleoauth:/run/${path}?${search.toString()}`;
   }
 }
