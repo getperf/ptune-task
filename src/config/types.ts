@@ -19,6 +19,11 @@ export interface NoteSettings {
 	templateText: string;
 }
 
+export interface ProjectIndexSettings {
+	enabled: boolean;
+	enableBasesSection: boolean;
+}
+
 export interface SnippetSettings {
 	filename: string;
 }
@@ -57,6 +62,7 @@ export interface PluginSettings {
 	llm: LlmSettings;
 
 	note: NoteSettings;
+	projectIndex: ProjectIndexSettings;
 	snippet: SnippetSettings;
 	review: ReviewSettings;
 	habitTasks: HabitTaskSettings;

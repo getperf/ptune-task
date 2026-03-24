@@ -108,6 +108,15 @@ export const settingsEn = {
 		},
 	},
 
+	projectIndex: {
+		sectionTitle: "Project Index Settings",
+
+		enableBasesSection: {
+			name: "Enable Bases section",
+			desc: "When the Bases plugin is enabled, add or maintain a Bases view section in project index.md notes",
+		},
+	},
+
 	review: {
 		sectionTitle: "Review Settings",
 

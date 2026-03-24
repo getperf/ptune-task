@@ -74,6 +74,10 @@ function mergeSettings(
 			...defaults.note,
 			...(data.note ?? {}),
 		},
+		projectIndex: {
+			...defaults.projectIndex,
+			...(data.projectIndex ?? {}),
+		},
 		snippet: {
 			...defaults.snippet,
 			...(data.snippet ?? {}),

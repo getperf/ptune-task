@@ -7,6 +7,7 @@ import { i18n } from "../shared/i18n/I18n";
 import { renderBasicSettings } from "./SettingsTabBasic";
 import { renderLLMSettings } from "./SettingsTabLLM";
 import { renderNoteSettings } from "./SettingsTabNote";
+import { renderProjectIndexSettings } from "./SettingsTabProjectIndex";
 import { renderReviewSettings } from "./SettingsTabReview";
 import { renderDailyNoteTaskSettings } from "./SettingsTabDailyNote";
 import { renderSnippetSettings } from "./SettingsTabSnippet";
@@ -56,6 +57,7 @@ export class PtuneSettingTab extends PluginSettingTab {
 		renderLLMSettings(containerEl);
 
 		renderNoteSettings(containerEl);
+		renderProjectIndexSettings(containerEl);
 		renderReviewSettings(containerEl);
 
 		renderDailyNoteTaskSettings(containerEl);

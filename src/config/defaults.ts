@@ -22,6 +22,11 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 		templateText: "",
 	},
 
+	projectIndex: {
+		enabled: true,
+		enableBasesSection: true,
+	},
+
 	snippet: {
 		filename: "snippet.md",
 	},

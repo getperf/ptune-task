@@ -56,6 +56,23 @@ describe("ConfigService", () => {
 		});
 	});
 
+	test("load(): nested projectIndex settings preserve defaults", async () => {
+		const service = new ConfigService();
+
+		const plugin = createPluginMock({
+			projectIndex: {
+				enableBasesSection: false,
+			},
+		}) as unknown as Plugin;
+
+		await service.load(plugin);
+
+		expect(service.getSettings().projectIndex).toEqual({
+			...DEFAULT_SETTINGS.projectIndex,
+			enableBasesSection: false,
+		});
+	});
+
 	test("load(): reviewPointOutputFormat falls back to legacy noteSummaryOutputFormat", async () => {
 		const service = new ConfigService();
 

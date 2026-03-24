@@ -108,6 +108,15 @@ export const settingsJa = {
 		},
 	},
 
+	projectIndex: {
+		sectionTitle: "プロジェクトインデックス設定",
+
+		enableBasesSection: {
+			name: "Bases セクションを有効にする",
+			desc: "Bases プラグインが有効なとき、プロジェクトの index.md に Bases ビュー用セクションを追加・補完します",
+		},
+	},
+
 	review: {
 		sectionTitle: "レビュー設定",
 
