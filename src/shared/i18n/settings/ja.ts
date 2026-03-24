@@ -142,7 +142,7 @@ export const settingsJa = {
 			morning: {
 				name: "朝のタスク",
 				desc: "毎朝確認・実行するタスクを改行区切りで入力します",
-				placeholder: "<朝>くすり🚫",
+				placeholder: "<朝>起床🚫",
 			},
 
 			evening: {
