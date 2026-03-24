@@ -40,7 +40,12 @@ export function registerAllCommands(plugin: Plugin, container: Container): void 
     callback: async () => {
       try {
         const result = await container.createAuthService().status();
-        new Notice(`Authenticated: ${result.email ?? "unknown"}`);
+        if (result.authenticated) {
+          new Notice(result.email ? `Authenticated: ${result.email}` : "Authenticated");
+          return;
+        }
+
+        new Notice("Not authenticated. Please login.");
       } catch {
         new Notice("Not authenticated. Please login.");
       }

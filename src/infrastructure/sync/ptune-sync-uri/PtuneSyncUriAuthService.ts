@@ -3,7 +3,7 @@ import { PtuneSyncClient } from "../shared/PtuneSyncClient";
 type AuthData = {
   auth: {
     authenticated: boolean;
-    email: string | null;
+    email?: string | null;
     expires_at?: string;
   };
 };
@@ -11,7 +11,7 @@ type AuthData = {
 export class PtuneSyncUriAuthService {
   constructor(private readonly client: PtuneSyncClient) {}
 
-  async status(): Promise<{ authenticated: boolean; email: string | null }> {
+  async status(): Promise<{ authenticated: boolean; email?: string | null }> {
     const envelope = await this.client.authStatus<AuthData>();
 
     if (!envelope.data?.auth) {
@@ -20,7 +20,7 @@ export class PtuneSyncUriAuthService {
 
     return {
       authenticated: envelope.data.auth.authenticated,
-      email: envelope.data.auth.email ?? null,
+      email: envelope.data.auth.email,
     };
   }
 
