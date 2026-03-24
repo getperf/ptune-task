@@ -1,6 +1,7 @@
 import { config } from "../config/config";
 import { DailyNoteRepository } from "../infrastructure/repository/DailyNoteRepository";
 import { ObsidianContext } from "../infrastructure/obsidian/ObsidianContext";
+import { logger } from "./logger/loggerInstance";
 
 export interface HabitTasks {
   morning: string[];
@@ -54,8 +55,8 @@ export class PtuneRuntime {
 
   getHabitTasks(): HabitTasks {
     const dailyNoteHabit = config.settings.dailyNoteTask?.habit;
-
-    return {
+    const source = dailyNoteHabit ? "dailyNoteTask.habit" : "habitTasks";
+    const habits = {
       morning: dailyNoteHabit?.morning
         ?? config.settings.habitTasks?.morning
         ?? [],
@@ -63,5 +64,11 @@ export class PtuneRuntime {
         ?? config.settings.habitTasks?.evening
         ?? [],
     };
+
+    logger.debug(
+      `[Service] PtuneRuntime.getHabitTasks source=${source} morning=${habits.morning.length} evening=${habits.evening.length}`,
+    );
+
+    return habits;
   }
 }

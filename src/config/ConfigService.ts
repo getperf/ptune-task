@@ -1,6 +1,7 @@
 import type { Plugin } from "obsidian";
 import { DEFAULT_SETTINGS } from "./defaults";
 import type { PluginSettings } from "./types";
+import { logger } from "../shared/logger/loggerInstance";
 
 export class ConfigService {
 	private plugin?: Plugin;
@@ -13,7 +14,15 @@ export class ConfigService {
 		const data =
 			(await plugin.loadData()) as Partial<PluginSettings> | null;
 
+		logger.debug(
+			`[Service] ConfigService.load raw dailyNoteTaskHabit=${data?.dailyNoteTask?.habit ? "present" : "absent"} legacyHabitTasks=${data?.habitTasks ? "present" : "absent"}`,
+		);
+
 		this.settings = mergeSettings(DEFAULT_SETTINGS, data);
+
+		logger.debug(
+			`[Service] ConfigService.load merged dailyNoteTaskHabit morning=${this.settings.dailyNoteTask?.habit.morning.length ?? 0} evening=${this.settings.dailyNoteTask?.habit.evening.length ?? 0} legacyHabitTasks morning=${this.settings.habitTasks.morning.length} evening=${this.settings.habitTasks.evening.length}`,
+		);
 	}
 
 	async save() {
@@ -35,14 +44,27 @@ function mergeSettings(
 		return defaults;
 	}
 
+	const mergedLegacyHabitTasks = {
+		...defaults.habitTasks,
+		...(data.habitTasks ?? {}),
+	};
+	const hasDailyNoteHabit = data.dailyNoteTask?.habit !== undefined;
+	const mergedDailyNoteHabit = hasDailyNoteHabit
+		? {
+			...defaults.dailyNoteTask.habit,
+			...data.dailyNoteTask?.habit,
+		}
+		: mergedLegacyHabitTasks;
+
+	logger.debug(
+		`[Service] ConfigService.mergeSettings habitSource=${hasDailyNoteHabit ? "dailyNoteTask.habit" : "habitTasks"} morning=${mergedDailyNoteHabit.morning.length} evening=${mergedDailyNoteHabit.evening.length}`,
+	);
+
 	const mergedDailyNoteTask = defaults.dailyNoteTask
 		? {
 			...defaults.dailyNoteTask,
 			...(data.dailyNoteTask ?? {}),
-			habit: {
-				...defaults.dailyNoteTask.habit,
-				...(data.dailyNoteTask?.habit ?? {}),
-			},
+			habit: mergedDailyNoteHabit,
 			tagSuggestions:
 				data.dailyNoteTask?.tagSuggestions ?? defaults.dailyNoteTask.tagSuggestions,
 			goalSuggestions:
@@ -83,10 +105,7 @@ function mergeSettings(
 			...(data.snippet ?? {}),
 		},
 		review: mergedReview,
-		habitTasks: {
-			...defaults.habitTasks,
-			...(data.habitTasks ?? {}),
-		},
+		habitTasks: mergedLegacyHabitTasks,
 		dailyNoteTask: mergedDailyNoteTask,
 	};
 }
