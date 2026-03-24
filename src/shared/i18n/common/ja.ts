@@ -64,6 +64,14 @@ export const commonJa = {
 		},
 	},
 
+	projectIndex: {
+		section: {
+			noteUpdateHistory: {
+				title: "ノート更新履歴",
+			},
+		},
+	},
+
 	daily: {
 		section: {
 			planned: { title: "今日の予定タスク" },

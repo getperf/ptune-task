@@ -64,6 +64,14 @@ export const commonEn = {
 		},
 	},
 
+	projectIndex: {
+		section: {
+			noteUpdateHistory: {
+				title: "Note Update History",
+			},
+		},
+	},
+
 	daily: {
 		section: {
 			planned: { title: "Planned Tasks" },

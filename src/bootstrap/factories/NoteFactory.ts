@@ -2,6 +2,7 @@ import { App } from "obsidian";
 import { NoteCreationUseCase } from "../../application/note/NoteCreationUseCase";
 import { NotePrefixService } from "../../application/note/NotePrefixService";
 import { TaskKeyOptionBuilder } from "../../application/note/TaskKeyOptionBuilder";
+import { ProjectIndexBasesTemplateBuilder } from "../../infrastructure/document/project/ProjectIndexBasesTemplateBuilder";
 import { ProjectIndexBuilder } from "../../infrastructure/document/project/ProjectIndexBuilder";
 import { ProjectNoteBuilder } from "../../infrastructure/document/note/ProjectNoteBuilder";
 import { TodayTaskKeyReader } from "../../infrastructure/obsidian/TodayTaskKeyReader";
@@ -21,7 +22,7 @@ export class NoteFactory {
     return new NoteCreationUseCase(
       new ProjectRepository(this.runtime, this.app),
       new NotePrefixService(),
-      new ProjectIndexBuilder(),
+      new ProjectIndexBuilder(this.app, new ProjectIndexBasesTemplateBuilder()),
       new ProjectNoteBuilder(),
       this.calendarFactory.createTodayResolver(),
       this.runtime,

@@ -20,6 +20,14 @@ export class ProjectRepository {
     return this.app.vault.getAbstractFileByPath(normalizePath(path)) !== null;
   }
 
+  async read(file: TFile): Promise<string> {
+    return this.app.vault.read(file);
+  }
+
+  async saveFile(file: TFile, content: string): Promise<void> {
+    await this.app.vault.modify(file, content);
+  }
+
   async listChildFolderNames(parentPath: string): Promise<string[]> {
     const folder = this.getFolder(parentPath);
 

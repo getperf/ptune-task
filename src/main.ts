@@ -28,6 +28,7 @@ export default class PtunePlugin extends Plugin {
 		registerWorkspaceFeatures(this, container);
 		container.createLayoutReadyHook().start();
 		container.createDailyNoteOpenHook().start(this);
+		container.createProjectIndexOpenHook().start(this);
 
 		logger.debug("ptune-task loaded");
 		this.addSettingTab(new PtuneSettingTab(this.app, this));

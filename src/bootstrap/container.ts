@@ -20,6 +20,7 @@ import { ReviewFeatureFactory } from "./factories/ReviewFeatureFactory";
 import { SyncFactory } from "./factories/SyncFactory";
 import { DailyNoteOpenHook } from "../infrastructure/obsidian/DailyNoteOpenHook";
 import { LayoutReadyHook } from "../infrastructure/obsidian/LayoutReadyHook";
+import { ProjectIndexOpenHook } from "../infrastructure/obsidian/ProjectIndexOpenHook";
 import { PtuneSyncUriAuthService } from "../infrastructure/sync/ptune-sync-uri/PtuneSyncUriAuthService";
 import { DailyNotesReviewWriter } from "../infrastructure/document/review/DailyNotesReviewWriter";
 import { LlmClient } from "../infrastructure/llm/LlmClient";
@@ -51,7 +52,7 @@ export class Container {
       this.calendarFactory,
       this.presentationFactory.createConfirmDialog(),
     );
-    this.hookFactory = new HookFactory(app, this.calendarFactory);
+    this.hookFactory = new HookFactory(app, this.runtime, this.calendarFactory);
   }
 
   createPullTodayCommand(): PullTodayCommand {
@@ -86,6 +87,10 @@ export class Container {
 
   createLayoutReadyHook(): LayoutReadyHook {
     return this.hookFactory.createLayoutReadyHook();
+  }
+
+  createProjectIndexOpenHook(): ProjectIndexOpenHook {
+    return this.hookFactory.createProjectIndexOpenHook();
   }
 
   createNoteCreationFeature(): NoteCreationFeature {
