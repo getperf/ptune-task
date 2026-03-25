@@ -38,4 +38,17 @@ export function renderReviewSettings(containerEl: HTMLElement) {
           await config.save();
         }),
     );
+
+  new Setting(containerEl)
+    .setName(t.xmindTemplatePath.name)
+    .setDesc(t.xmindTemplatePath.desc)
+    .addText((text) =>
+      text
+        .setPlaceholder(t.xmindTemplatePath.placeholder)
+        .setValue(config.settings.review.xmindTemplatePath)
+        .onChange(async (value) => {
+          config.settings.review.xmindTemplatePath = value.trim() || t.xmindTemplatePath.placeholder;
+          await config.save();
+        }),
+    );
 }

@@ -1,6 +1,7 @@
 import { App, normalizePath } from "obsidian";
 import { DailyNote } from "../../domain/daily/DailyNote";
 import { logger } from "../../shared/logger/loggerInstance";
+import { config } from "../../config/config";
 
 export type ReviewPointXMindTemplate = {
   vaultPath: string;
@@ -9,9 +10,6 @@ export type ReviewPointXMindTemplate = {
 };
 
 export class ReviewPointXMindTemplateService {
-  private static readonly PLUGIN_ID = "ptune-task";
-  private static readonly TEMPLATE_PATH = "assets/template_analysis.xmind";
-
   constructor(private readonly app: App) {}
 
   async ensureForDailyNote(note: DailyNote): Promise<ReviewPointXMindTemplate> {
@@ -21,10 +19,13 @@ export class ReviewPointXMindTemplateService {
     const exists = await this.app.vault.adapter.exists(targetPath);
 
     if (!exists) {
-      const sourcePath = this.getTemplateSourcePath();
+      const sourcePath = normalizePath(config.settings.review.xmindTemplatePath);
       logger.debug(
         `[Service] ReviewPointXMindTemplateService.copy start source=${sourcePath} target=${targetPath}`,
       );
+      if (!(await this.app.vault.adapter.exists(sourcePath))) {
+        throw new Error(`XMind template not found: ${sourcePath}`);
+      }
       const data = await this.app.vault.adapter.readBinary(sourcePath);
       await this.app.vault.adapter.writeBinary(targetPath, data);
       logger.debug(
@@ -37,12 +38,6 @@ export class ReviewPointXMindTemplateService {
       markdownLinkPath: encodeLinkDestination(targetPath),
       created: !exists,
     };
-  }
-
-  private getTemplateSourcePath(): string {
-    return normalizePath(
-      `${this.app.vault.configDir}/plugins/${ReviewPointXMindTemplateService.PLUGIN_ID}/${ReviewPointXMindTemplateService.TEMPLATE_PATH}`,
-    );
   }
 
   private resolveParentDir(path: string): string {

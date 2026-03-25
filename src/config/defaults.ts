@@ -38,6 +38,7 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 		taskReviewEnabledDefault: true,
 		notesReviewEnabledDefault: true,
 		taskReviewOutputFormat: "outline",
+		xmindTemplatePath: "_template/xmind/template_analysis.xmind",
 	},
 
 	habitTasks: {

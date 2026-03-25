@@ -15,18 +15,17 @@ describe("DailyNotesReflectionBuilder", () => {
     expect(builder.build(doc, "outline")).toContain("    - 親見出しの追加手順を確認した");
   });
 
-  test("builds xmind reflection with link and input/output blocks", () => {
+  test("builds xmind reflection with links and output block", () => {
     const doc = buildDocument();
     const builder = new DailyNotesReflectionBuilder();
     const markdown = builder.build(doc, "xmind", {
       xmindFileLink: "_journal/2026/03/2026-03-16_reviewpoint.xmind",
+      xmindInputFileLink: "_journal/2026/03/2026-03-16_reviewpoint_input.txt",
     });
 
     expect(markdown).toContain("[XMind による振り返り手順]");
     expect(markdown).toContain("[編集用 XMind ファイルを開く](_journal/2026/03/2026-03-16_reviewpoint.xmind)");
-    expect(markdown).toContain("**インプット（XMind 用）**");
-    expect(markdown).toContain("push時の差分ロジック見直し");
-    expect(markdown).toContain("\t新規作成で親見出し追加");
+    expect(markdown).toContain("[XMind インプットテキストを開く](_journal/2026/03/2026-03-16_reviewpoint_input.txt)");
     expect(markdown).toContain("**アウトプット（XMind 編集結果）**");
   });
 

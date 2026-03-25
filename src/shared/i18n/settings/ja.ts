@@ -133,6 +133,12 @@ export const settingsJa = {
 				xmind: "xmind",
 			},
 		},
+
+		xmindTemplatePath: {
+			name: "XMind テンプレートパス",
+			desc: "振り返りポイントの XMind テンプレートとして使う vault 相対パス",
+			placeholder: "_template/xmind/template_analysis.xmind",
+		},
 	},
 
 	dailyNoteTask: {

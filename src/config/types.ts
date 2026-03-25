@@ -37,6 +37,7 @@ export interface ReviewSettings {
 	taskReviewEnabledDefault: boolean;
 	notesReviewEnabledDefault: boolean;
 	taskReviewOutputFormat: ReviewOutputFormat;
+	xmindTemplatePath: string;
 }
 
 export type Lang = "ja" | "en";

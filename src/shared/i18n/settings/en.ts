@@ -133,6 +133,12 @@ export const settingsEn = {
 				xmind: "xmind",
 			},
 		},
+
+		xmindTemplatePath: {
+			name: "XMind template path",
+			desc: "Vault-relative path to the XMind template used for reflection points",
+			placeholder: "_template/xmind/template_analysis.xmind",
+		},
 	},
 
 	dailyNoteTask: {

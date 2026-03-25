@@ -49,6 +49,9 @@ describe("GenerateDailyNotesReviewUseCase", () => {
       const reviewPointXMindTemplateService = {
         ensureForDailyNote: jest.fn(),
       };
+      const reviewPointXMindInputFileService = {
+        writeForDailyNote: jest.fn(),
+      };
       const reportBuilder = {
         build: jest.fn().mockReturnValue(
           [
@@ -69,6 +72,7 @@ describe("GenerateDailyNotesReviewUseCase", () => {
         writer as never,
         reportBuilder as never,
         reviewPointXMindTemplateService as never,
+        reviewPointXMindInputFileService as never,
       );
 
       const result = await useCase.execute("2026-03-16", {
@@ -156,6 +160,12 @@ describe("GenerateDailyNotesReviewUseCase", () => {
           created: true,
         }),
       };
+      const reviewPointXMindInputFileService = {
+        writeForDailyNote: jest.fn().mockResolvedValue({
+          vaultPath: "_journal/2026/03/2026-03-16_reviewpoint_input.txt",
+          markdownLinkPath: "_journal/2026/03/2026-03-16_reviewpoint_input.txt",
+        }),
+      };
 
       const useCase = new GenerateDailyNotesReviewUseCase(
         createDailyNoteUseCase as never,
@@ -168,6 +178,7 @@ describe("GenerateDailyNotesReviewUseCase", () => {
         writer as never,
         reportBuilder as never,
         reviewPointXMindTemplateService as never,
+        reviewPointXMindInputFileService as never,
       );
 
       await useCase.execute("2026-03-16", {
@@ -177,10 +188,119 @@ describe("GenerateDailyNotesReviewUseCase", () => {
       });
 
       expect(reviewPointXMindTemplateService.ensureForDailyNote).toHaveBeenCalledWith(note);
+      expect(reviewPointXMindInputFileService.writeForDailyNote).toHaveBeenCalledWith(
+        note,
+        expect.stringContaining("push時の差分ロジック見直し"),
+      );
       expect(writer.write).toHaveBeenCalledWith(
         note,
         "- push時の差分ロジック見直し",
         expect.stringContaining("[編集用 XMind ファイルを開く](_journal/2026/03/2026-03-16_reviewpoint.xmind)"),
+      );
+      expect(writer.write).toHaveBeenCalledWith(
+        note,
+        "- push時の差分ロジック見直し",
+        expect.stringContaining("[XMind インプットテキストを開く](_journal/2026/03/2026-03-16_reviewpoint_input.txt)"),
+      );
+    } finally {
+      config.settings.review.reviewPointOutputFormat = originalFormat;
+      config.settings.review.sentenceMode = originalSentenceMode;
+    }
+  });
+
+  test("writes xmind input text from sentence summaries after llm reflection processing", async () => {
+    const originalFormat = config.settings.review.reviewPointOutputFormat;
+    const originalSentenceMode = config.settings.review.sentenceMode;
+    config.settings.review.reviewPointOutputFormat = "xmind";
+    config.settings.review.sentenceMode = "llm";
+
+    try {
+      const summaries = new NoteSummaries();
+      summaries.add({
+        noteFolder: "_project/339_ptune-taskBases追加ユースケース",
+        notePath: "_project/339_ptune-taskBases追加ユースケース/02_デイリーノートゴミ見出し出現問題調査.md",
+        noteTitle: "デイリーノートゴミ見出し出現問題調査",
+        summary: [
+          "GenerateDailyReviewFlowUseCase によりデイリーノートの先頭にランダム文字列を見出しとして追加している箇所がある。",
+          "該当ファイルは _journal/2026/03/ 以下の複数ファイルである。",
+        ].join(" "),
+      });
+
+      const note = new DailyNote("2026-03-24", "_journal/2026/03/2026-03-24.md", "before");
+      const updated = note.withContent("after");
+
+      const createDailyNoteUseCase = {
+        execute: jest.fn().mockResolvedValue({ note, created: false }),
+      };
+      const dailyNoteRepository = {
+        save: jest.fn().mockResolvedValue(undefined),
+      };
+      const collectUseCase = {
+        execute: jest.fn().mockResolvedValue(summaries),
+      };
+      const createdRepo = {
+        findByDate: jest.fn().mockReturnValue([{ path: summaries.getAll()[0].notePath }]),
+        hasSummary: jest.fn(),
+      };
+      const noteRepo = {
+        saveSummary: jest.fn(),
+      };
+      const noteSummaryGenerator = {
+        generate: jest.fn(),
+      };
+      const textGenerator = {
+        generate: jest.fn().mockResolvedValue(JSON.stringify([
+          { id: "s0", summary: "先頭のゴミ見出しを生成する箇所を特定した。" },
+          { id: "s1", summary: "3月21日以降の複数ノートで再現している。" },
+        ])),
+      };
+      const writer = {
+        write: jest.fn().mockReturnValue(updated),
+      };
+      const reportBuilder = {
+        build: jest.fn().mockReturnValue("- ptune-taskBases追加ユースケース"),
+      };
+      const reviewPointXMindTemplateService = {
+        ensureForDailyNote: jest.fn().mockResolvedValue({
+          vaultPath: "_journal/2026/03/2026-03-24_reviewpoint.xmind",
+          markdownLinkPath: "_journal/2026/03/2026-03-24_reviewpoint.xmind",
+          created: true,
+        }),
+      };
+      const reviewPointXMindInputFileService = {
+        writeForDailyNote: jest.fn().mockResolvedValue({
+          vaultPath: "_journal/2026/03/2026-03-24_reviewpoint_input.txt",
+          markdownLinkPath: "_journal/2026/03/2026-03-24_reviewpoint_input.txt",
+        }),
+      };
+
+      const useCase = new GenerateDailyNotesReviewUseCase(
+        createDailyNoteUseCase as never,
+        dailyNoteRepository as never,
+        collectUseCase as never,
+        createdRepo as never,
+        noteRepo as never,
+        noteSummaryGenerator as never,
+        textGenerator as never,
+        writer as never,
+        reportBuilder as never,
+        reviewPointXMindTemplateService as never,
+        reviewPointXMindInputFileService as never,
+      );
+
+      await useCase.execute("2026-03-24", {
+        reviewPointOutputFormat: "xmind",
+        enableSummaries: false,
+        enableReflection: true,
+      });
+
+      expect(reviewPointXMindInputFileService.writeForDailyNote).toHaveBeenCalledWith(
+        note,
+        expect.stringContaining("先頭のゴミ見出しを生成する箇所を特定した。"),
+      );
+      expect(reviewPointXMindInputFileService.writeForDailyNote).toHaveBeenCalledWith(
+        note,
+        expect.not.stringContaining("GenerateDailyReviewFlowUseCase によりデイリーノートの先頭にランダム文字列"),
       );
     } finally {
       config.settings.review.reviewPointOutputFormat = originalFormat;

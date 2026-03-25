@@ -27,6 +27,7 @@ import { LlmClient } from "../infrastructure/llm/LlmClient";
 import { CreatedProjectNoteRepository } from "../infrastructure/repository/CreatedProjectNoteRepository";
 import { ProjectNoteFrontmatterRepository } from "../infrastructure/repository/ProjectNoteFrontmatterRepository";
 import { ReviewPointXMindTemplateService } from "../infrastructure/review/ReviewPointXMindTemplateService";
+import { ReviewPointXMindInputFileService } from "../infrastructure/review/ReviewPointXMindInputFileService";
 import { SetupChecklistService } from "../application/setup/services/SetupChecklistService";
 import { NoteSetupHelper } from "../infrastructure/setup/NoteSetupHelper";
 import { SetupWizardDialog } from "../presentation/setup/SetupWizardDialog";
@@ -126,6 +127,7 @@ export class Container {
       new DailyNotesReviewWriter(),
       new DailyNotesReportBuilder(),
       new ReviewPointXMindTemplateService(this.app),
+      new ReviewPointXMindInputFileService(this.app),
     );
   }
 
