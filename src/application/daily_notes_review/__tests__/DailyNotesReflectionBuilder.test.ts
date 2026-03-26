@@ -1,6 +1,7 @@
 import { NoteSummaries } from "../../../domain/note/NoteSummaries";
 import { DailyNotesReflectionBuilder } from "../builders/DailyNotesReflectionBuilder";
 import { DailyNotesReflectionDocumentBuilder } from "../builders/DailyNotesReflectionDocumentBuilder";
+import { StructuredReflectionText } from "../services/StructuredReflectionTextAdapter";
 
 describe("DailyNotesReflectionBuilder", () => {
   test("builds outline reflection with guidance comment", () => {
@@ -47,10 +48,46 @@ describe("DailyNotesReflectionBuilder", () => {
     expect(markdown).toContain("  - ProtocolDispatcher の &lt;XXX&gt; 対応");
     expect(markdown).toContain("    - ProtocolDispatcher の &lt;XXX&gt; は補助にとどめる");
   });
+
+  test("builds structured outline reflection", () => {
+    const builder = new DailyNotesReflectionBuilder();
+    const markdown = builder.buildStructured(buildStructured(), "outline");
+
+    expect(markdown).toContain("- push時の差分ロジック見直し");
+    expect(markdown).toContain("  - 新規作成で親見出し追加");
+    expect(markdown).toContain("    - 親見出し追加方針を確認");
+  });
+
+  test("builds structured xmind input", () => {
+    const builder = new DailyNotesReflectionBuilder();
+
+    expect(builder.buildStructuredXmindInput(buildStructured())).toBe([
+      "push時の差分ロジック見直し",
+      "\t新規作成で親見出し追加",
+      "\t\t親見出し追加方針を確認",
+      "\t\tXMind連携案を整理",
+    ].join("\n"));
+  });
 });
 
 function buildDocument() {
   return new DailyNotesReflectionDocumentBuilder().build(buildSummaries());
+}
+
+function buildStructured(): StructuredReflectionText {
+  return {
+    folders: [
+      {
+        folderTitle: "push時の差分ロジック見直し",
+        notes: [
+          {
+            noteTitle: "新規作成で親見出し追加",
+            sentences: ["親見出し追加方針を確認", "XMind連携案を整理"],
+          },
+        ],
+      },
+    ],
+  };
 }
 
 function buildSummaries(

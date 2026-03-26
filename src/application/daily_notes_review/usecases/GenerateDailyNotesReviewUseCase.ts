@@ -6,7 +6,10 @@ import { DailyNotesReflectionDocumentBuilder } from "../builders/DailyNotesRefle
 import { DailyNotesReflectionDocument } from "../models/DailyNotesReflectionDocument";
 import { DailyNotesReportBuilder } from "../builders/DailyNotesReportBuilder";
 import { buildDailyNotesReflectionPrompt } from "../prompts/buildDailyNotesReflectionPrompt";
-import { SentenceSummaryAdapter } from "../services/SentenceSummaryAdapter";
+import {
+  StructuredReflectionText,
+  StructuredReflectionTextAdapter,
+} from "../services/StructuredReflectionTextAdapter";
 import { ProjectNoteFrontmatterRepository } from "../../../infrastructure/repository/ProjectNoteFrontmatterRepository";
 import { CreatedProjectNoteRepository } from "../../../infrastructure/repository/CreatedProjectNoteRepository";
 import { DailyNotesReviewWriter } from "../../../infrastructure/document/review/DailyNotesReviewWriter";
@@ -154,26 +157,39 @@ export class GenerateDailyNotesReviewUseCase {
       return await this.finalizeReflectionOutput(doc, note, outputFormat, xmindLinks);
     }
 
-    const adapter = new SentenceSummaryAdapter(doc);
-    const sentenceInputs = adapter.extract();
+    const adapter = new StructuredReflectionTextAdapter(doc);
+    const userPrompt = adapter.buildInput();
+    const sentenceInputs = doc.projects.flatMap((project) => project.notes)
+      .reduce((count, current) => count + current.sentences.length, 0);
     logger.debug(
-      `[UseCase] GenerateDailyNotesReviewUseCase reflectionSentences=${sentenceInputs.length}`,
+      `[UseCase] GenerateDailyNotesReviewUseCase reflectionSentences=${sentenceInputs}`,
     );
 
-    if (sentenceInputs.length === 0) {
+    if (sentenceInputs === 0) {
       return await this.finalizeReflectionOutput(doc, note, outputFormat, xmindLinks);
     }
 
     const reflection = await this.textGenerator.generate(
       buildDailyNotesReflectionPrompt(),
-      JSON.stringify(sentenceInputs, null, 2),
+      userPrompt,
     );
 
     if (reflection?.trim()) {
       logger.debug(
         `[UseCase] GenerateDailyNotesReviewUseCase reflectionResponse chars=${reflection.length}`,
       );
-      adapter.apply(reflection);
+      const structured = adapter.parseLoose(reflection);
+      logger.debug(
+        `[UseCase] GenerateDailyNotesReviewUseCase reflectionParsed=${structured ? "true" : "false"}`,
+      );
+      if (structured) {
+        return await this.finalizeStructuredReflectionOutput(
+          structured,
+          note,
+          outputFormat,
+          xmindLinks,
+        );
+      }
     } else {
       logger.warn("[UseCase] GenerateDailyNotesReviewUseCase reflectionResponse empty");
     }
@@ -209,6 +225,26 @@ export class GenerateDailyNotesReviewUseCase {
     }
 
     return this.reflectionBuilder.build(doc, outputFormat, {
+      xmindFileLink: links.xmindFileLink,
+      xmindInputFileLink,
+    });
+  }
+
+  private async finalizeStructuredReflectionOutput(
+    structured: StructuredReflectionText,
+    note: DailyNote,
+    outputFormat: ReviewOutputFormat,
+    links: { xmindFileLink?: string },
+  ): Promise<string> {
+    let xmindInputFileLink: string | undefined;
+
+    if (outputFormat === "xmind" && this.reviewPointXMindInputFileService) {
+      const inputText = this.reflectionBuilder.buildStructuredXmindInput(structured);
+      const inputFile = await this.reviewPointXMindInputFileService.writeForDailyNote(note, inputText);
+      xmindInputFileLink = inputFile.markdownLinkPath;
+    }
+
+    return this.reflectionBuilder.buildStructured(structured, outputFormat, {
       xmindFileLink: links.xmindFileLink,
       xmindInputFileLink,
     });

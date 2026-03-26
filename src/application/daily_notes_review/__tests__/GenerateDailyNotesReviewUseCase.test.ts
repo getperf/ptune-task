@@ -249,10 +249,12 @@ describe("GenerateDailyNotesReviewUseCase", () => {
         generate: jest.fn(),
       };
       const textGenerator = {
-        generate: jest.fn().mockResolvedValue(JSON.stringify([
-          { id: "s0", summary: "先頭のゴミ見出しを生成する箇所を特定した。" },
-          { id: "s1", summary: "3月21日以降の複数ノートで再現している。" },
-        ])),
+        generate: jest.fn().mockResolvedValue([
+          "[FOLDER] ptune-taskBases追加ユースケース",
+          "[NOTE] デイリーノートゴミ見出し出現問題調査",
+          "- 先頭のゴミ見出しを生成する箇所を特定した。",
+          "- 3月21日以降の複数ノートで再現している。",
+        ].join("\n")),
       };
       const writer = {
         write: jest.fn().mockReturnValue(updated),

@@ -2,6 +2,7 @@ import { DailyNotesReflectionDocument } from "../models/DailyNotesReflectionDocu
 import { ReviewOutputFormat } from "../../../config/types";
 import { i18n } from "../../../shared/i18n/I18n";
 import { escapeMarkdownDisplayText } from "./escapeMarkdownDisplayText";
+import { StructuredReflectionText } from "../services/StructuredReflectionTextAdapter";
 
 export type DailyNotesReflectionBuildOptions = {
   xmindFileLink?: string;
@@ -19,6 +20,24 @@ export class DailyNotesReflectionBuilder {
     }
 
     return this.buildOutline(doc);
+  }
+
+  buildStructured(
+    structured: StructuredReflectionText,
+    outputFormat: ReviewOutputFormat,
+    options?: DailyNotesReflectionBuildOptions,
+  ): string {
+    if (outputFormat === "xmind") {
+      return this.buildXmind(undefined, options);
+    }
+
+    const lines = [
+      buildCommentBlock(i18n.common.daily.reviewpoint.comment.outline),
+      "",
+      ...this.buildStructuredOutlineLines(structured),
+    ];
+
+    return lines.join("\n").trim();
   }
 
   private buildOutline(doc: DailyNotesReflectionDocument): string {
@@ -92,6 +111,42 @@ export class DailyNotesReflectionBuilder {
     }
 
     return lines.join("\n");
+  }
+
+  buildStructuredXmindInput(structured: StructuredReflectionText): string {
+    const lines: string[] = [];
+
+    for (const folder of structured.folders) {
+      lines.push(folder.folderTitle);
+
+      for (const note of folder.notes) {
+        lines.push(`\t${note.noteTitle}`);
+
+        for (const sentence of note.sentences) {
+          lines.push(`\t\t${sentence}`);
+        }
+      }
+    }
+
+    return lines.join("\n");
+  }
+
+  private buildStructuredOutlineLines(structured: StructuredReflectionText): string[] {
+    const lines: string[] = [];
+
+    for (const folder of structured.folders) {
+      lines.push(`- ${escapeMarkdownDisplayText(folder.folderTitle)}`);
+
+      for (const note of folder.notes) {
+        lines.push(`  - ${escapeMarkdownDisplayText(note.noteTitle)}`);
+
+        for (const sentence of note.sentences) {
+          lines.push(`    - ${escapeMarkdownDisplayText(sentence)}`);
+        }
+      }
+    }
+
+    return lines;
   }
 }
 
