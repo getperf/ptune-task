@@ -66,9 +66,22 @@ export class PtuneTaskUriClient implements PtuneSyncClient {
     return this.watcher.waitForAuthLoginCompletion<TData>(prepared.requestId, baseline);
   }
 
-  pull<TData>(query: PullQuery): Promise<PtuneSyncStatusEnvelope<TData>> {
-    logger.debug("[Sync] [PtuneTaskUriClient] pull delegated to legacy URI client");
-    return this.client.pull<TData>(query);
+  async pull<TData>(query: PullQuery): Promise<PtuneSyncStatusEnvelope<TData>> {
+    const prepared = await this.writer.writePull(query);
+    const uri = this.builder.buildPull(prepared.requestId, prepared.requestFile);
+
+    logger.info(
+      `[Sync] [PtuneTaskUriClient] pull start requestId=${prepared.requestId} list=${query.list}`,
+    );
+    logger.debug(
+      `[Sync] [PtuneTaskUriClient] pull requestFile=${prepared.requestFile} statusFile=${prepared.statusFile}`,
+    );
+    logger.debug(`[Sync] [PtuneTaskUriClient] pull uri=${uri}`);
+
+    const baseline = new Date();
+    await this.launcher.launch(uri);
+    await this.watcher.waitForAccepted<TData>(prepared.requestId, baseline);
+    return this.watcher.waitForCompletion<TData>(prepared.requestId, baseline);
   }
 
   review<TData>(query: ReviewQuery): Promise<PtuneSyncStatusEnvelope<TData>> {

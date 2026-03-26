@@ -23,7 +23,7 @@ The contract is designed to satisfy the following constraints:
 
 - Obsidian continues to launch PtuneSync through URI for all commands
 - request / response data is exchanged through files, not stdout
-- OAuth login remains compatible with the existing Google redirect URI
+- OAuth login remains compatible with redirect-URI based authentication
 - retry can be added safely as a startup watchdog
 - duplicate execution caused by retry must be prevented
 - partial JSON reads / writes must be avoided through atomic file replacement
@@ -45,7 +45,7 @@ Recommended flow:
 ```text
 Obsidian
   -> write request.json
-  -> launch net.getperf.ptune.googleoauth:/run/...?...request_file=...
+  -> launch ptune-sync://run?...request_file=...
   -> watch status.json
   -> optional startup retry until accepted
   -> wait for completed
@@ -76,6 +76,7 @@ work/
 
 Optional auxiliary files MAY be added later:
 
+- `pull-backup.json`
 - `events.log`
 - `debug.log`
 
@@ -85,6 +86,10 @@ However, the minimum recommended contract is:
 - `status.json`
 
 This keeps the contract compact while preserving request / response separation.
+
+`pull-backup.json` is a command-local artifact rather than a required public file.
+It is recommended only for successful `pull --include-completed` runs where the
+caller wants a short-lived pre-push safety copy in the same run directory.
 
 ---
 
@@ -288,39 +293,23 @@ not on final command completion.
 
 All commands SHOULD continue to use URI activation.
 
-The Google OAuth redirect path MUST remain fixed:
-
-```text
-net.getperf.ptune.googleoauth:/oauth2redirect
-```
-
-This path is reserved for browser redirect handling only.
-
-All non-OAuth command activation SHOULD move under `/run/...`.
-
 Recommended format:
 
 ```text
-net.getperf.ptune.googleoauth:/run/<command>?request_id=<id>&request_file=<absolute-or-encoded-path>
+ptune-sync://run?request_id=<id>&request_file=<absolute-or-encoded-path>
 ```
 
-Recommended command paths:
+Alternative command-specific format is also acceptable:
 
 ```text
-net.getperf.ptune.googleoauth:/run/auth/status?request_id=<id>&request_file=...
-net.getperf.ptune.googleoauth:/run/auth/login?request_id=<id>&request_file=...
-net.getperf.ptune.googleoauth:/run/pull?request_id=<id>&request_file=...
-net.getperf.ptune.googleoauth:/run/diff?request_id=<id>&request_file=...
-net.getperf.ptune.googleoauth:/run/push?request_id=<id>&request_file=...
-net.getperf.ptune.googleoauth:/run/review?request_id=<id>&request_file=...
+ptune-sync://push?request_id=<id>&request_file=...
+ptune-sync://auth-login?request_id=<id>&request_file=...
 ```
 
 Recommendation:
 
 - externally, URI remains the only launch method
 - internally, command dispatch uses `request.json`
-- `/oauth2redirect` is never dispatched as a run command
-- `/run/...` is the only public namespace for non-redirect commands
 
 This keeps Obsidian-side integration uniform.
 
@@ -445,4 +434,4 @@ The following remain for a later iteration:
 - whether `last_status.json` or a shared summary file is needed
 - whether `events.log` should be part of the public contract
 - whether cleanup is triggered on startup, periodically, or both
-- whether old flat paths should remain as temporary compatibility aliases
+- whether command-specific URI paths are preferable to a unified `run` path

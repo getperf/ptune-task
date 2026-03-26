@@ -1,8 +1,7 @@
+import { PullQuery } from "../../../application/sync/shared/dto/PullQuery";
 import { App, normalizePath } from "obsidian";
 import { logger } from "../../../shared/logger/loggerInstance";
 import { PtuneTaskWorkDir } from "./PtuneTaskWorkDir";
-
-type PtuneTaskCommand = "auth-status" | "auth-login";
 
 export class PtuneTaskRequestFileWriter {
   constructor(
@@ -10,7 +9,7 @@ export class PtuneTaskRequestFileWriter {
     private readonly workDir: PtuneTaskWorkDir,
   ) {}
 
-  async write(command: PtuneTaskCommand): Promise<{
+  async write(command: "auth-status" | "auth-login"): Promise<{
     requestId: string;
     requestFile: string;
     statusFile: string;
@@ -19,6 +18,7 @@ export class PtuneTaskRequestFileWriter {
     await this.workDir.ensureRunDirExists(requestId);
 
     const requestFile = this.workDir.getRequestFileRelative(requestId);
+    const runDir = this.workDir.getRunDirAbsolute(requestId);
     const home = this.workDir.getRootAbsolute();
     const statusFile = this.workDir.getStatusFileAbsolute(requestId);
     const payload = {
@@ -28,12 +28,58 @@ export class PtuneTaskRequestFileWriter {
       created_at: new Date().toISOString(),
       home,
       status_file: statusFile,
+      workspace: {
+        run_dir: runDir,
+        status_file: statusFile,
+      },
     };
 
     await this.writeAtomic(requestFile, JSON.stringify(payload, null, 2));
 
     logger.debug(
       `[Sync] [PtuneTaskRequestFileWriter] command=${command} requestId=${requestId} requestFile=${requestFile}`,
+    );
+
+    return {
+      requestId,
+      requestFile: this.workDir.getRequestFileAbsolute(requestId),
+      statusFile,
+    };
+  }
+
+  async writePull(query: PullQuery): Promise<{
+    requestId: string;
+    requestFile: string;
+    statusFile: string;
+  }> {
+    const requestId = this.generateRequestId();
+    await this.workDir.ensureRunDirExists(requestId);
+
+    const requestFile = this.workDir.getRequestFileRelative(requestId);
+    const runDir = this.workDir.getRunDirAbsolute(requestId);
+    const home = this.workDir.getRootAbsolute();
+    const statusFile = this.workDir.getStatusFileAbsolute(requestId);
+    const payload = {
+      schema_version: 1,
+      request_id: requestId,
+      command: "pull",
+      created_at: new Date().toISOString(),
+      home,
+      status_file: statusFile,
+      workspace: {
+        run_dir: runDir,
+        status_file: statusFile,
+      },
+      args: {
+        list: query.list,
+        include_completed: query.includeCompleted === true,
+      },
+    };
+
+    await this.writeAtomic(requestFile, JSON.stringify(payload, null, 2));
+
+    logger.debug(
+      `[Sync] [PtuneTaskRequestFileWriter] command=pull requestId=${requestId} requestFile=${requestFile}`,
     );
 
     return {

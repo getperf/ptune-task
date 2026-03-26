@@ -8,29 +8,6 @@ in `implementation-task-list.md`.
 The goal is to reduce ambiguity before implementation starts in either the
 Obsidian client or the WinUI PtuneSync side.
 
-## 0. URI Path Freeze
-
-Freeze the public URI path policy as follows:
-
-- OAuth browser redirect path stays fixed:
-  - `net.getperf.ptune.googleoauth:/oauth2redirect`
-- non-redirect commands move under `/run/...`
-
-Recommended command paths:
-
-- `net.getperf.ptune.googleoauth:/run/auth/status`
-- `net.getperf.ptune.googleoauth:/run/auth/login`
-- `net.getperf.ptune.googleoauth:/run/pull`
-- `net.getperf.ptune.googleoauth:/run/diff`
-- `net.getperf.ptune.googleoauth:/run/push`
-- `net.getperf.ptune.googleoauth:/run/review`
-
-Rules:
-
-- `/oauth2redirect` is reserved and must not be reused for general command dispatch
-- new Obsidian integration should emit only `/run/...` paths for the new backend
-- old flat paths may remain only as temporary compatibility aliases during migration
-
 ## 1. Request / Status Contract
 
 ### 1.1 File Set
@@ -40,7 +17,12 @@ Use one run directory per request:
 - `work/runs/<request_id>/request.json`
 - `work/runs/<request_id>/status.json`
 
-Do not introduce additional public JSON files at this stage.
+Do not introduce additional required public JSON files at this stage.
+
+Command-local artifacts are allowed when explicitly documented. The first such
+artifact is:
+
+- `work/runs/<request_id>/pull-backup.json` for successful `pull --include-completed`
 
 ### 1.2 request.json
 
@@ -96,6 +78,8 @@ Optional fields:
 - `data`
 - `instance_id`
 - `retry_count`
+
+`data.backup_file` is allowed when a command produces a run-local artifact.
 
 Recommended shape:
 
@@ -345,12 +329,11 @@ Exact retention numbers may remain configurable later.
 
 The following should be treated as frozen unless a later contract review changes them intentionally:
 
-- OAuth redirect path remains `net.getperf.ptune.googleoauth:/oauth2redirect`
-- non-redirect commands use `/run/...`
 - all external commands stay URI-based
 - all observable command state stays file-based
 - one run directory per `request_id`
 - public files are limited to `request.json` and `status.json`
+- command-local artifacts such as `pull-backup.json` are optional and non-required
 - startup retry is allowed only before `accepted`
 - dispatcher idempotency is based on `request_id`
 - cleanup is delayed and best-effort
