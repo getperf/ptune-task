@@ -11,6 +11,7 @@ import { PtuneTaskRequestFileWriter } from "./PtuneTaskRequestFileWriter";
 import { PtuneTaskStatusWatcher } from "./PtuneTaskStatusWatcher";
 import { PtuneTaskUriBuilder } from "./PtuneTaskUriBuilder";
 import { PtuneTaskWorkDir } from "./PtuneTaskWorkDir";
+import { PtuneTaskRunCleanupService } from "./PtuneTaskRunCleanupService";
 
 export class PtuneTaskUriClient implements PtuneSyncClient {
   private readonly workDir: PtuneTaskWorkDir;
@@ -18,6 +19,7 @@ export class PtuneTaskUriClient implements PtuneSyncClient {
   private readonly builder: PtuneTaskUriBuilder;
   private readonly launcher: PtuneSyncUriLauncher;
   private readonly watcher: PtuneTaskStatusWatcher;
+  private readonly cleanupService: PtuneTaskRunCleanupService;
 
   constructor(
     app: App,
@@ -28,9 +30,11 @@ export class PtuneTaskUriClient implements PtuneSyncClient {
     this.builder = new PtuneTaskUriBuilder();
     this.launcher = new PtuneSyncUriLauncher();
     this.watcher = new PtuneTaskStatusWatcher(app, this.workDir);
+    this.cleanupService = new PtuneTaskRunCleanupService(app, this.workDir);
   }
 
   async authStatus<TData>(): Promise<PtuneSyncStatusEnvelope<TData>> {
+    await this.cleanupService.cleanupBeforeRun();
     const prepared = await this.writer.write("auth-status");
     const uri = this.builder.buildAuthStatus(prepared.requestId, prepared.requestFile);
 
@@ -49,6 +53,7 @@ export class PtuneTaskUriClient implements PtuneSyncClient {
   }
 
   async authLogin<TData>(): Promise<PtuneSyncStatusEnvelope<TData>> {
+    await this.cleanupService.cleanupBeforeRun();
     const prepared = await this.writer.write("auth-login");
     const uri = this.builder.buildAuthLogin(prepared.requestId, prepared.requestFile);
 
@@ -67,6 +72,7 @@ export class PtuneTaskUriClient implements PtuneSyncClient {
   }
 
   async pull<TData>(query: PullQuery): Promise<PtuneSyncStatusEnvelope<TData>> {
+    await this.cleanupService.cleanupBeforeRun();
     const prepared = await this.writer.writePull(query);
     const uri = this.builder.buildPull(prepared.requestId, prepared.requestFile);
 
@@ -93,6 +99,7 @@ export class PtuneTaskUriClient implements PtuneSyncClient {
     payload: string,
     query: PushQuery,
   ): Promise<PtuneSyncStatusEnvelope<TData>> {
+    await this.cleanupService.cleanupBeforeRun();
     const prepared = await this.writer.writeDiff(query, payload);
     const uri = this.builder.buildDiff(prepared.requestId, prepared.requestFile);
 
@@ -114,6 +121,7 @@ export class PtuneTaskUriClient implements PtuneSyncClient {
     payload: string,
     query: PushQuery,
   ): Promise<PtuneSyncStatusEnvelope<TData>> {
+    await this.cleanupService.cleanupBeforeRun();
     const prepared = await this.writer.writePush(query, payload);
     const uri = this.builder.buildPush(prepared.requestId, prepared.requestFile);
 

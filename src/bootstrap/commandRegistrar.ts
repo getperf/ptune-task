@@ -16,6 +16,12 @@ export function registerAllCommands(plugin: Plugin, container: Container): void 
   });
 
   plugin.addCommand({
+    id: "cleanup-sync-runs",
+    name: "Cleanup Sync Runs",
+    callback: () => { container.createCleanupSyncRunsCommand().execute(); },
+  });
+
+  plugin.addCommand({
     id: "sync",
     name: "Push and Rebuild",
     callback: () => { container.createSyncAndRebuildCommand().execute(); },

@@ -23,6 +23,7 @@ export default class PtunePlugin extends Plugin {
 		);
 
 		const container = new Container(this.app);
+		await container.createRunCleanupService().cleanupOnStartup();
 		registerAllCommands(this, container);
 		registerEditorFeatures(this);
 		registerWorkspaceFeatures(this, container);
