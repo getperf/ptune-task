@@ -3,6 +3,7 @@ import { CollectCreatedNotesUseCase } from "../../note_scan/usecases/CollectCrea
 import { NoteSummaryGenerator } from "../../note_review/services/NoteSummaryGenerator";
 import { DailyNotesReflectionBuilder } from "../builders/DailyNotesReflectionBuilder";
 import { DailyNotesReflectionDocumentBuilder } from "../builders/DailyNotesReflectionDocumentBuilder";
+import { DailyNotesReflectionDocument } from "../models/DailyNotesReflectionDocument";
 import { DailyNotesReportBuilder } from "../builders/DailyNotesReportBuilder";
 import { buildDailyNotesReflectionPrompt } from "../prompts/buildDailyNotesReflectionPrompt";
 import { SentenceSummaryAdapter } from "../services/SentenceSummaryAdapter";
@@ -17,6 +18,7 @@ import { config } from "../../../config/config";
 import { logger } from "../../../shared/logger/loggerInstance";
 import { ReviewOutputFormat } from "../../../config/types";
 import { ReviewPointXMindTemplateService } from "../../../infrastructure/review/ReviewPointXMindTemplateService";
+import { ReviewPointXMindInputFileService } from "../../../infrastructure/review/ReviewPointXMindInputFileService";
 
 export type GenerateDailyNotesReviewResult = {
   note?: DailyNote;
@@ -50,6 +52,7 @@ export class GenerateDailyNotesReviewUseCase {
     private readonly writer: DailyNotesReviewWriter,
     private readonly reportBuilder: DailyNotesReportBuilder,
     private readonly reviewPointXMindTemplateService?: ReviewPointXMindTemplateService,
+    private readonly reviewPointXMindInputFileService?: ReviewPointXMindInputFileService,
     private readonly reflectionDocumentBuilder = new DailyNotesReflectionDocumentBuilder(),
     private readonly reflectionBuilder = new DailyNotesReflectionBuilder(),
   ) {}
@@ -143,15 +146,12 @@ export class GenerateDailyNotesReviewUseCase {
     outputFormat: ReviewOutputFormat,
   ): Promise<string> {
     const doc = this.reflectionDocumentBuilder.build(summaries);
-    let xmindFileLink: string | undefined;
-
-    if (outputFormat === "xmind" && this.reviewPointXMindTemplateService) {
-      const xmindFile = await this.reviewPointXMindTemplateService.ensureForDailyNote(note);
-      xmindFileLink = xmindFile.markdownLinkPath;
-    }
+    const xmindLinks = outputFormat === "xmind"
+      ? await this.prepareXMindFiles(note)
+      : {};
 
     if (config.settings.review.sentenceMode !== "llm") {
-      return this.reflectionBuilder.build(doc, outputFormat, { xmindFileLink });
+      return await this.finalizeReflectionOutput(doc, note, outputFormat, xmindLinks);
     }
 
     const adapter = new SentenceSummaryAdapter(doc);
@@ -161,7 +161,7 @@ export class GenerateDailyNotesReviewUseCase {
     );
 
     if (sentenceInputs.length === 0) {
-      return this.reflectionBuilder.build(doc, outputFormat, { xmindFileLink });
+      return await this.finalizeReflectionOutput(doc, note, outputFormat, xmindLinks);
     }
 
     const reflection = await this.textGenerator.generate(
@@ -178,7 +178,40 @@ export class GenerateDailyNotesReviewUseCase {
       logger.warn("[UseCase] GenerateDailyNotesReviewUseCase reflectionResponse empty");
     }
 
-    return this.reflectionBuilder.build(doc, outputFormat, { xmindFileLink });
+    return await this.finalizeReflectionOutput(doc, note, outputFormat, xmindLinks);
+  }
+
+  private async prepareXMindFiles(note: DailyNote): Promise<{
+    xmindFileLink?: string;
+  }> {
+    if (!this.reviewPointXMindTemplateService) {
+      return {};
+    }
+
+    const xmindFile = await this.reviewPointXMindTemplateService.ensureForDailyNote(note);
+    return {
+      xmindFileLink: xmindFile.markdownLinkPath,
+    };
+  }
+
+  private async finalizeReflectionOutput(
+    doc: DailyNotesReflectionDocument,
+    note: DailyNote,
+    outputFormat: ReviewOutputFormat,
+    links: { xmindFileLink?: string },
+  ): Promise<string> {
+    let xmindInputFileLink: string | undefined;
+
+    if (outputFormat === "xmind" && this.reviewPointXMindInputFileService) {
+      const inputText = this.reflectionBuilder.buildXmindInput(doc);
+      const inputFile = await this.reviewPointXMindInputFileService.writeForDailyNote(note, inputText);
+      xmindInputFileLink = inputFile.markdownLinkPath;
+    }
+
+    return this.reflectionBuilder.build(doc, outputFormat, {
+      xmindFileLink: links.xmindFileLink,
+      xmindInputFileLink,
+    });
   }
 
   private resolveErrorMessage(error: unknown): string {

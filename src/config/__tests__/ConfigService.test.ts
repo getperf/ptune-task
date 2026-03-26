@@ -87,6 +87,48 @@ describe("ConfigService", () => {
 		expect(service.getSettings().review.reviewPointOutputFormat).toBe("xmind");
 	});
 
+	test("load(): dailyNoteTask.habit falls back to legacy habitTasks when not configured", async () => {
+		const service = new ConfigService();
+
+		const plugin = createPluginMock({
+			habitTasks: {
+				morning: ["<朝>起床🚫"],
+				evening: ["<夜>プール🚫"],
+			},
+		}) as unknown as Plugin;
+
+		await service.load(plugin);
+
+		expect(service.getSettings().dailyNoteTask?.habit).toEqual({
+			morning: ["<朝>起床🚫"],
+			evening: ["<夜>プール🚫"],
+		});
+	});
+
+	test("load(): explicit dailyNoteTask.habit overrides legacy habitTasks", async () => {
+		const service = new ConfigService();
+
+		const plugin = createPluginMock({
+			habitTasks: {
+				morning: ["<朝>起床🚫"],
+				evening: ["<夜>プール🚫"],
+			},
+			dailyNoteTask: {
+				habit: {
+					morning: [],
+					evening: [],
+				},
+			},
+		}) as unknown as Plugin;
+
+		await service.load(plugin);
+
+		expect(service.getSettings().dailyNoteTask?.habit).toEqual({
+			morning: [],
+			evening: [],
+		});
+	});
+
 	test("save(): saveData called", async () => {
 		const service = new ConfigService();
 

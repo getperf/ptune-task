@@ -43,24 +43,13 @@ export class DailyNotesReviewWriter {
   ): void {
     const heading = HeadingService.resolve(key);
     const matcher = HeadingMatcher.heading(heading.baseTitle);
-    let target = adapter.findSectionByMatcher(matcher);
-
-    logger.debug(`[Service] DailyNotesReviewWriter.upsertChildSection start key=${key} exists=${target !== null}`);
-
-    if (!target) {
-      parentSection.appendChild({
-        title: heading.renderedTitle,
-        depth: heading.depth,
-        content: () => "",
-      });
-      target = adapter.findSectionByMatcher(matcher);
-      logger.debug(`[Service] DailyNotesReviewWriter.upsertChildSection appended key=${key} foundAfterAppend=${target !== null}`);
-    }
-
-    if (!target) {
-      logger.warn(`[Service] DailyNotesReviewWriter.upsertChildSection targetMissing key=${key}`);
-      throw new Error(`Failed to create daily review section: ${key}`);
-    }
+    logger.debug(`[Service] DailyNotesReviewWriter.upsertChildSection start key=${key}`);
+    const target = parentSection.ensureChild({
+      matcher,
+      title: heading.renderedTitle,
+      depth: heading.depth,
+      content: () => "",
+    });
 
     target.resetContent(markdownBody);
     logger.debug(`[Service] DailyNotesReviewWriter.upsertChildSection updated key=${key} length=${markdownBody.trim().length}`);

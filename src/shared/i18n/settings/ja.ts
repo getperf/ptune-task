@@ -133,6 +133,12 @@ export const settingsJa = {
 				xmind: "xmind",
 			},
 		},
+
+		xmindTemplatePath: {
+			name: "XMind テンプレートパス",
+			desc: "振り返りポイントの XMind テンプレートとして使う vault 相対パス",
+			placeholder: "_template/xmind/template_analysis.xmind",
+		},
 	},
 
 	dailyNoteTask: {
@@ -142,7 +148,7 @@ export const settingsJa = {
 			morning: {
 				name: "朝のタスク",
 				desc: "毎朝確認・実行するタスクを改行区切りで入力します",
-				placeholder: "<朝>くすり🚫",
+				placeholder: "<朝>起床🚫",
 			},
 
 			evening: {

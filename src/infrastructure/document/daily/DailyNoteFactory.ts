@@ -4,6 +4,7 @@ import { DailyNote } from "../../../domain/daily/DailyNote";
 import { PtuneRuntime } from "../../../shared/PtuneRuntime";
 import { DailyTemplateBuilder } from "./DailyTemplateBuilder";
 import { DailyNoteCreator } from "../../../application/calendar/services/DailyNoteCreator";
+import { logger } from "../../../shared/logger/loggerInstance";
 
 export class DailyNoteFactory implements DailyNoteCreator {
   constructor(
@@ -13,6 +14,10 @@ export class DailyNoteFactory implements DailyNoteCreator {
 
   create(date: string): DailyNote {
     const habits = this.runtime.getHabitTasks();
+
+    logger.debug(
+      `[Service] DailyNoteFactory.create date=${date} morning=${habits.morning.length} evening=${habits.evening.length}`,
+    );
 
     const content = this.templateBuilder.build({
       morningHabits: habits.morning,

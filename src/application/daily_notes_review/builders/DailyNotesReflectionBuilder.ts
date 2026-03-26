@@ -5,6 +5,7 @@ import { escapeMarkdownDisplayText } from "./escapeMarkdownDisplayText";
 
 export type DailyNotesReflectionBuildOptions = {
   xmindFileLink?: string;
+  xmindInputFileLink?: string;
 };
 
 export class DailyNotesReflectionBuilder {
@@ -31,7 +32,7 @@ export class DailyNotesReflectionBuilder {
   }
 
   private buildXmind(
-    doc: DailyNotesReflectionDocument,
+    _doc: DailyNotesReflectionDocument,
     options?: DailyNotesReflectionBuildOptions,
   ): string {
     const t = i18n.common.daily.reviewpoint;
@@ -44,11 +45,11 @@ export class DailyNotesReflectionBuilder {
       lines.push(`[${t.xmindFileLinkLabel}](${options.xmindFileLink})`, "");
     }
 
+    if (options?.xmindInputFileLink) {
+      lines.push(`[${t.xmindInputFileLinkLabel}](${options.xmindInputFileLink})`, "");
+    }
+
     lines.push(
-      `**${t.xmindInputHeading}**`,
-      "",
-      wrapWithCodeBlock(this.buildXmindInput(doc), "text"),
-      "",
       `**${t.xmindOutputHeading}**`,
       "",
       wrapWithCodeBlock("", "text"),
@@ -75,7 +76,7 @@ export class DailyNotesReflectionBuilder {
     return lines;
   }
 
-  private buildXmindInput(doc: DailyNotesReflectionDocument): string {
+  buildXmindInput(doc: DailyNotesReflectionDocument): string {
     const lines: string[] = [];
 
     for (const project of doc.projects) {

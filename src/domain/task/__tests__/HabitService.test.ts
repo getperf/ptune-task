@@ -13,18 +13,18 @@ describe("HabitService", () => {
     ];
 
     expect(
-      HabitService.collectExistingHabits(lines, ["<朝>くすり🚫", "<夜>プール🚫"]),
+      HabitService.collectExistingHabits(lines, ["<朝>起床🚫", "<夜>プール🚫"]),
     ).toEqual(["<夜>プール🚫"]);
   });
 
   test("preserves configured habit order", () => {
     const lines = [
       "- [ ] <夜>プール🚫",
-      "- [ ] <朝>くすり🚫",
+      "- [ ] <朝>起床🚫",
     ];
 
     expect(
-      HabitService.collectExistingHabits(lines, ["<朝>くすり🚫", "<夜>プール🚫"]),
-    ).toEqual(["<朝>くすり🚫", "<夜>プール🚫"]);
+      HabitService.collectExistingHabits(lines, ["<朝>起床🚫", "<夜>プール🚫"]),
+    ).toEqual(["<朝>起床🚫", "<夜>プール🚫"]);
   });
 });
