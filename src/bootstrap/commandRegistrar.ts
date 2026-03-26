@@ -10,6 +10,12 @@ export function registerAllCommands(plugin: Plugin, container: Container): void 
   });
 
   plugin.addCommand({
+    id: "ptunesync-diff-check",
+    name: "PtuneSync Diff Check",
+    callback: () => { container.createDiffCheckCommand().execute(); },
+  });
+
+  plugin.addCommand({
     id: "sync",
     name: "Push and Rebuild",
     callback: () => { container.createSyncAndRebuildCommand().execute(); },

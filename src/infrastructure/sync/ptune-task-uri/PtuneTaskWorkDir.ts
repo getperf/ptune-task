@@ -62,6 +62,14 @@ export class PtuneTaskWorkDir {
     return normalizePath(`${this.getRunDirAbsolute(requestId)}/status.json`);
   }
 
+  getInputFileRelative(requestId: string): string {
+    return normalizePath(`${this.getRunDirRelative(requestId)}/input.json`);
+  }
+
+  getInputFileAbsolute(requestId: string): string {
+    return normalizePath(`${this.getRunDirAbsolute(requestId)}/input.json`);
+  }
+
   private getBasePath(): string {
     const adapter = this.app.vault.adapter;
 

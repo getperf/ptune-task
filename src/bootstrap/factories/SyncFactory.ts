@@ -59,11 +59,15 @@ export class SyncFactory {
     );
   }
 
-  createSyncDailyNoteUseCase(): PushSyncUseCase {
-    const diffUseCase = new DiffDailyNoteUseCase(
+  createDiffDailyNoteUseCase(): DiffDailyNoteUseCase {
+    return new DiffDailyNoteUseCase(
       this.runtime.dailyNoteRepository,
       this.createSyncPort(),
     );
+  }
+
+  createSyncDailyNoteUseCase(): PushSyncUseCase {
+    const diffUseCase = this.createDiffDailyNoteUseCase();
     const pushUseCase = new ApplyPushUseCase(this.createSyncPort());
 
     return new PushSyncUseCase(

@@ -30,6 +30,7 @@ import { ReviewPointXMindTemplateService } from "../infrastructure/review/Review
 import { SetupChecklistService } from "../application/setup/services/SetupChecklistService";
 import { NoteSetupHelper } from "../infrastructure/setup/NoteSetupHelper";
 import { SetupWizardDialog } from "../presentation/setup/SetupWizardDialog";
+import { PtuneSyncDiffCheckCommand } from "../presentation/diff/PtuneSyncDiffCheckCommand";
 
 export class Container {
   private readonly runtime: PtuneRuntime;
@@ -58,6 +59,13 @@ export class Container {
   createPullTodayCommand(): PullTodayCommand {
     return new PullTodayCommand(
       this.syncFactory.createPullAndMergeTodayUseCase(),
+      this.presentationFactory.createObsidianPresenter(),
+    );
+  }
+
+  createDiffCheckCommand(): PtuneSyncDiffCheckCommand {
+    return new PtuneSyncDiffCheckCommand(
+      this.syncFactory.createDiffDailyNoteUseCase(),
       this.presentationFactory.createObsidianPresenter(),
     );
   }

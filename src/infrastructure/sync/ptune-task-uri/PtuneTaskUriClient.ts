@@ -89,12 +89,25 @@ export class PtuneTaskUriClient implements PtuneSyncClient {
     return this.client.review<TData>(query);
   }
 
-  diff<TData>(
+  async diff<TData>(
     payload: string,
     query: PushQuery,
   ): Promise<PtuneSyncStatusEnvelope<TData>> {
-    logger.debug("[Sync] [PtuneTaskUriClient] diff delegated to legacy URI client");
-    return this.client.diff<TData>(payload, query);
+    const prepared = await this.writer.writeDiff(query, payload);
+    const uri = this.builder.buildDiff(prepared.requestId, prepared.requestFile);
+
+    logger.info(
+      `[Sync] [PtuneTaskUriClient] diff start requestId=${prepared.requestId} list=${query.list}`,
+    );
+    logger.debug(
+      `[Sync] [PtuneTaskUriClient] diff requestFile=${prepared.requestFile} statusFile=${prepared.statusFile} inputFile=${prepared.inputFile}`,
+    );
+    logger.debug(`[Sync] [PtuneTaskUriClient] diff uri=${uri}`);
+
+    const baseline = new Date();
+    await this.launcher.launch(uri);
+    await this.watcher.waitForAccepted<TData>(prepared.requestId, baseline);
+    return this.watcher.waitForCompletion<TData>(prepared.requestId, baseline);
   }
 
   push<TData>(

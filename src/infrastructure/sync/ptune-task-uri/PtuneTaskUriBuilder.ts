@@ -11,6 +11,10 @@ export class PtuneTaskUriBuilder {
     return this.buildRunUri("pull", requestId, requestFile);
   }
 
+  buildDiff(requestId: string, requestFile: string): string {
+    return this.buildRunUri("diff", requestId, requestFile);
+  }
+
   private buildRunUri(path: string, requestId: string, requestFile: string): string {
     const search = new URLSearchParams();
     search.set("request_id", requestId);
