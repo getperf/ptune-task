@@ -14,24 +14,23 @@ export class MergeTaskTreeService {
 
     const result: TaskTreeNode[] = [];
 
-    // ① ローカル順で処理
-    for (const localRoot of local) {
-      const googleMatch = this.findMatch(localRoot, localIndex, googleIndex);
+    // ① Google順で処理
+    for (const googleRoot of google) {
+      const localMatch = this.findMatch(googleRoot, googleIndex, localIndex);
 
-      if (googleMatch) {
+      if (localMatch) {
         result.push(
-          this.mergeNode(localRoot, googleMatch, localIndex, googleIndex),
+          this.mergeNode(localMatch, googleRoot, localIndex, googleIndex),
         );
       } else {
-        // 未登録ローカル
-        result.push(localRoot);
+        result.push(googleRoot);
       }
     }
 
-    // ② Googleにのみ存在する root を末尾に追加
-    for (const googleRoot of google) {
-      if (!this.findMatch(googleRoot, googleIndex, localIndex)) {
-        result.push(googleRoot);
+    // ② ローカルのみ存在する root を末尾に追加
+    for (const localRoot of local) {
+      if (!this.findMatch(localRoot, localIndex, googleIndex)) {
+        result.push(localRoot);
       }
     }
 
@@ -46,25 +45,25 @@ export class MergeTaskTreeService {
   ): TaskTreeNode {
     const mergedChildren: TaskTreeNode[] = [];
 
-    // ローカル順で子を処理
-    for (const localChild of localNode.children) {
-      const googleChild = this.findMatch(localChild, localIndex, googleIndex);
+    // Google順で子を処理
+    for (const googleChild of googleNode.children) {
+      const localChild = this.findMatch(googleChild, googleIndex, localIndex);
 
-      if (googleChild) {
+      if (localChild) {
         mergedChildren.push(
           this.mergeNode(localChild, googleChild, localIndex, googleIndex),
         );
       } else {
-        mergedChildren.push(localChild);
+        mergedChildren.push(googleChild);
       }
     }
 
-    // Googleのみ存在する子を追加
-    for (const googleChild of googleNode.children) {
-      const exists = this.findMatch(googleChild, googleIndex, localIndex);
+    // ローカルのみ存在する子を追加
+    for (const localChild of localNode.children) {
+      const exists = this.findMatch(localChild, localIndex, googleIndex);
 
       if (!exists) {
-        mergedChildren.push(googleChild);
+        mergedChildren.push(localChild);
       }
     }
 

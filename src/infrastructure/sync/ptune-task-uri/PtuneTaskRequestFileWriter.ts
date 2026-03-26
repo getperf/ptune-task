@@ -96,6 +96,28 @@ export class PtuneTaskRequestFileWriter {
     statusFile: string;
     inputFile: string;
   }> {
+    return this.writeTaskCommand("diff", query, payload);
+  }
+
+  async writePush(query: PushQuery, payload: string): Promise<{
+    requestId: string;
+    requestFile: string;
+    statusFile: string;
+    inputFile: string;
+  }> {
+    return this.writeTaskCommand("push", query, payload);
+  }
+
+  private async writeTaskCommand(
+    command: "diff" | "push",
+    query: PushQuery,
+    payload: string,
+  ): Promise<{
+    requestId: string;
+    requestFile: string;
+    statusFile: string;
+    inputFile: string;
+  }> {
     const requestId = this.generateRequestId();
     await this.workDir.ensureRunDirExists(requestId);
 
@@ -111,7 +133,7 @@ export class PtuneTaskRequestFileWriter {
     const requestPayload = {
       schema_version: 1,
       request_id: requestId,
-      command: "diff",
+      command,
       created_at: new Date().toISOString(),
       home,
       status_file: statusFile,
@@ -124,13 +146,14 @@ export class PtuneTaskRequestFileWriter {
       },
       args: {
         list: query.list,
+        allow_delete: query.allowDelete === true,
       },
     };
 
     await this.writeAtomic(requestFile, JSON.stringify(requestPayload, null, 2));
 
     logger.debug(
-      `[Sync] [PtuneTaskRequestFileWriter] command=diff requestId=${requestId} requestFile=${requestFile} inputFile=${inputFile}`,
+      `[Sync] [PtuneTaskRequestFileWriter] command=${command} requestId=${requestId} requestFile=${requestFile} inputFile=${inputFile}`,
     );
 
     return {

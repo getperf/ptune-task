@@ -50,8 +50,8 @@ export class PushAndRebuildCommand {
       if (result instanceof Object && "success" in result) {
         const diff = result as DiffResult;
 
-        if (diff.isValidationFailure()) {
-          const message = `Diff validation failed (${diff.summary.errors} errors)`;
+        if (diff.isValidationFailure() || diff.hasErrors()) {
+          const message = `Push blocked by diff (${diff.summary.errors} errors)`;
           const details = this.buildValidationMessage(diff);
           this.presenter.showWarningWithDetails(message, details);
           return;
@@ -121,3 +121,4 @@ export class PushAndRebuildCommand {
     return lines.join("\n");
   }
 }
+

@@ -110,11 +110,24 @@ export class PtuneTaskUriClient implements PtuneSyncClient {
     return this.watcher.waitForCompletion<TData>(prepared.requestId, baseline);
   }
 
-  push<TData>(
+  async push<TData>(
     payload: string,
     query: PushQuery,
   ): Promise<PtuneSyncStatusEnvelope<TData>> {
-    logger.debug("[Sync] [PtuneTaskUriClient] push delegated to legacy URI client");
-    return this.client.push<TData>(payload, query);
+    const prepared = await this.writer.writePush(query, payload);
+    const uri = this.builder.buildPush(prepared.requestId, prepared.requestFile);
+
+    logger.info(
+      `[Sync] [PtuneTaskUriClient] push start requestId=${prepared.requestId} list=${query.list} allowDelete=${query.allowDelete === true}`,
+    );
+    logger.debug(
+      `[Sync] [PtuneTaskUriClient] push requestFile=${prepared.requestFile} statusFile=${prepared.statusFile} inputFile=${prepared.inputFile}`,
+    );
+    logger.debug(`[Sync] [PtuneTaskUriClient] push uri=${uri}`);
+
+    const baseline = new Date();
+    await this.launcher.launch(uri);
+    await this.watcher.waitForAccepted<TData>(prepared.requestId, baseline);
+    return this.watcher.waitForCompletion<TData>(prepared.requestId, baseline);
   }
 }

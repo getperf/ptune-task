@@ -73,4 +73,34 @@ describe("MergeTaskTreeService", () => {
     expect(merged[1]?.entry.id).toBe("gb");
     expect(merged[0]?.children[2]?.entry.id).toBe("ga3");
   });
+  test("prefers remote order for matched tasks during pull merge", () => {
+    const service = new MergeTaskTreeService();
+
+    const local = [
+      node(entry("task2-id", "task2"), [
+        node(entry("task2__test1", "test1", "task2-id")),
+      ]),
+      node(entry("task1-id", "task1"), [
+        node(entry("task1__test1", "test1", "task1-id")),
+      ]),
+    ];
+
+    const remote = [
+      node(entry("g-task1", "task1"), [
+        node(entry("g-task1-test1", "test1", "g-task1")),
+      ]),
+      node(entry("g-task2", "task2"), [
+        node(entry("g-task2-test1", "test1", "g-task2")),
+      ]),
+    ];
+
+    const merged = service.merge(local, remote);
+
+    expect(merged.map((root) => root.entry.title)).toEqual(["task1", "task2"]);
+    expect(merged[0]?.children.map((child) => child.entry.title)).toEqual(["test1"]);
+    expect(merged[1]?.children.map((child) => child.entry.title)).toEqual(["test1"]);
+    expect(merged[0]?.entry.id).toBe("g-task1");
+    expect(merged[1]?.entry.id).toBe("g-task2");
+  });
 });
+
