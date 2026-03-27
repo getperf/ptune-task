@@ -52,7 +52,6 @@ export class SyncAndRebuildDailyNoteUseCase {
       includeCompleted: phase === SyncPhase.Working,
     };
 
-    // --- remote pull ---
     const raw = await this.syncPort.pull(query);
     logger.debug(`[Sync] SyncAndRebuildDailyNoteUseCase rawBytes=${raw.length}`);
 
@@ -66,7 +65,6 @@ export class SyncAndRebuildDailyNoteUseCase {
       `[UseCase] SyncAndRebuildDailyNoteUseCase remoteEntries count=${remoteEntries.length} roots=${this.countRootEntries(remoteEntries)}`,
     );
 
-    // --- local entries ---
     const localJson = MarkdownToJsonUseCase.execute(note.content);
     logger.debug(`[UseCase] SyncAndRebuildDailyNoteUseCase localJsonBytes=${localJson.length}`);
     const localPayload = JSON.parse(localJson) as RawPayload;
@@ -75,19 +73,17 @@ export class SyncAndRebuildDailyNoteUseCase {
       `[UseCase] SyncAndRebuildDailyNoteUseCase localEntries count=${localEntries.length} roots=${this.countRootEntries(localEntries)}`,
     );
 
-    // --- merge ---
     const localTree = buildTaskTree(localEntries);
-
     const remoteTree = buildTaskTree(remoteEntries);
-
-    const mergedTree = this.mergeService.merge(localTree, remoteTree);
+    const mergedTree = this.mergeService.merge(localTree, remoteTree, {
+      order: "local-first",
+    });
 
     const rendered = renderTaskTree(mergedTree);
     logger.debug(
       `[UseCase] SyncAndRebuildDailyNoteUseCase rendered taskMarkdownBytes=${rendered.taskListMarkdown.length} taskKeys=${Object.keys(rendered.taskKeys).length}`,
     );
 
-    // --- section rebuild ---
     const sectionMarkdown = PlannedTaskSectionBuilder.buildForToday({
       tasksMarkdown: rendered.taskListMarkdown,
       keepExistingHabits: true,
@@ -99,12 +95,10 @@ export class SyncAndRebuildDailyNoteUseCase {
 
     adapter.replaceSection("daily.section.planned.title", sectionMarkdown);
 
-    // --- phase update ---
     if (!adapter.getSyncPhase()) {
       adapter.setSyncPhase(SyncPhase.Working);
     }
 
-    // --- taskKeys update ---
     adapter.replaceTaskKeys(rendered.taskKeys);
 
     const updated = note.withContent(adapter.toString());

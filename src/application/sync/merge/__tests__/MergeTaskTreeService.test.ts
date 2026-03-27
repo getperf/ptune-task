@@ -73,6 +73,7 @@ describe("MergeTaskTreeService", () => {
     expect(merged[1]?.entry.id).toBe("gb");
     expect(merged[0]?.children[2]?.entry.id).toBe("ga3");
   });
+
   test("prefers remote order for matched tasks during pull merge", () => {
     const service = new MergeTaskTreeService();
 
@@ -102,5 +103,50 @@ describe("MergeTaskTreeService", () => {
     expect(merged[0]?.entry.id).toBe("g-task1");
     expect(merged[1]?.entry.id).toBe("g-task2");
   });
-});
 
+  test("can preserve local order for post-push rebuild", () => {
+    const service = new MergeTaskTreeService();
+
+    const local = [
+      node(entry("habit-morning", "<朝>くすり🚫")),
+      node(entry("g-task3", "test3"), [
+        node(entry("g-task3-child", "Task1", "g-task3")),
+      ]),
+      node(entry("g-task4", "test4"), [
+        node(entry("g-task4-child", "Task1", "g-task4")),
+      ]),
+      node(entry("g-task5", "test5"), [
+        node(entry("g-task5-child1", "Task1", "g-task5")),
+        node(entry("g-task5-child2", "Task2", "g-task5")),
+      ]),
+      node(entry("habit-evening", "<夜>プール🚫")),
+    ];
+
+    const remote = [
+      node(entry("g-task4", "test4"), [
+        node(entry("g-task4-child", "Task1", "g-task4")),
+      ]),
+      node(entry("g-task5", "test5"), [
+        node(entry("g-task5-child1", "Task1", "g-task5")),
+        node(entry("g-task5-child2", "Task2", "g-task5")),
+      ]),
+      node(entry("habit-evening-remote", "<夜>プール🚫")),
+      node(entry("g-task3", "test3"), [
+        node(entry("g-task3-child", "Task1", "g-task3")),
+      ]),
+      node(entry("habit-morning-remote", "<朝>くすり🚫")),
+    ];
+
+    const merged = service.merge(local, remote, { order: "local-first" });
+
+    expect(merged.map((root) => root.entry.title)).toEqual([
+      "<朝>くすり🚫",
+      "test3",
+      "test4",
+      "test5",
+      "<夜>プール🚫",
+    ]);
+    expect(merged[0]?.entry.id).toBe("habit-morning-remote");
+    expect(merged[4]?.entry.id).toBe("habit-evening-remote");
+  });
+});

@@ -7,30 +7,60 @@ type TreeIndex = {
   keyByNode: Map<TaskTreeNode, string>;
 };
 
+type MergeOrder = "remote-first" | "local-first";
+
+type MergeOptions = {
+  order?: MergeOrder;
+};
+
 export class MergeTaskTreeService {
-  merge(local: TaskTreeNode[], google: TaskTreeNode[]): TaskTreeNode[] {
+  merge(
+    local: TaskTreeNode[],
+    google: TaskTreeNode[],
+    options: MergeOptions = {},
+  ): TaskTreeNode[] {
+    const order = options.order ?? "remote-first";
     const googleIndex = this.buildIndex(google);
     const localIndex = this.buildIndex(local);
 
+    return this.mergeOrdered(local, google, localIndex, googleIndex, order);
+  }
+
+  private mergeOrdered(
+    local: TaskTreeNode[],
+    google: TaskTreeNode[],
+    localIndex: TreeIndex,
+    googleIndex: TreeIndex,
+    order: MergeOrder,
+  ): TaskTreeNode[] {
+    const primary = order === "local-first" ? local : google;
+    const primaryIndex = order === "local-first" ? localIndex : googleIndex;
+    const secondary = order === "local-first" ? google : local;
+    const secondaryIndex = order === "local-first" ? googleIndex : localIndex;
+
     const result: TaskTreeNode[] = [];
 
-    // ① Google順で処理
-    for (const googleRoot of google) {
-      const localMatch = this.findMatch(googleRoot, googleIndex, localIndex);
+    for (const primaryNode of primary) {
+      const secondaryMatch = this.findMatch(primaryNode, primaryIndex, secondaryIndex);
 
-      if (localMatch) {
+      if (order === "local-first") {
         result.push(
-          this.mergeNode(localMatch, googleRoot, localIndex, googleIndex),
+          secondaryMatch
+            ? this.mergeNode(primaryNode, secondaryMatch, localIndex, googleIndex, order)
+            : primaryNode,
         );
       } else {
-        result.push(googleRoot);
+        result.push(
+          secondaryMatch
+            ? this.mergeNode(secondaryMatch, primaryNode, localIndex, googleIndex, order)
+            : primaryNode,
+        );
       }
     }
 
-    // ② ローカルのみ存在する root を末尾に追加
-    for (const localRoot of local) {
-      if (!this.findMatch(localRoot, localIndex, googleIndex)) {
-        result.push(localRoot);
+    for (const secondaryNode of secondary) {
+      if (!this.findMatch(secondaryNode, secondaryIndex, primaryIndex)) {
+        result.push(secondaryNode);
       }
     }
 
@@ -42,30 +72,15 @@ export class MergeTaskTreeService {
     googleNode: TaskTreeNode,
     localIndex: TreeIndex,
     googleIndex: TreeIndex,
+    order: MergeOrder,
   ): TaskTreeNode {
-    const mergedChildren: TaskTreeNode[] = [];
-
-    // Google順で子を処理
-    for (const googleChild of googleNode.children) {
-      const localChild = this.findMatch(googleChild, googleIndex, localIndex);
-
-      if (localChild) {
-        mergedChildren.push(
-          this.mergeNode(localChild, googleChild, localIndex, googleIndex),
-        );
-      } else {
-        mergedChildren.push(googleChild);
-      }
-    }
-
-    // ローカルのみ存在する子を追加
-    for (const localChild of localNode.children) {
-      const exists = this.findMatch(localChild, localIndex, googleIndex);
-
-      if (!exists) {
-        mergedChildren.push(localChild);
-      }
-    }
+    const mergedChildren = this.mergeOrdered(
+      localNode.children,
+      googleNode.children,
+      localIndex,
+      googleIndex,
+      order,
+    );
 
     return {
       entry: {
