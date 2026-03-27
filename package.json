@@ -33,5 +33,13 @@
 		"md-ast-core": "file:../md-ast-core/md-ast-core-1.0.0.tgz",
 		"obsidian": "latest",
 		"obsidian-daily-notes-interface": "^0.9.4"
+	},
+	"overrides": {
+		"ajv": "^8.18.0",
+		"brace-expansion": "^2.0.3",
+		"flatted": "^3.4.2",
+		"handlebars": "^4.7.9",
+		"minimatch": "^9.0.9",
+		"picomatch": "^4.0.4"
 	}
 }
