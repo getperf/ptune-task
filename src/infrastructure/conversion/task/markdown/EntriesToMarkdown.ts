@@ -17,7 +17,7 @@ export class EntriesToMarkdown {
     depth: number,
     lines: string[],
   ): void {
-    const indent = "  ".repeat(depth);
+    const indent = "    ".repeat(depth);
 
     const line = TaskLineFormatter.format(node.entry);
 
