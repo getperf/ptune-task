@@ -27,4 +27,16 @@ describe("HabitService", () => {
       HabitService.collectExistingHabits(lines, ["<朝>起床🚫", "<夜>プール🚫"]),
     ).toEqual(["<朝>起床🚫", "<夜>プール🚫"]);
   });
+  test("collects habits from markdown with extra spaces after bullet", () => {
+    const lines = [
+      "-   [ ] <朝>くすり🚫",
+      "-   [ ] test3",
+      "-   [ ] <夜>プール🚫",
+    ];
+
+    expect(
+      HabitService.collectExistingHabits(lines, ["<朝>くすり🚫", "<夜>プール🚫"]),
+    ).toEqual(["<朝>くすり🚫", "<夜>プール🚫"]);
+  });
 });
+

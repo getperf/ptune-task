@@ -27,7 +27,7 @@ export class HabitService {
   }
 
   static extractTitle(line: string): string {
-    return line.replace(/^- \[[ x]\] /, "").trim();
+    return line.replace(/^\s*-\s+\[[ x]\]\s+/, "").trim();
   }
 
   static isHabitLine(line: string, habitSet: Set<string>): boolean {
@@ -75,7 +75,7 @@ export class HabitService {
 
   static hasHabitLines(lines: string[], habitSet: Set<string>): boolean {
     for (const line of lines) {
-      const m = line.match(/^- \[.\] (.+)$/);
+      const m = line.match(/^\s*-\s+\[.\]\s+(.+)$/);
 
       if (!m) continue;
 
@@ -89,3 +89,4 @@ export class HabitService {
     return false;
   }
 }
+
