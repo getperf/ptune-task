@@ -128,3 +128,8 @@ Clients MUST read `status.json` instead of stdout when using URI execution.
 * Adding options is allowed
 * Changing response structure requires version increment
 
+## 8. Push Ordering Notes
+
+* `push` MAY skip reorder operations for completed tasks
+* clients MUST NOT assume that completed tasks will be reordered to match input order
+

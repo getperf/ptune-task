@@ -53,6 +53,11 @@ UseCases should remain small and readable.
 
 Avoid putting heavy logic inside UseCases.
 
+Sync-specific policy
+
+- pull merge should prefer remote order so the rebuilt task tree reflects the latest remote ordering
+- post-push daily note rebuild should prefer local order so user-arranged task order and habit placement stay stable in the note
+
 ---
 
 ### Service
