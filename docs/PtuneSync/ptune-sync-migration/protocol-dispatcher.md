@@ -14,7 +14,6 @@ cause duplicate command execution.
 `ProtocolDispatcher` SHOULD be responsible for:
 
 - receiving URI activation
-- recognizing reserved OAuth redirect paths
 - parsing `request_id` and `request_file`
 - loading `request.json`
 - validating the request envelope
@@ -34,7 +33,6 @@ cause duplicate command execution.
 
 ```text
 Protocol activation
-  -> if path == /oauth2redirect: forward to OAuth redirect signal and return
   -> parse URI
   -> resolve request.json
   -> validate request_id
@@ -50,26 +48,17 @@ Protocol activation
 Recommended URI forms:
 
 ```text
-net.getperf.ptune.googleoauth:/run/push?request_id=<id>&request_file=<path>
+ptune-sync://run?request_id=<id>&request_file=<path>
 ```
 
-Reserved redirect form:
+or
 
 ```text
-net.getperf.ptune.googleoauth:/oauth2redirect?code=...
+ptune-sync://push?request_id=<id>&request_file=<path>
+ptune-sync://auth-login?request_id=<id>&request_file=<path>
 ```
 
-Rules:
-
-- `/oauth2redirect` MUST bypass run-command dispatch
-- `/run/...` MUST be treated as command activation
-- old flat paths such as `/auth` or `/export` MAY remain only as temporary compatibility aliases during migration
-
-Recommended normalization:
-
-- `namespace = "run"`
-- `command = "push" | "pull" | "diff" | "review" | "auth/login" | "auth/status"`
-- `raw_path = "run/push"` for logging
+The dispatcher SHOULD normalize both styles to the same internal command model.
 
 ## Request Validation Rules
 
@@ -83,23 +72,6 @@ The dispatcher SHOULD reject the request when:
 - `workspace.status_file` is missing
 
 Validation failure SHOULD result in writing an error `status.json` when possible.
-
-## Path Routing Rules
-
-Recommended path handling order:
-
-1. `/oauth2redirect`
-   - do not create or read `request.json`
-   - forward to OAuth redirect handling only
-2. `/run/...`
-   - treat as a run command
-   - validate `request_id` and `request_file`
-   - dispatch through the request/status contract
-3. legacy flat paths
-   - only if compatibility mode is still enabled
-   - normalize internally to the equivalent `/run/...` command
-
-This keeps Google OAuth redirect handling isolated from general command execution.
 
 ## Idempotency Rules
 
@@ -165,7 +137,7 @@ This write is the handshake that allows the caller to stop startup retry.
 Suggested split:
 
 - `ProtocolDispatcher`
-  - activation entry, path routing, and idempotency
+  - activation entry and idempotency
 - `RequestReader`
   - reads and validates `request.json`
 - `StatusWriter`
@@ -204,4 +176,4 @@ This document does not yet define:
 
 - exact WinUI class names
 - packaged vs unpackaged app differences
-- how legacy flat paths are removed after migration
+- how OAuth browser redirects are resumed internally

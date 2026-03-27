@@ -103,3 +103,4 @@ export class Logger {
 		this.log("error", ...args);
 	}
 }
+

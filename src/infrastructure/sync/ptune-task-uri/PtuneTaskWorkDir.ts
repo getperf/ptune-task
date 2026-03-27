@@ -10,6 +10,25 @@ export class PtuneTaskWorkDir {
     }
   }
 
+  async ensureConfigDirExists(): Promise<void> {
+    await this.ensureRootExists();
+    const configDir = this.getConfigRelative();
+    if (!(await this.app.vault.adapter.exists(configDir))) {
+      await this.app.vault.adapter.mkdir(configDir);
+    }
+  }
+
+  async ensureRunCleanupConfigExists(): Promise<void> {
+    await this.ensureConfigDirExists();
+    const configPath = this.getRunCleanupConfigRelative();
+    if (!(await this.app.vault.adapter.exists(configPath))) {
+      await this.app.vault.adapter.write(
+        configPath,
+        `${JSON.stringify({ profile: "prod" }, null, 2)}\n`,
+      );
+    }
+  }
+
   async ensureRunDirExists(requestId: string): Promise<void> {
     await this.ensureRootExists();
     const runsDir = this.getRunsRelative();
@@ -38,6 +57,22 @@ export class PtuneTaskWorkDir {
     return normalizePath(`${this.getRootAbsolute()}/runs`);
   }
 
+  getConfigRelative(): string {
+    return normalizePath(`${this.getRootRelative()}/config`);
+  }
+
+  getConfigAbsolute(): string {
+    return normalizePath(`${this.getRootAbsolute()}/config`);
+  }
+
+  getRunCleanupConfigRelative(): string {
+    return normalizePath(`${this.getConfigRelative()}/run-cleanup.json`);
+  }
+
+  getRunCleanupConfigAbsolute(): string {
+    return normalizePath(`${this.getConfigAbsolute()}/run-cleanup.json`);
+  }
+
   getRunDirRelative(requestId: string): string {
     return normalizePath(`${this.getRunsRelative()}/${requestId}`);
   }
@@ -60,6 +95,14 @@ export class PtuneTaskWorkDir {
 
   getStatusFileAbsolute(requestId: string): string {
     return normalizePath(`${this.getRunDirAbsolute(requestId)}/status.json`);
+  }
+
+  getInputFileRelative(requestId: string): string {
+    return normalizePath(`${this.getRunDirRelative(requestId)}/input.json`);
+  }
+
+  getInputFileAbsolute(requestId: string): string {
+    return normalizePath(`${this.getRunDirAbsolute(requestId)}/input.json`);
   }
 
   private getBasePath(): string {

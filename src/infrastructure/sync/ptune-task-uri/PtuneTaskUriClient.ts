@@ -11,6 +11,7 @@ import { PtuneTaskRequestFileWriter } from "./PtuneTaskRequestFileWriter";
 import { PtuneTaskStatusWatcher } from "./PtuneTaskStatusWatcher";
 import { PtuneTaskUriBuilder } from "./PtuneTaskUriBuilder";
 import { PtuneTaskWorkDir } from "./PtuneTaskWorkDir";
+import { PtuneTaskRunCleanupService } from "./PtuneTaskRunCleanupService";
 
 export class PtuneTaskUriClient implements PtuneSyncClient {
   private readonly workDir: PtuneTaskWorkDir;
@@ -18,6 +19,7 @@ export class PtuneTaskUriClient implements PtuneSyncClient {
   private readonly builder: PtuneTaskUriBuilder;
   private readonly launcher: PtuneSyncUriLauncher;
   private readonly watcher: PtuneTaskStatusWatcher;
+  private readonly cleanupService: PtuneTaskRunCleanupService;
 
   constructor(
     app: App,
@@ -28,9 +30,11 @@ export class PtuneTaskUriClient implements PtuneSyncClient {
     this.builder = new PtuneTaskUriBuilder();
     this.launcher = new PtuneSyncUriLauncher();
     this.watcher = new PtuneTaskStatusWatcher(app, this.workDir);
+    this.cleanupService = new PtuneTaskRunCleanupService(app, this.workDir);
   }
 
   async authStatus<TData>(): Promise<PtuneSyncStatusEnvelope<TData>> {
+    await this.cleanupService.cleanupBeforeRun();
     const prepared = await this.writer.write("auth-status");
     const uri = this.builder.buildAuthStatus(prepared.requestId, prepared.requestFile);
 
@@ -49,6 +53,7 @@ export class PtuneTaskUriClient implements PtuneSyncClient {
   }
 
   async authLogin<TData>(): Promise<PtuneSyncStatusEnvelope<TData>> {
+    await this.cleanupService.cleanupBeforeRun();
     const prepared = await this.writer.write("auth-login");
     const uri = this.builder.buildAuthLogin(prepared.requestId, prepared.requestFile);
 
@@ -66,9 +71,23 @@ export class PtuneTaskUriClient implements PtuneSyncClient {
     return this.watcher.waitForAuthLoginCompletion<TData>(prepared.requestId, baseline);
   }
 
-  pull<TData>(query: PullQuery): Promise<PtuneSyncStatusEnvelope<TData>> {
-    logger.debug("[Sync] [PtuneTaskUriClient] pull delegated to legacy URI client");
-    return this.client.pull<TData>(query);
+  async pull<TData>(query: PullQuery): Promise<PtuneSyncStatusEnvelope<TData>> {
+    await this.cleanupService.cleanupBeforeRun();
+    const prepared = await this.writer.writePull(query);
+    const uri = this.builder.buildPull(prepared.requestId, prepared.requestFile);
+
+    logger.info(
+      `[Sync] [PtuneTaskUriClient] pull start requestId=${prepared.requestId} list=${query.list}`,
+    );
+    logger.debug(
+      `[Sync] [PtuneTaskUriClient] pull requestFile=${prepared.requestFile} statusFile=${prepared.statusFile}`,
+    );
+    logger.debug(`[Sync] [PtuneTaskUriClient] pull uri=${uri}`);
+
+    const baseline = new Date();
+    await this.launcher.launch(uri);
+    await this.watcher.waitForAccepted<TData>(prepared.requestId, baseline);
+    return this.watcher.waitForCompletion<TData>(prepared.requestId, baseline);
   }
 
   review<TData>(query: ReviewQuery): Promise<PtuneSyncStatusEnvelope<TData>> {
@@ -76,19 +95,47 @@ export class PtuneTaskUriClient implements PtuneSyncClient {
     return this.client.review<TData>(query);
   }
 
-  diff<TData>(
+  async diff<TData>(
     payload: string,
     query: PushQuery,
   ): Promise<PtuneSyncStatusEnvelope<TData>> {
-    logger.debug("[Sync] [PtuneTaskUriClient] diff delegated to legacy URI client");
-    return this.client.diff<TData>(payload, query);
+    await this.cleanupService.cleanupBeforeRun();
+    const prepared = await this.writer.writeDiff(query, payload);
+    const uri = this.builder.buildDiff(prepared.requestId, prepared.requestFile);
+
+    logger.info(
+      `[Sync] [PtuneTaskUriClient] diff start requestId=${prepared.requestId} list=${query.list}`,
+    );
+    logger.debug(
+      `[Sync] [PtuneTaskUriClient] diff requestFile=${prepared.requestFile} statusFile=${prepared.statusFile} inputFile=${prepared.inputFile}`,
+    );
+    logger.debug(`[Sync] [PtuneTaskUriClient] diff uri=${uri}`);
+
+    const baseline = new Date();
+    await this.launcher.launch(uri);
+    await this.watcher.waitForAccepted<TData>(prepared.requestId, baseline);
+    return this.watcher.waitForCompletion<TData>(prepared.requestId, baseline);
   }
 
-  push<TData>(
+  async push<TData>(
     payload: string,
     query: PushQuery,
   ): Promise<PtuneSyncStatusEnvelope<TData>> {
-    logger.debug("[Sync] [PtuneTaskUriClient] push delegated to legacy URI client");
-    return this.client.push<TData>(payload, query);
+    await this.cleanupService.cleanupBeforeRun();
+    const prepared = await this.writer.writePush(query, payload);
+    const uri = this.builder.buildPush(prepared.requestId, prepared.requestFile);
+
+    logger.info(
+      `[Sync] [PtuneTaskUriClient] push start requestId=${prepared.requestId} list=${query.list} allowDelete=${query.allowDelete === true}`,
+    );
+    logger.debug(
+      `[Sync] [PtuneTaskUriClient] push requestFile=${prepared.requestFile} statusFile=${prepared.statusFile} inputFile=${prepared.inputFile}`,
+    );
+    logger.debug(`[Sync] [PtuneTaskUriClient] push uri=${uri}`);
+
+    const baseline = new Date();
+    await this.launcher.launch(uri);
+    await this.watcher.waitForAccepted<TData>(prepared.requestId, baseline);
+    return this.watcher.waitForCompletion<TData>(prepared.requestId, baseline);
   }
 }

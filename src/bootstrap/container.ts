@@ -31,6 +31,9 @@ import { ReviewPointXMindInputFileService } from "../infrastructure/review/Revie
 import { SetupChecklistService } from "../application/setup/services/SetupChecklistService";
 import { NoteSetupHelper } from "../infrastructure/setup/NoteSetupHelper";
 import { SetupWizardDialog } from "../presentation/setup/SetupWizardDialog";
+import { PtuneSyncDiffCheckCommand } from "../presentation/diff/PtuneSyncDiffCheckCommand";
+import { PtuneTaskRunCleanupService } from "../infrastructure/sync/ptune-task-uri/PtuneTaskRunCleanupService";
+import { CleanupSyncRunsCommand } from "../presentation/maintenance/CleanupSyncRunsCommand";
 
 export class Container {
   private readonly runtime: PtuneRuntime;
@@ -59,6 +62,20 @@ export class Container {
   createPullTodayCommand(): PullTodayCommand {
     return new PullTodayCommand(
       this.syncFactory.createPullAndMergeTodayUseCase(),
+      this.presentationFactory.createObsidianPresenter(),
+    );
+  }
+
+  createDiffCheckCommand(): PtuneSyncDiffCheckCommand {
+    return new PtuneSyncDiffCheckCommand(
+      this.syncFactory.createDiffDailyNoteUseCase(),
+      this.presentationFactory.createObsidianPresenter(),
+    );
+  }
+
+  createCleanupSyncRunsCommand(): CleanupSyncRunsCommand {
+    return new CleanupSyncRunsCommand(
+      this.createRunCleanupService(),
       this.presentationFactory.createObsidianPresenter(),
     );
   }
@@ -144,6 +161,10 @@ export class Container {
 
   createAuthService(): PtuneSyncUriAuthService {
     return this.syncFactory.createAuthService();
+  }
+
+  createRunCleanupService(): PtuneTaskRunCleanupService {
+    return new PtuneTaskRunCleanupService(this.app);
   }
 
   createSetupWizardDialog(): SetupWizardDialog {

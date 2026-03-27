@@ -17,8 +17,7 @@ They are intentionally stored outside archived project copies so that:
 - `winui-uri-run-contract.md`
   - target run contract for URI-based WinUI execution
   - covers `request_id`, `request.json`, `status.json`, run directories,
-    startup retry, dispatcher idempotency, cleanup direction, and `/run/...`
-    path policy with reserved `/oauth2redirect`
+    startup retry, dispatcher idempotency, and cleanup direction
 - `contract-finalization.md`
   - concrete decision draft for Phase 1 contract finalization
   - fixes the first proposal for request/status fields, request identity,
