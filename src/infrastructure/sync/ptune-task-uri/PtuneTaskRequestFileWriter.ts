@@ -1,5 +1,6 @@
 import { PullQuery } from "../../../application/sync/shared/dto/PullQuery";
 import { PushQuery } from "../../../application/sync/shared/dto/PushQuery";
+import { ReviewQuery } from "../../../application/sync/shared/dto/ReviewQuery";
 import { App, normalizePath } from "obsidian";
 import { logger } from "../../../shared/logger/loggerInstance";
 import { PtuneTaskWorkDir } from "./PtuneTaskWorkDir";
@@ -79,6 +80,43 @@ export class PtuneTaskRequestFileWriter {
 
     logger.debug(
       `[Sync] [PtuneTaskRequestFileWriter] command=pull requestNonce=${requestNonce} requestFile=${requestFile}`,
+    );
+
+    return {
+      requestNonce,
+      requestFile: this.workDir.getRequestFileAbsolute(),
+      statusFile,
+    };
+  }
+
+  async writeReview(query: ReviewQuery): Promise<PreparedRequestFiles> {
+    await this.workDir.ensureInteropDirExists();
+
+    const requestNonce = this.generateRequestNonce();
+    const requestFile = this.workDir.getRequestFileRelative();
+    const home = this.workDir.getRootAbsolute();
+    const statusFile = this.workDir.getStatusFileAbsolute();
+    const requestPayload = {
+      schema_version: 1,
+      request_nonce: requestNonce,
+      command: "review",
+      created_at: new Date().toISOString(),
+      home,
+      status_file: statusFile,
+      workspace: {
+        status_file: statusFile,
+      },
+      args: {
+        preset: query.preset ?? (query.date ? "date" : "today"),
+        date: query.date ?? "",
+        list: query.list,
+      },
+    };
+
+    await this.writeAtomic(requestFile, JSON.stringify(requestPayload, null, 2));
+
+    logger.debug(
+      `[Sync] [PtuneTaskRequestFileWriter] command=review requestNonce=${requestNonce} requestFile=${requestFile}`,
     );
 
     return {

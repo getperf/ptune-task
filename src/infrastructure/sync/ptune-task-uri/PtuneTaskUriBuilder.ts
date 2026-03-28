@@ -11,6 +11,10 @@ export class PtuneTaskUriBuilder {
     return this.buildRunUri("pull", requestFile);
   }
 
+  buildReview(requestFile: string): string {
+    return this.buildRunUri("review", requestFile);
+  }
+
   buildDiff(requestFile: string): string {
     return this.buildRunUri("diff", requestFile);
   }

@@ -90,9 +90,23 @@ export class PtuneTaskUriClient implements PtuneSyncClient {
     return this.watcher.waitForCompletion<TData>(prepared.requestNonce, baseline);
   }
 
-  review<TData>(query: ReviewQuery): Promise<PtuneSyncStatusEnvelope<TData>> {
-    logger.debug("[Sync] [PtuneTaskUriClient] review delegated to legacy URI client");
-    return this.client.review<TData>(query);
+  async review<TData>(query: ReviewQuery): Promise<PtuneSyncStatusEnvelope<TData>> {
+    await this.cleanupService.cleanupBeforeRun();
+    const prepared = await this.writer.writeReview(query);
+    const uri = this.builder.buildReview(prepared.requestFile);
+
+    logger.info(
+      `[Sync] [PtuneTaskUriClient] review start requestNonce=${prepared.requestNonce} list=${query.list} preset=${query.preset ?? "today"} date=${query.date ?? ""}`,
+    );
+    logger.debug(
+      `[Sync] [PtuneTaskUriClient] review requestFile=${prepared.requestFile} statusFile=${prepared.statusFile}`,
+    );
+    logger.debug(`[Sync] [PtuneTaskUriClient] review uri=${uri}`);
+
+    const baseline = new Date();
+    await this.launcher.launch(uri);
+    await this.watcher.waitForAccepted<TData>(prepared.requestNonce, baseline);
+    return this.watcher.waitForCompletion<TData>(prepared.requestNonce, baseline);
   }
 
   async diff<TData>(

@@ -16,6 +16,12 @@ export function registerAllCommands(plugin: Plugin, container: Container): void 
   });
 
   plugin.addCommand({
+    id: "ptunesync-review-check",
+    name: "PtuneSync Review Check",
+    callback: () => { container.createReviewCheckCommand().execute(); },
+  });
+
+  plugin.addCommand({
     id: "cleanup-sync-runs",
     name: "Cleanup Sync Runs",
     callback: () => { container.createCleanupSyncRunsCommand().execute(); },
