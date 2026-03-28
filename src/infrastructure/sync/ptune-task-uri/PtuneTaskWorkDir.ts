@@ -10,6 +10,14 @@ export class PtuneTaskWorkDir {
     }
   }
 
+  async ensureInteropDirExists(): Promise<void> {
+    await this.ensureRootExists();
+    const interopDir = this.getInteropRelative();
+    if (!(await this.app.vault.adapter.exists(interopDir))) {
+      await this.app.vault.adapter.mkdir(interopDir);
+    }
+  }
+
   async ensureConfigDirExists(): Promise<void> {
     await this.ensureRootExists();
     const configDir = this.getConfigRelative();
@@ -49,6 +57,14 @@ export class PtuneTaskWorkDir {
     return normalizePath(`${this.getBasePath()}/${this.getRootRelative()}`);
   }
 
+  getInteropRelative(): string {
+    return normalizePath(`${this.getRootRelative()}/interop`);
+  }
+
+  getInteropAbsolute(): string {
+    return normalizePath(`${this.getRootAbsolute()}/interop`);
+  }
+
   getRunsRelative(): string {
     return normalizePath(`${this.getRootRelative()}/runs`);
   }
@@ -81,28 +97,28 @@ export class PtuneTaskWorkDir {
     return normalizePath(`${this.getRunsAbsolute()}/${requestId}`);
   }
 
-  getRequestFileRelative(requestId: string): string {
-    return normalizePath(`${this.getRunDirRelative(requestId)}/request.json`);
+  getRequestFileRelative(): string {
+    return normalizePath(`${this.getInteropRelative()}/request.json`);
   }
 
-  getRequestFileAbsolute(requestId: string): string {
-    return normalizePath(`${this.getRunDirAbsolute(requestId)}/request.json`);
+  getRequestFileAbsolute(): string {
+    return normalizePath(`${this.getInteropAbsolute()}/request.json`);
   }
 
-  getStatusFileRelative(requestId: string): string {
-    return normalizePath(`${this.getRunDirRelative(requestId)}/status.json`);
+  getStatusFileRelative(): string {
+    return normalizePath(`${this.getInteropRelative()}/status.json`);
   }
 
-  getStatusFileAbsolute(requestId: string): string {
-    return normalizePath(`${this.getRunDirAbsolute(requestId)}/status.json`);
+  getStatusFileAbsolute(): string {
+    return normalizePath(`${this.getInteropAbsolute()}/status.json`);
   }
 
-  getInputFileRelative(requestId: string): string {
-    return normalizePath(`${this.getRunDirRelative(requestId)}/input.json`);
+  getInputFileRelative(): string {
+    return normalizePath(`${this.getInteropRelative()}/input.json`);
   }
 
-  getInputFileAbsolute(requestId: string): string {
-    return normalizePath(`${this.getRunDirAbsolute(requestId)}/input.json`);
+  getInputFileAbsolute(): string {
+    return normalizePath(`${this.getInteropAbsolute()}/input.json`);
   }
 
   private getBasePath(): string {

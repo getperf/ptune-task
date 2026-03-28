@@ -16,42 +16,42 @@ export class PtuneTaskStatusWatcher {
   ) {}
 
   async waitForAccepted<TData>(
-    requestId: string,
+    requestNonce: string,
     baseline: Date,
   ): Promise<PtuneSyncStatusEnvelope<TData>> {
-    return this.waitFor(requestId, baseline, this.startupTimeoutMs, (envelope) =>
+    return this.waitFor(requestNonce, baseline, this.startupTimeoutMs, (envelope) =>
       envelope.phase === "accepted"
       || envelope.phase === "running"
       || envelope.phase === "completed");
   }
 
   async waitForCompletion<TData>(
-    requestId: string,
+    requestNonce: string,
     baseline: Date,
   ): Promise<PtuneSyncStatusEnvelope<TData>> {
-    return this.waitForCompletionWithTimeout(requestId, baseline, this.completionTimeoutMs);
+    return this.waitForCompletionWithTimeout(requestNonce, baseline, this.completionTimeoutMs);
   }
 
   async waitForAuthLoginCompletion<TData>(
-    requestId: string,
+    requestNonce: string,
     baseline: Date,
   ): Promise<PtuneSyncStatusEnvelope<TData>> {
-    return this.waitForCompletionWithTimeout(requestId, baseline, this.authLoginTimeoutMs);
+    return this.waitForCompletionWithTimeout(requestNonce, baseline, this.authLoginTimeoutMs);
   }
 
   private async waitForCompletionWithTimeout<TData>(
-    requestId: string,
+    requestNonce: string,
     baseline: Date,
     timeoutMs: number,
   ): Promise<PtuneSyncStatusEnvelope<TData>> {
-    return this.waitFor(requestId, baseline, timeoutMs, (envelope) =>
+    return this.waitFor(requestNonce, baseline, timeoutMs, (envelope) =>
       envelope.phase === "completed"
       || envelope.status === "success"
       || envelope.status === "error");
   }
 
   private async waitFor<TData>(
-    requestId: string,
+    requestNonce: string,
     baseline: Date,
     timeoutMs: number,
     predicate: (envelope: PtuneSyncStatusEnvelope<TData>) => boolean,
@@ -59,8 +59,8 @@ export class PtuneTaskStatusWatcher {
     const timeoutAt = Date.now() + timeoutMs;
 
     while (Date.now() < timeoutAt) {
-      const envelope = await this.tryRead<TData>(requestId);
-      if (!envelope || !this.isNewer(envelope, baseline) || !this.matchesRequest(envelope, requestId)) {
+      const envelope = await this.tryRead<TData>(requestNonce);
+      if (!envelope || !this.isNewer(envelope, baseline) || !this.matchesRequest(envelope, requestNonce)) {
         await this.delay(this.pollIntervalMs);
         continue;
       }
@@ -76,8 +76,8 @@ export class PtuneTaskStatusWatcher {
     throw new Error("ptune-task status wait timed out");
   }
 
-  private async tryRead<TData>(requestId: string): Promise<PtuneSyncStatusEnvelope<TData> | null> {
-    const path = this.workDir.getStatusFileRelative(requestId);
+  private async tryRead<TData>(requestNonce: string): Promise<PtuneSyncStatusEnvelope<TData> | null> {
+    const path = this.workDir.getStatusFileRelative();
 
     if (!(await this.app.vault.adapter.exists(path))) {
       return null;
@@ -87,7 +87,7 @@ export class PtuneTaskStatusWatcher {
       const raw = await this.app.vault.adapter.read(path);
       const envelope = PtuneSyncStatusParser.parse<TData>(raw);
       logger.debug(
-        `[Sync] [PtuneTaskStatusWatcher] requestId=${requestId} phase=${envelope.phase ?? "<none>"} status=${envelope.status}`,
+        `[Sync] [PtuneTaskStatusWatcher] requestNonce=${requestNonce} envelopeNonce=${envelope.request_nonce ?? "<none>"} phase=${envelope.phase ?? "<none>"} status=${envelope.status}`,
       );
       return envelope;
     } catch {
@@ -95,8 +95,12 @@ export class PtuneTaskStatusWatcher {
     }
   }
 
-  private matchesRequest(envelope: PtuneSyncStatusEnvelope, requestId: string): boolean {
-    return !envelope.request_id || envelope.request_id === requestId;
+  private matchesRequest(envelope: PtuneSyncStatusEnvelope, requestNonce: string): boolean {
+    if (envelope.request_nonce) {
+      return envelope.request_nonce === requestNonce;
+    }
+
+    return !envelope.request_id || envelope.request_id === requestNonce;
   }
 
   private isNewer(envelope: PtuneSyncStatusEnvelope, baseline: Date): boolean {

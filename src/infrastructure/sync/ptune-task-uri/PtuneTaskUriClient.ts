@@ -36,10 +36,10 @@ export class PtuneTaskUriClient implements PtuneSyncClient {
   async authStatus<TData>(): Promise<PtuneSyncStatusEnvelope<TData>> {
     await this.cleanupService.cleanupBeforeRun();
     const prepared = await this.writer.write("auth-status");
-    const uri = this.builder.buildAuthStatus(prepared.requestId, prepared.requestFile);
+    const uri = this.builder.buildAuthStatus(prepared.requestFile);
 
     logger.info(
-      `[Sync] [PtuneTaskUriClient] authStatus start requestId=${prepared.requestId}`,
+      `[Sync] [PtuneTaskUriClient] authStatus start requestNonce=${prepared.requestNonce}`,
     );
     logger.debug(
       `[Sync] [PtuneTaskUriClient] authStatus requestFile=${prepared.requestFile} statusFile=${prepared.statusFile}`,
@@ -48,17 +48,17 @@ export class PtuneTaskUriClient implements PtuneSyncClient {
 
     const baseline = new Date();
     await this.launcher.launch(uri);
-    await this.watcher.waitForAccepted<TData>(prepared.requestId, baseline);
-    return this.watcher.waitForCompletion<TData>(prepared.requestId, baseline);
+    await this.watcher.waitForAccepted<TData>(prepared.requestNonce, baseline);
+    return this.watcher.waitForCompletion<TData>(prepared.requestNonce, baseline);
   }
 
   async authLogin<TData>(): Promise<PtuneSyncStatusEnvelope<TData>> {
     await this.cleanupService.cleanupBeforeRun();
     const prepared = await this.writer.write("auth-login");
-    const uri = this.builder.buildAuthLogin(prepared.requestId, prepared.requestFile);
+    const uri = this.builder.buildAuthLogin(prepared.requestFile);
 
     logger.info(
-      `[Sync] [PtuneTaskUriClient] authLogin start requestId=${prepared.requestId}`,
+      `[Sync] [PtuneTaskUriClient] authLogin start requestNonce=${prepared.requestNonce}`,
     );
     logger.debug(
       `[Sync] [PtuneTaskUriClient] authLogin requestFile=${prepared.requestFile} statusFile=${prepared.statusFile}`,
@@ -67,17 +67,17 @@ export class PtuneTaskUriClient implements PtuneSyncClient {
 
     const baseline = new Date();
     await this.launcher.launch(uri);
-    await this.watcher.waitForAccepted<TData>(prepared.requestId, baseline);
-    return this.watcher.waitForAuthLoginCompletion<TData>(prepared.requestId, baseline);
+    await this.watcher.waitForAccepted<TData>(prepared.requestNonce, baseline);
+    return this.watcher.waitForAuthLoginCompletion<TData>(prepared.requestNonce, baseline);
   }
 
   async pull<TData>(query: PullQuery): Promise<PtuneSyncStatusEnvelope<TData>> {
     await this.cleanupService.cleanupBeforeRun();
     const prepared = await this.writer.writePull(query);
-    const uri = this.builder.buildPull(prepared.requestId, prepared.requestFile);
+    const uri = this.builder.buildPull(prepared.requestFile);
 
     logger.info(
-      `[Sync] [PtuneTaskUriClient] pull start requestId=${prepared.requestId} list=${query.list}`,
+      `[Sync] [PtuneTaskUriClient] pull start requestNonce=${prepared.requestNonce} list=${query.list}`,
     );
     logger.debug(
       `[Sync] [PtuneTaskUriClient] pull requestFile=${prepared.requestFile} statusFile=${prepared.statusFile}`,
@@ -86,8 +86,8 @@ export class PtuneTaskUriClient implements PtuneSyncClient {
 
     const baseline = new Date();
     await this.launcher.launch(uri);
-    await this.watcher.waitForAccepted<TData>(prepared.requestId, baseline);
-    return this.watcher.waitForCompletion<TData>(prepared.requestId, baseline);
+    await this.watcher.waitForAccepted<TData>(prepared.requestNonce, baseline);
+    return this.watcher.waitForCompletion<TData>(prepared.requestNonce, baseline);
   }
 
   review<TData>(query: ReviewQuery): Promise<PtuneSyncStatusEnvelope<TData>> {
@@ -101,10 +101,10 @@ export class PtuneTaskUriClient implements PtuneSyncClient {
   ): Promise<PtuneSyncStatusEnvelope<TData>> {
     await this.cleanupService.cleanupBeforeRun();
     const prepared = await this.writer.writeDiff(query, payload);
-    const uri = this.builder.buildDiff(prepared.requestId, prepared.requestFile);
+    const uri = this.builder.buildDiff(prepared.requestFile);
 
     logger.info(
-      `[Sync] [PtuneTaskUriClient] diff start requestId=${prepared.requestId} list=${query.list}`,
+      `[Sync] [PtuneTaskUriClient] diff start requestNonce=${prepared.requestNonce} list=${query.list}`,
     );
     logger.debug(
       `[Sync] [PtuneTaskUriClient] diff requestFile=${prepared.requestFile} statusFile=${prepared.statusFile} inputFile=${prepared.inputFile}`,
@@ -113,8 +113,8 @@ export class PtuneTaskUriClient implements PtuneSyncClient {
 
     const baseline = new Date();
     await this.launcher.launch(uri);
-    await this.watcher.waitForAccepted<TData>(prepared.requestId, baseline);
-    return this.watcher.waitForCompletion<TData>(prepared.requestId, baseline);
+    await this.watcher.waitForAccepted<TData>(prepared.requestNonce, baseline);
+    return this.watcher.waitForCompletion<TData>(prepared.requestNonce, baseline);
   }
 
   async push<TData>(
@@ -123,10 +123,10 @@ export class PtuneTaskUriClient implements PtuneSyncClient {
   ): Promise<PtuneSyncStatusEnvelope<TData>> {
     await this.cleanupService.cleanupBeforeRun();
     const prepared = await this.writer.writePush(query, payload);
-    const uri = this.builder.buildPush(prepared.requestId, prepared.requestFile);
+    const uri = this.builder.buildPush(prepared.requestFile);
 
     logger.info(
-      `[Sync] [PtuneTaskUriClient] push start requestId=${prepared.requestId} list=${query.list} allowDelete=${query.allowDelete === true}`,
+      `[Sync] [PtuneTaskUriClient] push start requestNonce=${prepared.requestNonce} list=${query.list} allowDelete=${query.allowDelete === true}`,
     );
     logger.debug(
       `[Sync] [PtuneTaskUriClient] push requestFile=${prepared.requestFile} statusFile=${prepared.statusFile} inputFile=${prepared.inputFile}`,
@@ -135,7 +135,7 @@ export class PtuneTaskUriClient implements PtuneSyncClient {
 
     const baseline = new Date();
     await this.launcher.launch(uri);
-    await this.watcher.waitForAccepted<TData>(prepared.requestId, baseline);
-    return this.watcher.waitForCompletion<TData>(prepared.requestId, baseline);
+    await this.watcher.waitForAccepted<TData>(prepared.requestNonce, baseline);
+    return this.watcher.waitForCompletion<TData>(prepared.requestNonce, baseline);
   }
 }
