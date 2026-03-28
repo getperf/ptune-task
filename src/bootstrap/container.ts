@@ -34,6 +34,7 @@ import { SetupWizardDialog } from "../presentation/setup/SetupWizardDialog";
 import { PtuneSyncDiffCheckCommand } from "../presentation/diff/PtuneSyncDiffCheckCommand";
 import { PtuneTaskRunCleanupService } from "../infrastructure/sync/ptune-task-uri/PtuneTaskRunCleanupService";
 import { CleanupSyncRunsCommand } from "../presentation/maintenance/CleanupSyncRunsCommand";
+import { AuthLoginProgressService } from "../presentation/auth/AuthLoginProgressService";
 
 export class Container {
   private readonly runtime: PtuneRuntime;
@@ -161,6 +162,10 @@ export class Container {
 
   createAuthService(): PtuneSyncUriAuthService {
     return this.syncFactory.createAuthService();
+  }
+
+  createAuthLoginProgressService(): AuthLoginProgressService {
+    return new AuthLoginProgressService(this.app);
   }
 
   createRunCleanupService(): PtuneTaskRunCleanupService {

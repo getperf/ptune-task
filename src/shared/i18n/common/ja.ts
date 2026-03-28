@@ -158,6 +158,32 @@ export const commonJa = {
 		},
 	},
 
+	auth: {
+		progress: {
+			title: "Google 認証を実行中",
+			subtitle: "ブラウザでログインを完了してください。",
+			statusLabel: "現在の状態",
+			instructionTitle: "操作案内",
+			hintTitle: "うまく進まない場合",
+			running: "ブラウザで認証を進めています...",
+			browserInstruction: "ブラウザで Google 認証を完了してください。",
+			backButtonHint: "反応が止まったように見える場合は、ブラウザの戻るボタンで戻ってから続行すると完了できることがあります。",
+			autoClose: "認証が完了するとこの画面は自動で閉じます。",
+			completed: "Google 認証が完了しました。まもなく閉じます",
+			failed: "Google 認証に失敗しました",
+			timedOut: "Google 認証がタイムアウトしました。ブラウザの状態を確認して、必要なら再度お試しください。",
+		},
+		notice: {
+			loginSucceeded: "Google 認証が完了しました。",
+			loginFailed: "Google 認証に失敗しました",
+			loginCancelled: "Google 認証の待機を終了しました。",
+			loginTimedOut: "Google 認証がタイムアウトしました。ブラウザの状態を確認して、必要なら再度お試しください。",
+			authenticated: "認証済みです",
+			authenticatedWithEmail: "認証済み",
+			notAuthenticated: "未認証です。ログインしてください。",
+		},
+	},
+
 	push: {
 		confirm: {
 			planning: {

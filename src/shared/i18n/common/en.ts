@@ -160,6 +160,32 @@ export const commonEn = {
 		},
 	},
 
+	auth: {
+		progress: {
+			title: "Running Google Sign-in",
+			subtitle: "Complete the browser sign-in flow to continue.",
+			statusLabel: "Current status",
+			instructionTitle: "What to do",
+			hintTitle: "If it looks stuck",
+			running: "Continuing authentication in your browser...",
+			browserInstruction: "Complete the Google sign-in flow in your browser.",
+			backButtonHint: "If the browser looks stuck, going back once and continuing again may allow the sign-in to complete.",
+			autoClose: "This dialog closes automatically after authentication completes.",
+			completed: "Google sign-in completed. Closing shortly",
+			failed: "Google sign-in failed",
+			timedOut: "Google sign-in timed out. Check the browser state and try again if needed.",
+		},
+		notice: {
+			loginSucceeded: "Google login successful.",
+			loginFailed: "Login failed",
+			loginCancelled: "Stopped waiting for Google sign-in.",
+			loginTimedOut: "Google sign-in timed out. Check the browser state and try again if needed.",
+			authenticated: "Authenticated",
+			authenticatedWithEmail: "Authenticated",
+			notAuthenticated: "Not authenticated. Please login.",
+		},
+	},
+
 	push: {
 		confirm: {
 			planning: {

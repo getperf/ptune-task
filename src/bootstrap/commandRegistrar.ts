@@ -38,10 +38,11 @@ export function registerAllCommands(plugin: Plugin, container: Container): void 
     name: "Login",
     callback: async () => {
       try {
-        await container.createAuthService().login();
-        new Notice("Google login successful.");
+        await container.createAuthLoginProgressService().run(() =>
+          container.createAuthService().login());
+        new Notice(i18n.common.auth.notice.loginSucceeded);
       } catch (e: unknown) {
-        new Notice(`Login failed: ${e instanceof Error ? e.message : String(e)}`);
+        new Notice(`${i18n.common.auth.notice.loginFailed}: ${e instanceof Error ? e.message : String(e)}`);
       }
     },
   });
@@ -53,13 +54,15 @@ export function registerAllCommands(plugin: Plugin, container: Container): void 
       try {
         const result = await container.createAuthService().status();
         if (result.authenticated) {
-          new Notice(result.email ? `Authenticated: ${result.email}` : "Authenticated");
+          new Notice(result.email
+            ? `${i18n.common.auth.notice.authenticatedWithEmail}: ${result.email}`
+            : i18n.common.auth.notice.authenticated);
           return;
         }
 
-        new Notice("Not authenticated. Please login.");
+        new Notice(i18n.common.auth.notice.notAuthenticated);
       } catch {
-        new Notice("Not authenticated. Please login.");
+        new Notice(i18n.common.auth.notice.notAuthenticated);
       }
     },
   });
