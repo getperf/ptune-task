@@ -32,7 +32,11 @@ export class GenerateDailyReviewUseCase {
     logger.info("GenerateDailyReviewUseCase started");
 
     // 1) review 取得
-    const json = await this.ptuneSync.review({ list } as ReviewQuery);
+    const json = await this.ptuneSync.review({
+      preset: "date",
+      date,
+      list,
+    } as ReviewQuery);
     const parsed = JSON.parse(json) as ReviewResponse;
 
     const tasks = parsed.tasks ?? [];

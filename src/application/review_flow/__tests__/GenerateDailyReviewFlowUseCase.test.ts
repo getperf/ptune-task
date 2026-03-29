@@ -3,12 +3,16 @@ import { CreateDailyNoteUseCase } from "../../calendar/usecases/CreateDailyNoteU
 import { GenerateDailyNotesReviewUseCase } from "../../daily_notes_review/usecases/GenerateDailyNotesReviewUseCase";
 import { TextGenerationPort } from "../../llm/ports/TextGenerationPort";
 import { GenerateDailyReviewUseCase } from "../../review/usecases/GenerateDailyReviewUseCase";
+import { PullAndMergeTodayUseCase } from "../../sync/pull/PullAndMergeTodayUseCase";
 import { getDefaultTaskListId } from "../../sync/shared/DefaultTaskListId";
 import { GenerateDailyReviewFlowUseCase } from "../usecases/GenerateDailyReviewFlowUseCase";
 
 describe("GenerateDailyReviewFlowUseCase", () => {
   test("can skip both reviews independently", async () => {
     const note = new DailyNote("2026-03-16", "daily/2026-03-16.md", "");
+    const pullAndMergeTodayUseCase = {
+      execute: jest.fn(),
+    } as unknown as PullAndMergeTodayUseCase;
     const taskReviewUseCase = {
       execute: jest.fn(),
     } as unknown as GenerateDailyReviewUseCase;
@@ -23,6 +27,7 @@ describe("GenerateDailyReviewFlowUseCase", () => {
     } as unknown as TextGenerationPort;
 
     const useCase = new GenerateDailyReviewFlowUseCase(
+      pullAndMergeTodayUseCase,
       taskReviewUseCase,
       dailyNotesReviewUseCase,
       createDailyNoteUseCase,
@@ -37,6 +42,7 @@ describe("GenerateDailyReviewFlowUseCase", () => {
     });
 
     expect(taskReviewUseCase.execute).not.toHaveBeenCalled();
+    expect(pullAndMergeTodayUseCase.execute).not.toHaveBeenCalled();
     expect(dailyNotesReviewUseCase.execute).not.toHaveBeenCalled();
     expect(createDailyNoteUseCase.execute).toHaveBeenCalledWith("2026-03-16");
     expect(result).toEqual({
@@ -56,6 +62,9 @@ describe("GenerateDailyReviewFlowUseCase", () => {
 
   test("runs daily notes review without llm summaries when llm is unavailable", async () => {
     const taskNote = new DailyNote("2026-03-16", "daily/2026-03-16.md", "");
+    const pullAndMergeTodayUseCase = {
+      execute: jest.fn().mockResolvedValue({ note: taskNote, created: false }),
+    } as unknown as PullAndMergeTodayUseCase;
     const taskReviewUseCase = {
       execute: jest.fn().mockResolvedValue({ note: taskNote, taskCount: 2 }),
     } as unknown as GenerateDailyReviewUseCase;
@@ -74,6 +83,7 @@ describe("GenerateDailyReviewFlowUseCase", () => {
     } as unknown as TextGenerationPort;
 
     const useCase = new GenerateDailyReviewFlowUseCase(
+      pullAndMergeTodayUseCase,
       taskReviewUseCase,
       dailyNotesReviewUseCase,
       createDailyNoteUseCase,
@@ -87,6 +97,7 @@ describe("GenerateDailyReviewFlowUseCase", () => {
       reviewPointOutputFormat: "outline",
     });
 
+    expect(pullAndMergeTodayUseCase.execute).toHaveBeenCalledTimes(1);
     expect(taskReviewUseCase.execute).toHaveBeenCalledWith(
       "2026-03-16",
       getDefaultTaskListId(),
@@ -116,6 +127,9 @@ describe("GenerateDailyReviewFlowUseCase", () => {
   test("runs daily notes review with selected format", async () => {
     const taskNote = new DailyNote("2026-03-16", "daily/2026-03-16.md", "task");
     const finalNote = new DailyNote("2026-03-16", "daily/2026-03-16.md", "final");
+    const pullAndMergeTodayUseCase = {
+      execute: jest.fn().mockResolvedValue({ note: taskNote, created: false }),
+    } as unknown as PullAndMergeTodayUseCase;
     const taskReviewUseCase = {
       execute: jest.fn().mockResolvedValue({ note: taskNote, taskCount: 5 }),
     } as unknown as GenerateDailyReviewUseCase;
@@ -134,6 +148,7 @@ describe("GenerateDailyReviewFlowUseCase", () => {
     } as unknown as TextGenerationPort;
 
     const useCase = new GenerateDailyReviewFlowUseCase(
+      pullAndMergeTodayUseCase,
       taskReviewUseCase,
       dailyNotesReviewUseCase,
       createDailyNoteUseCase,
@@ -147,6 +162,7 @@ describe("GenerateDailyReviewFlowUseCase", () => {
       reviewPointOutputFormat: "xmind",
     });
 
+    expect(pullAndMergeTodayUseCase.execute).toHaveBeenCalledTimes(1);
     expect(dailyNotesReviewUseCase.execute).toHaveBeenCalledWith(
       "2026-03-16",
       expect.objectContaining({

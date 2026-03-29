@@ -6,6 +6,7 @@ import {
 } from "../../daily_notes_review/usecases/GenerateDailyNotesReviewUseCase";
 import { TextGenerationPort } from "../../llm/ports/TextGenerationPort";
 import { GenerateDailyReviewUseCase } from "../../review/usecases/GenerateDailyReviewUseCase";
+import { PullAndMergeTodayUseCase } from "../../sync/pull/PullAndMergeTodayUseCase";
 import { getDefaultTaskListId } from "../../sync/shared/DefaultTaskListId";
 import { DailyReviewFlowProgressEvent } from "../types/DailyReviewFlowProgressEvent";
 import { DailyReviewFlowResult } from "../types/DailyReviewFlowResult";
@@ -13,6 +14,7 @@ import { ReviewFlowRunOptions } from "../types/ReviewFlowRunOptions";
 
 export class GenerateDailyReviewFlowUseCase {
   constructor(
+    private readonly pullAndMergeTodayUseCase: PullAndMergeTodayUseCase,
     private readonly taskReviewUseCase: GenerateDailyReviewUseCase,
     private readonly dailyNotesReviewUseCase: GenerateDailyNotesReviewUseCase,
     private readonly createDailyNoteUseCase: CreateDailyNoteUseCase,
@@ -33,6 +35,7 @@ export class GenerateDailyReviewFlowUseCase {
 
       if (options.taskReviewEnabled) {
         onProgress?.({ type: "task_review_started", date: options.date });
+        await this.pullAndMergeTodayUseCase.execute();
         taskReviewResult = await this.taskReviewUseCase.execute(
           options.date,
           getDefaultTaskListId(),

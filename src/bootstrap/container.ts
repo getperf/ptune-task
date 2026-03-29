@@ -162,6 +162,7 @@ export class Container {
     const llm = new LlmClient();
 
     return new GenerateDailyReviewFlowUseCase(
+      this.syncFactory.createPullAndMergeTodayUseCase(),
       this.createGenerateDailyReviewUseCase(),
       this.createGenerateDailyNotesReviewUseCase(llm),
       this.calendarFactory.createCreateDailyNoteUseCase(),
