@@ -84,4 +84,14 @@ export class ReviewTaskTree {
 
     return map;
   }
+
+  aggregateUnfinishedPomodoro(): { planned: number; actual: number } {
+    return this.unfinishedNodes().reduce(
+      (acc, node) => ({
+        planned: acc.planned + (node.pomodoroPlanned ?? 0),
+        actual: acc.actual + (node.pomodoroActual ?? 0),
+      }),
+      { planned: 0, actual: 0 },
+    );
+  }
 }
