@@ -35,6 +35,7 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 		sentenceMode: "llm",
 		noteSummaryOutputFormat: "outline",
 		reviewPointOutputFormat: "outline",
+		reviewTrendDays: 7,
 		taskReviewEnabledDefault: true,
 		notesReviewEnabledDefault: true,
 		taskReviewOutputFormat: "outline",

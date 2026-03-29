@@ -34,6 +34,7 @@ export interface ReviewSettings {
 	sentenceMode: SentenceMode;
 	noteSummaryOutputFormat: ReviewOutputFormat;
 	reviewPointOutputFormat: ReviewOutputFormat;
+	reviewTrendDays: number;
 	taskReviewEnabledDefault: boolean;
 	notesReviewEnabledDefault: boolean;
 	taskReviewOutputFormat: ReviewOutputFormat;

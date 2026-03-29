@@ -5,6 +5,7 @@ export type DailyHeadingKey =
   | "daily.section.timetable.title"
   | "daily.section.unfinished.title"
   | "daily.section.timeanalysis.title"
+  | "daily.section.trend.title"
   | "daily.section.memo.title"
   | "daily.section.tags.title"
   | "daily.section.unregistered.title"

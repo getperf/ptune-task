@@ -13,6 +13,7 @@ export const DailyHeadingConfig: Record<DailyHeadingKey, HeadingMeta> = {
   "daily.section.timetable.title": { depth: 4, icon: "🕒", },
   "daily.section.unfinished.title": { depth: 4, icon: "📦", },
   "daily.section.timeanalysis.title": { depth: 4, icon: "⏱", },
+  "daily.section.trend.title": { depth: 4, icon: "📈", },
   "daily.section.memo.title": { depth: 2, icon: "🙌", },
   "daily.section.tags.title": { depth: 3, icon: "📌", },
   "daily.section.unregistered.title": { depth: 3, icon: "⚠", },

@@ -80,6 +80,7 @@ export const commonJa = {
 			timetable: { title: "タイムテーブル" },
 			unfinished: { title: "未完了タスク" },
 			timeanalysis: { title: "時間分析" },
+			trend: { title: "日次傾向" },
 			memo: { title: "振り返りメモ" },
 			tags: { title: "タグ一覧（当日生成）" },
 			unregistered: { title: "未登録タグ候補（要レビュー）" },

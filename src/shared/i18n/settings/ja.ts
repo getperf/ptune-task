@@ -134,6 +134,12 @@ export const settingsJa = {
 			},
 		},
 
+		reviewTrendDays: {
+			name: "レビュー傾向の日数",
+			desc: "日次傾向テーブルに含める過去日数です（1〜30）。既定は7日です",
+			placeholder: "7",
+		},
+
 		xmindTemplatePath: {
 			name: "XMind テンプレートパス",
 			desc: "振り返りポイントの XMind テンプレートとして使う vault 相対パス",

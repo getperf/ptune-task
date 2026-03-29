@@ -134,6 +134,12 @@ export const settingsEn = {
 			},
 		},
 
+		reviewTrendDays: {
+			name: "Trend days",
+			desc: "Number of past days to include in the daily trend table (1-30). Default is 7.",
+			placeholder: "7",
+		},
+
 		xmindTemplatePath: {
 			name: "XMind template path",
 			desc: "Vault-relative path to the XMind template used for reflection points",

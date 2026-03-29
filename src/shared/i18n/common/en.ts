@@ -80,6 +80,7 @@ export const commonEn = {
 			timetable: { title: "Time Table" },
 			unfinished: { title: "Unfinished Tasks" },
 			timeanalysis: { title: "Time Analysis" },
+			trend: { title: "Daily Trend" },
 			memo: { title: "Reflection Memo" },
 			tags: { title: "Tag List (Generated Today)" },
 			unregistered: {

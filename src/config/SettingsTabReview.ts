@@ -40,6 +40,24 @@ export function renderReviewSettings(containerEl: HTMLElement) {
     );
 
   new Setting(containerEl)
+    .setName(t.reviewTrendDays.name)
+    .setDesc(t.reviewTrendDays.desc)
+    .addText((text) =>
+      text
+        .setPlaceholder(t.reviewTrendDays.placeholder)
+        .setValue(config.settings.review.reviewTrendDays.toString())
+        .onChange(async (value) => {
+          const parsed = Number.parseInt(value, 10);
+          const normalized = Number.isFinite(parsed)
+            ? Math.min(30, Math.max(1, parsed))
+            : 7;
+
+          config.settings.review.reviewTrendDays = normalized;
+          await config.save();
+        }),
+    );
+
+  new Setting(containerEl)
     .setName(t.xmindTemplatePath.name)
     .setDesc(t.xmindTemplatePath.desc)
     .addText((text) =>

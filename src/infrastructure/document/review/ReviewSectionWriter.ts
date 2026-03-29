@@ -4,6 +4,7 @@ import { hdrAllowPrefixWith } from "md-ast-core";
 import { ReviewDocumentRenderer } from "./ReviewDocumentRenderer";
 import { ReviewTaskTree } from "../../../application/review/models/ReviewTaskTree";
 import { HeadingMatcher } from "../matcher/HeadingMatcher";
+import { ReviewDailyTrendStat } from "../../../application/review/dto/ReviewDailyTrendStat";
 
 export class ReviewSectionWriter {
   constructor(
@@ -11,7 +12,11 @@ export class ReviewSectionWriter {
     private readonly renderer = new ReviewDocumentRenderer(),
   ) { }
 
-  appendReview(tree: ReviewTaskTree, timeLabel: string): void {
+  appendReview(
+    tree: ReviewTaskTree,
+    timeLabel: string,
+    trendStats: ReviewDailyTrendStat[],
+  ): void {
     const review = HeadingService.resolve("daily.section.review.title");
 
     const timelog = this.adapter.findOrCreateSection(
@@ -43,6 +48,6 @@ export class ReviewSectionWriter {
       throw new Error("Failed to locate newly appended review section");
     }
 
-    this.renderer.render(reviewSection, tree);
+    this.renderer.render(reviewSection, tree, trendStats);
   }
 }
