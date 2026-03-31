@@ -150,6 +150,33 @@ export const settingsJa = {
 	dailyNoteTask: {
 		sectionTitle: "日次タスク設定",
 
+		templateManager: {
+			name: "テンプレート",
+			desc: "テンプレートを選んで、日次タスク設定へ適用またはクリアします",
+			open: "テンプレートを開く",
+			options: {
+				"software-development": "ソフト開発",
+			},
+			modal: {
+				title: "日次タスクテンプレート",
+				desc: "現在の Daily Note task 設定を上書きします。適用前にテンプレートを選択してください。",
+				includeHabit: {
+					name: "Habit タスクも更新する",
+					desc: "有効にすると、朝のタスクを「<朝>起床🚫」、夜のタスクを「<夜>就寝🚫」へ更新します",
+				},
+				template: {
+					name: "タスクテンプレート",
+					desc: "適用するテンプレートを選択します",
+				},
+				apply: "適用",
+				clear: "クリア",
+			},
+			notice: {
+				applied: "日次タスクテンプレートを適用しました",
+				cleared: "日次タスク設定をクリアしました",
+			},
+		},
+
 		habit: {
 			morning: {
 				name: "朝のタスク",
@@ -160,26 +187,26 @@ export const settingsJa = {
 			evening: {
 				name: "夜のタスク",
 				desc: "毎晩確認・実行するタスクを改行区切りで入力します",
-				placeholder: "<夜>プール🚫",
+				placeholder: "<夜>就寝🚫",
 			},
 		},
 
 		tagSuggestions: {
 			name: "タグ候補",
 			desc: "タスク入力時のコード補完候補リスト（改行区切り）",
-			placeholder: "設計\n調査\n試作\n実装\n検証",
+			placeholder: "",
 		},
 
 		goalSuggestions: {
 			name: "ゴール候補",
 			desc: "タスク完了目標のコード補完候補リスト（改行区切り）",
-			placeholder: "仕様確定\n設計整理完了\n実装完了\nテスト追加完了\nリファクタリング完了\nバグ修正完了",
+			placeholder: "",
 		},
 
 		subTaskTemplates: {
 			name: "サブタスクテンプレート",
 			desc: "サブタスク入力時のコード補完候補リスト（改行区切り）",
-			placeholder: "要件整理 #設計 🍅x1\nユースケース #設計 🍅x1\n変更調査 #調査 🍅x1\nプロトタイプ #実装 🍅x1\nバグ修正 #実装 🍅x1\nレビュー #検証 🍅x1\nリグレッション #検証 🍅x1",
+			placeholder: "",
 		},
 	},
 

@@ -150,6 +150,33 @@ export const settingsEn = {
 	dailyNoteTask: {
 		sectionTitle: "Daily Task Settings",
 
+		templateManager: {
+			name: "Templates",
+			desc: "Select a template to apply or clear the daily task settings",
+			open: "Open templates",
+			options: {
+				"software-development": "Software development",
+			},
+			modal: {
+				title: "Daily task templates",
+				desc: "This will overwrite the current Daily Note task settings. Select a template before applying it.",
+				includeHabit: {
+					name: "Update habit tasks too",
+					desc: "When enabled, morning and evening habit tasks are updated to the default wake-up and sleep entries.",
+				},
+				template: {
+					name: "Task template",
+					desc: "Choose the template to apply",
+				},
+				apply: "Apply",
+				clear: "Clear",
+			},
+			notice: {
+				applied: "Applied the daily task template",
+				cleared: "Cleared the daily task settings",
+			},
+		},
+
 		habit: {
 			morning: {
 				name: "Morning list",

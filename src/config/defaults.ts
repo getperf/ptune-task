@@ -1,4 +1,5 @@
 import { PluginSettings } from "./types";
+import { createEmptyDailyNoteTaskSettings } from "./dailyNoteTaskTemplates";
 
 export const DEFAULT_SETTINGS: PluginSettings = {
 	language: "ja",
@@ -48,27 +49,6 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 	},
 
 	dailyNoteTask: {
-		habit: {
-			morning: [],
-			evening: [],
-		},
-		tagSuggestions: ["設計", "調査", "試作", "実装", "検証"],
-		goalSuggestions: [
-			"仕様確定",
-			"設計整理完了",
-			"実装完了",
-			"テスト追加完了",
-			"リファクタリング完了",
-			"バグ修正完了",
-		],
-		subTaskTemplates: [
-			"要件整理 #設計 🍅x1",
-			"ユースケース #設計 🍅x1",
-			"変更調査 #調査 🍅x1",
-			"プロトタイプ #実装 🍅x1",
-			"バグ修正 #実装 🍅x1",
-			"レビュー #検証 🍅x1",
-			"リグレッション #検証 🍅x1",
-		],
+		...createEmptyDailyNoteTaskSettings(),
 	},
 }
