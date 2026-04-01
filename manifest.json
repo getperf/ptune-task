@@ -3,7 +3,7 @@
 	"name": "ptune-task",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Work-log management plugin for organizing notes, summaries, and daily retrospectives.",
+	"description": "Daily task planning, Google Tasks sync, and review workflow for Obsidian.",
 	"author": "Minoru Furusawa",
 	"authorUrl": "https://ptune.getperf.net/",
 	"isDesktopOnly": true
