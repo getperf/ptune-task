@@ -1,34 +1,21 @@
 import { PullQuery } from "../../../application/sync/shared/dto/PullQuery";
 import { PushQuery } from "../../../application/sync/shared/dto/PushQuery";
 import { ReviewQuery } from "../../../application/sync/shared/dto/ReviewQuery";
-import { App } from "obsidian";
 import { logger } from "../../../shared/logger/loggerInstance";
 import { PtuneSyncStatusDto } from "../ptune-sync-uri/PtuneSyncStatusDto";
-import { PtuneSyncUriClient } from "../ptune-sync-uri/PtuneSyncUriClient";
 import { PtuneSyncUriLauncher } from "../ptune-sync-uri/PtuneSyncUriLauncher";
 import { PtuneSyncClient } from "../shared/PtuneSyncClient";
 import { PtuneTaskRequestFileWriter } from "./PtuneTaskRequestFileWriter";
 import { PtuneTaskStatusWatcher } from "./PtuneTaskStatusWatcher";
 import { PtuneTaskUriBuilder } from "./PtuneTaskUriBuilder";
-import { PtuneTaskWorkDir } from "./PtuneTaskWorkDir";
 
 export class PtuneTaskUriClient implements PtuneSyncClient {
-  private readonly workDir: PtuneTaskWorkDir;
-  private readonly writer: PtuneTaskRequestFileWriter;
-  private readonly builder: PtuneTaskUriBuilder;
-  private readonly launcher: PtuneSyncUriLauncher;
-  private readonly watcher: PtuneTaskStatusWatcher;
-
   constructor(
-    app: App,
-    private readonly client: PtuneSyncUriClient,
-  ) {
-    this.workDir = new PtuneTaskWorkDir(app);
-    this.writer = new PtuneTaskRequestFileWriter(app, this.workDir);
-    this.builder = new PtuneTaskUriBuilder();
-    this.launcher = new PtuneSyncUriLauncher();
-    this.watcher = new PtuneTaskStatusWatcher(app, this.workDir);
-  }
+    private readonly writer: PtuneTaskRequestFileWriter,
+    private readonly builder: PtuneTaskUriBuilder,
+    private readonly launcher: PtuneSyncUriLauncher,
+    private readonly watcher: PtuneTaskStatusWatcher,
+  ) {}
 
   async authStatus<TData>(): Promise<PtuneSyncStatusDto<TData>> {
     const prepared = await this.writer.write("auth-status");

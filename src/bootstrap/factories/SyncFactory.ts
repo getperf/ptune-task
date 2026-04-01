@@ -7,14 +7,13 @@ import { DiffDailyNoteUseCase } from "../../application/sync/diff/DiffDailyNoteU
 import { MergeTaskTreeService } from "../../application/sync/merge/MergeTaskTreeService";
 import { SyncAndRebuildDailyNoteUseCase } from "../../application/rebuild/SyncAndRebuildDailyNoteUseCase";
 import { ObsidianConfirmDialog } from "../../infrastructure/obsidian/ObsidianConfirmDialog";
+import { PtuneTaskRequestFileWriter } from "../../infrastructure/sync/ptune-task-uri/PtuneTaskRequestFileWriter";
+import { PtuneTaskStatusWatcher } from "../../infrastructure/sync/ptune-task-uri/PtuneTaskStatusWatcher";
 import { PtuneTaskUriClient } from "../../infrastructure/sync/ptune-task-uri/PtuneTaskUriClient";
+import { PtuneTaskUriBuilder } from "../../infrastructure/sync/ptune-task-uri/PtuneTaskUriBuilder";
+import { PtuneTaskWorkDir } from "../../infrastructure/sync/ptune-task-uri/PtuneTaskWorkDir";
 import { PtuneSyncClient } from "../../infrastructure/sync/shared/PtuneSyncClient";
-import { PtuneSyncWorkDir } from "../../infrastructure/sync/ptune-sync-uri/PtuneSyncWorkDir";
-import { PtuneSyncUriBuilder } from "../../infrastructure/sync/ptune-sync-uri/PtuneSyncUriBuilder";
 import { PtuneSyncUriLauncher } from "../../infrastructure/sync/ptune-sync-uri/PtuneSyncUriLauncher";
-import { PtuneSyncStatusWatcher } from "../../infrastructure/sync/ptune-sync-uri/PtuneSyncStatusWatcher";
-import { PtuneSyncInputFileWriter } from "../../infrastructure/sync/ptune-sync-uri/PtuneSyncInputFileWriter";
-import { PtuneSyncUriClient } from "../../infrastructure/sync/ptune-sync-uri/PtuneSyncUriClient";
 import { PtuneSyncUriAdapter } from "../../infrastructure/sync/ptune-sync-uri/PtuneSyncUriAdapter";
 import { PtuneSyncUriAuthService } from "../../infrastructure/sync/ptune-sync-uri/PtuneSyncUriAuthService";
 import { CalendarFactory } from "./CalendarFactory";
@@ -85,18 +84,13 @@ export class SyncFactory {
 
   private createBackendClient(): PtuneSyncClient {
     logger.info("[Sync] [Factory] create backend=ptune-task");
-    return new PtuneTaskUriClient(this.app, this.createLegacyUriClient());
-  }
+    const workDir = new PtuneTaskWorkDir(this.app);
 
-  private createLegacyUriClient(): PtuneSyncUriClient {
-    const workDir = new PtuneSyncWorkDir(this.app);
-
-    return new PtuneSyncUriClient(
-      workDir,
-      new PtuneSyncUriBuilder(workDir),
+    return new PtuneTaskUriClient(
+      new PtuneTaskRequestFileWriter(this.app, workDir),
+      new PtuneTaskUriBuilder(),
       new PtuneSyncUriLauncher(),
-      new PtuneSyncStatusWatcher(this.app, workDir),
-      new PtuneSyncInputFileWriter(this.app, workDir),
+      new PtuneTaskStatusWatcher(this.app, workDir),
     );
   }
 }
