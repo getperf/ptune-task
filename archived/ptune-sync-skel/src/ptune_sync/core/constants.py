@@ -1,1 +1,0 @@
-DEFAULT_LIST_NAME = "_Today"
