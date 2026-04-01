@@ -1,6 +1,6 @@
 import { Setting } from "obsidian";
 import { config } from "./config";
-import type { LogLevel, SyncBackend } from "./types";
+import type { LogLevel } from "./types";
 import { logger } from "../shared/logger/loggerInstance";
 import { i18n } from "../shared/i18n/I18n";
 
@@ -8,32 +8,10 @@ function isLogLevel(v: string): v is LogLevel {
 	return ["debug", "info", "warn", "error", "none"].includes(v);
 }
 
-function isSyncBackend(v: string): v is SyncBackend {
-	return ["ptune-task", "ptune-sync-skel"].includes(v);
-}
-
 export function renderBasicSettings(containerEl: HTMLElement) {
 	const t = i18n.settings.basic;
 
 	new Setting(containerEl).setName(t.heading).setHeading();
-
-	new Setting(containerEl)
-		.setName(t.syncBackend.name)
-		.setDesc(t.syncBackend.desc)
-		.addDropdown((dropdown) =>
-			dropdown
-				.addOptions({
-					"ptune-task": t.syncBackend.options["ptune-task"],
-					"ptune-sync-skel": t.syncBackend.options["ptune-sync-skel"],
-				})
-				.setValue(config.settings.syncBackend)
-				.onChange(async (value) => {
-					if (!isSyncBackend(value)) return;
-
-					config.settings.syncBackend = value;
-					await config.save();
-				}),
-		);
 
 	new Setting(containerEl)
 		.setName(t.logLevel.name)

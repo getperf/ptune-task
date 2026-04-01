@@ -20,6 +20,14 @@ export const commonJa = {
 		close: "閉じる",
 	},
 
+	commands: {
+		pullToday: "今日の予定を Pull",
+		pushToday: "今日の予定を Push",
+		dailyReview: "今日の振り返り Review",
+		login: "ログイン認証",
+		authStatus: "認証ステータス",
+	},
+
 	noteCreation: {
 		menu: {
 			createProjectFolder: "プロジェクトフォルダ作成",

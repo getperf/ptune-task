@@ -4,15 +4,6 @@ export const settingsEn = {
 	basic: {
 		heading: "Basic Settings",
 
-		syncBackend: {
-			name: "Sync Backend",
-			desc: "Select the PtuneSync backend to use during the migration period",
-			options: {
-				"ptune-task": "PtuneSync (new)",
-				"ptune-sync-skel": "ptune-sync-skel (legacy)",
-			},
-		},
-
 		logLevel: {
 			name: "Log Level",
 			desc: "Select log output level",

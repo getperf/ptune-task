@@ -5,43 +5,25 @@ import { i18n } from "../shared/i18n/I18n";
 export function registerAllCommands(plugin: Plugin, container: Container): void {
   plugin.addCommand({
     id: "pull-today",
-    name: "Pull Today",
+    name: i18n.common.commands.pullToday,
     callback: () => { container.createPullTodayCommand().execute(); },
   });
 
   plugin.addCommand({
-    id: "ptunesync-diff-check",
-    name: "PtuneSync Diff Check",
-    callback: () => { container.createDiffCheckCommand().execute(); },
-  });
-
-  plugin.addCommand({
-    id: "ptunesync-review-check",
-    name: "PtuneSync Review Check",
-    callback: () => { container.createReviewCheckCommand().execute(); },
-  });
-
-  plugin.addCommand({
-    id: "cleanup-sync-runs",
-    name: "Cleanup Sync Runs",
-    callback: () => { container.createCleanupSyncRunsCommand().execute(); },
-  });
-
-  plugin.addCommand({
     id: "sync",
-    name: "Push and Rebuild",
+    name: i18n.common.commands.pushToday,
     callback: () => { container.createSyncAndRebuildCommand().execute(); },
   });
 
   plugin.addCommand({
     id: "review",
-    name: "Generate Daily Review",
+    name: i18n.common.commands.dailyReview,
     callback: () => { container.createReviewCommand().execute(); },
   });
 
   plugin.addCommand({
     id: "login",
-    name: "Login",
+    name: i18n.common.commands.login,
     callback: async () => {
       try {
         await container.createAuthLoginProgressService().run(() =>
@@ -55,7 +37,7 @@ export function registerAllCommands(plugin: Plugin, container: Container): void 
 
   plugin.addCommand({
     id: "auth-status",
-    name: "Auth Status",
+    name: i18n.common.commands.authStatus,
     callback: async () => {
       try {
         const result = await container.createAuthService().status();

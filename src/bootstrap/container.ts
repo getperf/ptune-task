@@ -31,10 +31,7 @@ import { ReviewPointXMindInputFileService } from "../infrastructure/review/Revie
 import { SetupChecklistService } from "../application/setup/services/SetupChecklistService";
 import { NoteSetupHelper } from "../infrastructure/setup/NoteSetupHelper";
 import { SetupWizardDialog } from "../presentation/setup/SetupWizardDialog";
-import { PtuneSyncDiffCheckCommand } from "../presentation/diff/PtuneSyncDiffCheckCommand";
-import { PtuneSyncReviewCheckCommand } from "../presentation/review/PtuneSyncReviewCheckCommand";
 import { PtuneTaskRunCleanupService } from "../infrastructure/sync/ptune-task-uri/PtuneTaskRunCleanupService";
-import { CleanupSyncRunsCommand } from "../presentation/maintenance/CleanupSyncRunsCommand";
 import { AuthLoginProgressService } from "../presentation/auth/AuthLoginProgressService";
 
 export class Container {
@@ -64,28 +61,6 @@ export class Container {
   createPullTodayCommand(): PullTodayCommand {
     return new PullTodayCommand(
       this.syncFactory.createPullAndMergeTodayUseCase(),
-      this.presentationFactory.createObsidianPresenter(),
-    );
-  }
-
-  createDiffCheckCommand(): PtuneSyncDiffCheckCommand {
-    return new PtuneSyncDiffCheckCommand(
-      this.syncFactory.createDiffDailyNoteUseCase(),
-      this.presentationFactory.createObsidianPresenter(),
-    );
-  }
-
-  createReviewCheckCommand(): PtuneSyncReviewCheckCommand {
-    return new PtuneSyncReviewCheckCommand(
-      this.calendarFactory.createTodayResolver(),
-      this.syncFactory.createClient(),
-      this.presentationFactory.createObsidianPresenter(),
-    );
-  }
-
-  createCleanupSyncRunsCommand(): CleanupSyncRunsCommand {
-    return new CleanupSyncRunsCommand(
-      this.createRunCleanupService(),
       this.presentationFactory.createObsidianPresenter(),
     );
   }

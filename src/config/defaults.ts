@@ -3,7 +3,6 @@ import { createEmptyDailyNoteTaskSettings } from "./dailyNoteTaskTemplates";
 
 export const DEFAULT_SETTINGS: PluginSettings = {
 	language: "ja",
-	syncBackend: "ptune-task",
 
 	logLevel: "info",
 	enableLogFile: false,

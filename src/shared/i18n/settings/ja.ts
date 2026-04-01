@@ -4,15 +4,6 @@ export const settingsJa = {
 	basic: {
 		heading: "基本設定",
 
-		syncBackend: {
-			name: "同期バックエンド",
-			desc: "移行期間中に使用する PtuneSync バックエンドを選択します",
-			options: {
-				"ptune-task": "PtuneSync（新）",
-				"ptune-sync-skel": "ptune-sync-skel（旧）",
-			},
-		},
-
 		logLevel: {
 			name: "ログレベル",
 			desc: "ログの出力レベルを指定します",

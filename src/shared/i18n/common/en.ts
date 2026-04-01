@@ -20,6 +20,14 @@ export const commonEn = {
 		close: "Close",
 	},
 
+	commands: {
+		pullToday: "Pull Today",
+		pushToday: "Push Today",
+		dailyReview: "Generate Daily Review",
+		login: "Login",
+		authStatus: "Auth Status",
+	},
+
 	noteCreation: {
 		menu: {
 			createProjectFolder: "Create Project Folder",

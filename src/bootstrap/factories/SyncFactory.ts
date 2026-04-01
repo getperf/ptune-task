@@ -6,11 +6,8 @@ import { ApplyPushUseCase } from "../../application/sync/push/ApplyPushUseCase";
 import { DiffDailyNoteUseCase } from "../../application/sync/diff/DiffDailyNoteUseCase";
 import { MergeTaskTreeService } from "../../application/sync/merge/MergeTaskTreeService";
 import { SyncAndRebuildDailyNoteUseCase } from "../../application/rebuild/SyncAndRebuildDailyNoteUseCase";
-import { config } from "../../config/config";
-import { SyncBackend } from "../../config/types";
 import { ObsidianConfirmDialog } from "../../infrastructure/obsidian/ObsidianConfirmDialog";
 import { PtuneTaskUriClient } from "../../infrastructure/sync/ptune-task-uri/PtuneTaskUriClient";
-import { PtuneSyncSkelUriClient } from "../../infrastructure/sync/ptune-sync-skel-uri/PtuneSyncSkelUriClient";
 import { PtuneSyncClient } from "../../infrastructure/sync/shared/PtuneSyncClient";
 import { PtuneSyncWorkDir } from "../../infrastructure/sync/ptune-sync-uri/PtuneSyncWorkDir";
 import { PtuneSyncUriBuilder } from "../../infrastructure/sync/ptune-sync-uri/PtuneSyncUriBuilder";
@@ -33,7 +30,7 @@ export class SyncFactory {
     private readonly calendarFactory: CalendarFactory,
     private readonly confirmDialog: ObsidianConfirmDialog,
   ) {
-    this.client = this.createBackendClient(config.settings.syncBackend);
+    this.client = this.createBackendClient();
   }
 
   createClient(): PtuneSyncClient {
@@ -86,16 +83,9 @@ export class SyncFactory {
     );
   }
 
-  private createBackendClient(syncBackend: SyncBackend): PtuneSyncClient {
-    logger.info(`[Sync] [Factory] create backend=${syncBackend}`);
-
-    switch (syncBackend) {
-      case "ptune-sync-skel":
-        return new PtuneSyncSkelUriClient(this.createLegacyUriClient());
-      case "ptune-task":
-      default:
-        return new PtuneTaskUriClient(this.app, this.createLegacyUriClient());
-    }
+  private createBackendClient(): PtuneSyncClient {
+    logger.info("[Sync] [Factory] create backend=ptune-task");
+    return new PtuneTaskUriClient(this.app, this.createLegacyUriClient());
   }
 
   private createLegacyUriClient(): PtuneSyncUriClient {
