@@ -1,9 +1,9 @@
-export interface PtuneSyncStatusError {
+export interface PtuneSyncStatusErrorDto {
   type: string;
   message: string;
 }
 
-export interface PtuneSyncStatusEnvelope<TData = unknown> {
+export interface PtuneSyncStatusDto<TData = unknown> {
   version: number;
   timestamp: string;
   status: "running" | "success" | "error";
@@ -15,6 +15,6 @@ export interface PtuneSyncStatusEnvelope<TData = unknown> {
   phase?: "created" | "accepted" | "running" | "completed";
   updated_at?: string;
   data?: TData;
-  error?: PtuneSyncStatusError;
+  error?: PtuneSyncStatusErrorDto;
   meta?: Record<string, unknown>;
 }

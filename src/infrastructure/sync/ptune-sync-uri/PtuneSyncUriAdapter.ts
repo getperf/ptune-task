@@ -8,6 +8,7 @@ import { ReviewQuery } from "../../../application/sync/shared/dto/ReviewQuery";
 import { getDefaultTaskListId } from "../../../application/sync/shared/DefaultTaskListId";
 import { PtuneSyncPort } from "../../../application/sync/shared/ports/PtuneSyncPort";
 import { PtuneSyncClient } from "../shared/PtuneSyncClient";
+import { PtuneSyncCommandResultMapper } from "./PtuneSyncCommandResultMapper";
 
 type ExportLikeResult = {
   schema_version: number;
@@ -20,31 +21,35 @@ export class PtuneSyncUriAdapter implements PtuneSyncPort {
   constructor(private readonly client: PtuneSyncClient) {}
 
   async pull(query: PullQuery): Promise<string> {
-    const envelope = await this.client.pull<ExportLikeResult>(query);
+    const result = PtuneSyncCommandResultMapper.fromDto(
+      await this.client.pull<ExportLikeResult>(query),
+    );
 
-    if (!envelope.data) {
+    if (!result.data) {
       throw new Error("Missing pull data");
     }
 
-    return JSON.stringify(envelope.data);
+    return JSON.stringify(result.data);
   }
 
   async review(query: ReviewQuery): Promise<string> {
-    const envelope = await this.client.review<ExportLikeResult>(query);
+    const result = PtuneSyncCommandResultMapper.fromDto(
+      await this.client.review<ExportLikeResult>(query),
+    );
 
-    if (!envelope.data) {
+    if (!result.data) {
       throw new Error("Missing review data");
     }
 
-    return JSON.stringify(envelope.data);
+    return JSON.stringify(result.data);
   }
 
   async diff(payload: string): Promise<DiffResult> {
-    const envelope = await this.client.diff<DiffData>(payload, {
+    const result = PtuneSyncCommandResultMapper.fromDto(await this.client.diff<DiffData>(payload, {
       list: getDefaultTaskListId(),
-    });
+    }));
 
-    const summary = envelope.data?.summary ?? {
+    const summary = result.data?.summary ?? {
       create: 0,
       update: 0,
       delete: 0,
@@ -53,19 +58,21 @@ export class PtuneSyncUriAdapter implements PtuneSyncPort {
     };
 
     return new DiffResult(
-      envelope.success ?? envelope.status === "success",
+      result.ok,
       summary,
-      envelope.data?.errors ?? [],
-      envelope.data?.warnings ?? [],
-      envelope.error?.message,
+      result.data?.errors ?? [],
+      result.data?.warnings ?? [],
+      result.errorMessage,
     );
   }
 
   async push(payload: string, query: PushQuery): Promise<void> {
-    const envelope = await this.client.push<{ accepted: number }>(payload, query);
+    const result = PtuneSyncCommandResultMapper.fromDto(
+      await this.client.push<{ accepted: number }>(payload, query),
+    );
 
-    if (envelope.status !== "success" || envelope.success === false) {
-      throw new Error(envelope.error?.message ?? "ptune-sync push failed");
+    if (!result.ok) {
+      throw new Error(result.errorMessage ?? "ptune-sync push failed");
     }
   }
 }

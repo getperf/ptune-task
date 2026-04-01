@@ -1,19 +1,19 @@
 import { PullQuery } from "../../../application/sync/shared/dto/PullQuery";
 import { PushQuery } from "../../../application/sync/shared/dto/PushQuery";
 import { ReviewQuery } from "../../../application/sync/shared/dto/ReviewQuery";
-import { PtuneSyncStatusEnvelope } from "../ptune-sync-uri/PtuneSyncStatusEnvelope";
+import { PtuneSyncStatusDto } from "../ptune-sync-uri/PtuneSyncStatusDto";
 
 export interface PtuneSyncClient {
-  authStatus<TData>(): Promise<PtuneSyncStatusEnvelope<TData>>;
-  authLogin<TData>(): Promise<PtuneSyncStatusEnvelope<TData>>;
-  pull<TData>(query: PullQuery): Promise<PtuneSyncStatusEnvelope<TData>>;
-  review<TData>(query: ReviewQuery): Promise<PtuneSyncStatusEnvelope<TData>>;
+  authStatus<TData>(): Promise<PtuneSyncStatusDto<TData>>;
+  authLogin<TData>(): Promise<PtuneSyncStatusDto<TData>>;
+  pull<TData>(query: PullQuery): Promise<PtuneSyncStatusDto<TData>>;
+  review<TData>(query: ReviewQuery): Promise<PtuneSyncStatusDto<TData>>;
   diff<TData>(
     payload: string,
     query: PushQuery,
-  ): Promise<PtuneSyncStatusEnvelope<TData>>;
+  ): Promise<PtuneSyncStatusDto<TData>>;
   push<TData>(
     payload: string,
     query: PushQuery,
-  ): Promise<PtuneSyncStatusEnvelope<TData>>;
+  ): Promise<PtuneSyncStatusDto<TData>>;
 }

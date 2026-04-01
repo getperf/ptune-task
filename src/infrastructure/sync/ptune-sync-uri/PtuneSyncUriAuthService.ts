@@ -1,4 +1,5 @@
 import { PtuneSyncClient } from "../shared/PtuneSyncClient";
+import { PtuneSyncCommandResultMapper } from "./PtuneSyncCommandResultMapper";
 
 type AuthData = {
   auth: {
@@ -12,24 +13,28 @@ export class PtuneSyncUriAuthService {
   constructor(private readonly client: PtuneSyncClient) {}
 
   async status(): Promise<{ authenticated: boolean; email?: string | null }> {
-    const envelope = await this.client.authStatus<AuthData>();
+    const result = PtuneSyncCommandResultMapper.fromDto(
+      await this.client.authStatus<AuthData>(),
+    );
 
-    if (!envelope.data?.auth) {
+    if (!result.data?.auth) {
       throw new Error("Invalid auth status response");
     }
 
     return {
-      authenticated: envelope.data.auth.authenticated,
-      email: envelope.data.auth.email,
+      authenticated: result.data.auth.authenticated,
+      email: result.data.auth.email,
     };
   }
 
   async login(): Promise<void> {
-    const envelope = await this.client.authLogin<AuthData>();
+    const result = PtuneSyncCommandResultMapper.fromDto(
+      await this.client.authLogin<AuthData>(),
+    );
 
-    if (!envelope.data?.auth?.authenticated) {
+    if (!result.data?.auth?.authenticated) {
       throw new Error(
-        envelope.error?.message ?? "Login did not complete successfully",
+        result.errorMessage ?? "Login did not complete successfully",
       );
     }
   }

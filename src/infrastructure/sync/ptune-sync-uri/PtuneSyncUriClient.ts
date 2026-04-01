@@ -1,7 +1,7 @@
 import { PullQuery } from "../../../application/sync/shared/dto/PullQuery";
 import { PushQuery } from "../../../application/sync/shared/dto/PushQuery";
 import { ReviewQuery } from "../../../application/sync/shared/dto/ReviewQuery";
-import { PtuneSyncStatusEnvelope } from "./PtuneSyncStatusEnvelope";
+import { PtuneSyncStatusDto } from "./PtuneSyncStatusDto";
 import { PtuneSyncUriBuilder } from "./PtuneSyncUriBuilder";
 import { PtuneSyncUriLauncher } from "./PtuneSyncUriLauncher";
 import { PtuneSyncStatusWatcher } from "./PtuneSyncStatusWatcher";
@@ -20,28 +20,28 @@ export class PtuneSyncUriClient implements PtuneSyncClient {
     private readonly inputWriter: PtuneSyncInputFileWriter,
   ) {}
 
-  authStatus<TData>(): Promise<PtuneSyncStatusEnvelope<TData>> {
+  authStatus<TData>(): Promise<PtuneSyncStatusDto<TData>> {
     return this.run(this.builder.buildAuthStatus());
   }
 
-  authLogin<TData>(): Promise<PtuneSyncStatusEnvelope<TData>> {
+  authLogin<TData>(): Promise<PtuneSyncStatusDto<TData>> {
     return this.run(this.builder.buildAuthLogin());
   }
 
-  pull<TData>(query: PullQuery): Promise<PtuneSyncStatusEnvelope<TData>> {
+  pull<TData>(query: PullQuery): Promise<PtuneSyncStatusDto<TData>> {
     return this.run(
       this.builder.buildPull(query.list, !!query.includeCompleted),
     );
   }
 
-  review<TData>(query: ReviewQuery): Promise<PtuneSyncStatusEnvelope<TData>> {
+  review<TData>(query: ReviewQuery): Promise<PtuneSyncStatusDto<TData>> {
     return this.run(this.builder.buildReview(query.list));
   }
 
   async diff<TData>(
     payload: string,
     query: PushQuery,
-  ): Promise<PtuneSyncStatusEnvelope<TData>> {
+  ): Promise<PtuneSyncStatusDto<TData>> {
     await this.workDir.ensureExists();
     const inputPath = await this.inputWriter.writeDiffInput(payload);
 
@@ -51,7 +51,7 @@ export class PtuneSyncUriClient implements PtuneSyncClient {
   async push<TData>(
     payload: string,
     query: PushQuery,
-  ): Promise<PtuneSyncStatusEnvelope<TData>> {
+  ): Promise<PtuneSyncStatusDto<TData>> {
     await this.workDir.ensureExists();
     const inputPath = await this.inputWriter.writePushInput(payload);
 
@@ -62,7 +62,7 @@ export class PtuneSyncUriClient implements PtuneSyncClient {
 
   private async run<TData>(
     uri: string,
-  ): Promise<PtuneSyncStatusEnvelope<TData>> {
+  ): Promise<PtuneSyncStatusDto<TData>> {
     if (this.inFlight) {
       throw new Error("ptune-sync command is already running");
     }

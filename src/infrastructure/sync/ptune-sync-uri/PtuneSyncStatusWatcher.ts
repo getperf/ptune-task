@@ -1,5 +1,6 @@
 import { App } from "obsidian";
-import { PtuneSyncStatusEnvelope } from "./PtuneSyncStatusEnvelope";
+import { PtuneSyncRunStateMapper } from "./PtuneSyncRunStateMapper";
+import { PtuneSyncStatusDto } from "./PtuneSyncStatusDto";
 import { PtuneSyncWorkDir } from "./PtuneSyncWorkDir";
 import { PtuneSyncStatusParser } from "./PtuneSyncStatusParser";
 
@@ -14,7 +15,7 @@ export class PtuneSyncStatusWatcher {
 
   async waitForCompletion<TData>(
     baseline: Date,
-  ): Promise<PtuneSyncStatusEnvelope<TData>> {
+  ): Promise<PtuneSyncStatusDto<TData>> {
     const timeoutAt = Date.now() + this.timeoutMs;
 
     while (Date.now() < timeoutAt) {
@@ -25,7 +26,8 @@ export class PtuneSyncStatusWatcher {
         continue;
       }
 
-      if (envelope.status === "running") {
+      const runState = PtuneSyncRunStateMapper.fromDto(envelope);
+      if (runState.status === "running") {
         await this.delay(this.pollIntervalMs);
         continue;
       }
@@ -36,7 +38,7 @@ export class PtuneSyncStatusWatcher {
     throw new Error("ptune-sync status wait timed out");
   }
 
-  private async tryRead<TData>(): Promise<PtuneSyncStatusEnvelope<TData> | null> {
+  private async tryRead<TData>(): Promise<PtuneSyncStatusDto<TData> | null> {
     const path = this.workDir.getStatusFile();
 
     if (!(await this.app.vault.adapter.exists(path))) {
@@ -51,8 +53,8 @@ export class PtuneSyncStatusWatcher {
     }
   }
 
-  private isNewer(envelope: PtuneSyncStatusEnvelope, baseline: Date): boolean {
-    const timestamp = Date.parse(envelope.timestamp);
+  private isNewer(envelope: PtuneSyncStatusDto, baseline: Date): boolean {
+    const timestamp = Date.parse(PtuneSyncRunStateMapper.fromDto(envelope).updatedAt);
 
     return !Number.isNaN(timestamp) && timestamp > baseline.getTime();
   }

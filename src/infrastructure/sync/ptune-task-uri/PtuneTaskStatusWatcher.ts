@@ -1,6 +1,8 @@
 import { App } from "obsidian";
 import { logger } from "../../../shared/logger/loggerInstance";
-import { PtuneSyncStatusEnvelope } from "../ptune-sync-uri/PtuneSyncStatusEnvelope";
+import { PtuneSyncRunState } from "../ptune-sync-uri/PtuneSyncRunState";
+import { PtuneSyncRunStateMapper } from "../ptune-sync-uri/PtuneSyncRunStateMapper";
+import { PtuneSyncStatusDto } from "../ptune-sync-uri/PtuneSyncStatusDto";
 import { PtuneSyncStatusParser } from "../ptune-sync-uri/PtuneSyncStatusParser";
 import { PtuneTaskWorkDir } from "./PtuneTaskWorkDir";
 
@@ -18,24 +20,24 @@ export class PtuneTaskStatusWatcher {
   async waitForAccepted<TData>(
     requestNonce: string,
     baseline: Date,
-  ): Promise<PtuneSyncStatusEnvelope<TData>> {
-    return this.waitFor(requestNonce, baseline, this.startupTimeoutMs, (envelope) =>
-      envelope.phase === "accepted"
-      || envelope.phase === "running"
-      || envelope.phase === "completed");
+  ): Promise<PtuneSyncStatusDto<TData>> {
+    return this.waitFor(requestNonce, baseline, this.startupTimeoutMs, (runState) =>
+      runState.phase === "accepted"
+      || runState.phase === "running"
+      || runState.phase === "completed");
   }
 
   async waitForCompletion<TData>(
     requestNonce: string,
     baseline: Date,
-  ): Promise<PtuneSyncStatusEnvelope<TData>> {
+  ): Promise<PtuneSyncStatusDto<TData>> {
     return this.waitForCompletionWithTimeout(requestNonce, baseline, this.completionTimeoutMs);
   }
 
   async waitForAuthLoginCompletion<TData>(
     requestNonce: string,
     baseline: Date,
-  ): Promise<PtuneSyncStatusEnvelope<TData>> {
+  ): Promise<PtuneSyncStatusDto<TData>> {
     return this.waitForCompletionWithTimeout(requestNonce, baseline, this.authLoginTimeoutMs);
   }
 
@@ -43,19 +45,19 @@ export class PtuneTaskStatusWatcher {
     requestNonce: string,
     baseline: Date,
     timeoutMs: number,
-  ): Promise<PtuneSyncStatusEnvelope<TData>> {
-    return this.waitFor(requestNonce, baseline, timeoutMs, (envelope) =>
-      envelope.phase === "completed"
-      || envelope.status === "success"
-      || envelope.status === "error");
+  ): Promise<PtuneSyncStatusDto<TData>> {
+    return this.waitFor(requestNonce, baseline, timeoutMs, (runState) =>
+      runState.phase === "completed"
+      || runState.status === "success"
+      || runState.status === "error");
   }
 
   private async waitFor<TData>(
     requestNonce: string,
     baseline: Date,
     timeoutMs: number,
-    predicate: (envelope: PtuneSyncStatusEnvelope<TData>) => boolean,
-  ): Promise<PtuneSyncStatusEnvelope<TData>> {
+    predicate: (runState: PtuneSyncRunState<TData>) => boolean,
+  ): Promise<PtuneSyncStatusDto<TData>> {
     const timeoutAt = Date.now() + timeoutMs;
 
     while (Date.now() < timeoutAt) {
@@ -65,7 +67,8 @@ export class PtuneTaskStatusWatcher {
         continue;
       }
 
-      if (!predicate(envelope)) {
+      const runState = PtuneSyncRunStateMapper.fromDto(envelope);
+      if (!predicate(runState)) {
         await this.delay(this.pollIntervalMs);
         continue;
       }
@@ -76,7 +79,7 @@ export class PtuneTaskStatusWatcher {
     throw new Error("ptune-task status wait timed out");
   }
 
-  private async tryRead<TData>(requestNonce: string): Promise<PtuneSyncStatusEnvelope<TData> | null> {
+  private async tryRead<TData>(requestNonce: string): Promise<PtuneSyncStatusDto<TData> | null> {
     const path = this.workDir.getStatusFileRelative();
 
     if (!(await this.app.vault.adapter.exists(path))) {
@@ -86,8 +89,9 @@ export class PtuneTaskStatusWatcher {
     try {
       const raw = await this.app.vault.adapter.read(path);
       const envelope = PtuneSyncStatusParser.parse<TData>(raw);
+      const runState = PtuneSyncRunStateMapper.fromDto(envelope);
       logger.debug(
-        `[Sync] [PtuneTaskStatusWatcher] requestNonce=${requestNonce} envelopeNonce=${envelope.request_nonce ?? "<none>"} phase=${envelope.phase ?? "<none>"} status=${envelope.status}`,
+        `[Sync] [PtuneTaskStatusWatcher] requestNonce=${requestNonce} envelopeNonce=${runState.requestNonce ?? "<none>"} phase=${runState.phase} status=${runState.status}`,
       );
       return envelope;
     } catch {
@@ -95,17 +99,18 @@ export class PtuneTaskStatusWatcher {
     }
   }
 
-  private matchesRequest(envelope: PtuneSyncStatusEnvelope, requestNonce: string): boolean {
-    if (envelope.request_nonce) {
-      return envelope.request_nonce === requestNonce;
+  private matchesRequest(envelope: PtuneSyncStatusDto, requestNonce: string): boolean {
+    const runState = PtuneSyncRunStateMapper.fromDto(envelope);
+
+    if (runState.requestNonce) {
+      return runState.requestNonce === requestNonce;
     }
 
-    return !envelope.request_id || envelope.request_id === requestNonce;
+    return !runState.requestId || runState.requestId === requestNonce;
   }
 
-  private isNewer(envelope: PtuneSyncStatusEnvelope, baseline: Date): boolean {
-    const value = envelope.updated_at ?? envelope.timestamp;
-    const timestamp = Date.parse(value);
+  private isNewer(envelope: PtuneSyncStatusDto, baseline: Date): boolean {
+    const timestamp = Date.parse(PtuneSyncRunStateMapper.fromDto(envelope).updatedAt);
     return !Number.isNaN(timestamp) && timestamp > baseline.getTime();
   }
 

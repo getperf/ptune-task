@@ -1,14 +1,14 @@
-import { PtuneSyncStatusEnvelope } from "./PtuneSyncStatusEnvelope";
+import { PtuneSyncStatusDto } from "./PtuneSyncStatusDto";
 
 export class PtuneSyncStatusParser {
-  static parse<TData>(raw: string): PtuneSyncStatusEnvelope<TData> {
+  static parse<TData>(raw: string): PtuneSyncStatusDto<TData> {
     const parsed: unknown = JSON.parse(raw);
 
     if (!parsed || typeof parsed !== "object") {
       throw new Error("Invalid ptune-sync status: expected object");
     }
 
-    const envelope = parsed as PtuneSyncStatusEnvelope<TData>;
+    const envelope = parsed as PtuneSyncStatusDto<TData>;
 
     if (typeof envelope.version !== "number") {
       throw new Error("Invalid ptune-sync status: missing version");

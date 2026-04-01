@@ -3,7 +3,7 @@ import { PushQuery } from "../../../application/sync/shared/dto/PushQuery";
 import { ReviewQuery } from "../../../application/sync/shared/dto/ReviewQuery";
 import { App } from "obsidian";
 import { logger } from "../../../shared/logger/loggerInstance";
-import { PtuneSyncStatusEnvelope } from "../ptune-sync-uri/PtuneSyncStatusEnvelope";
+import { PtuneSyncStatusDto } from "../ptune-sync-uri/PtuneSyncStatusDto";
 import { PtuneSyncUriClient } from "../ptune-sync-uri/PtuneSyncUriClient";
 import { PtuneSyncUriLauncher } from "../ptune-sync-uri/PtuneSyncUriLauncher";
 import { PtuneSyncClient } from "../shared/PtuneSyncClient";
@@ -30,7 +30,7 @@ export class PtuneTaskUriClient implements PtuneSyncClient {
     this.watcher = new PtuneTaskStatusWatcher(app, this.workDir);
   }
 
-  async authStatus<TData>(): Promise<PtuneSyncStatusEnvelope<TData>> {
+  async authStatus<TData>(): Promise<PtuneSyncStatusDto<TData>> {
     const prepared = await this.writer.write("auth-status");
     const uri = this.builder.buildAuthStatus(prepared.requestFile);
 
@@ -48,7 +48,7 @@ export class PtuneTaskUriClient implements PtuneSyncClient {
     return this.watcher.waitForCompletion<TData>(prepared.requestNonce, baseline);
   }
 
-  async authLogin<TData>(): Promise<PtuneSyncStatusEnvelope<TData>> {
+  async authLogin<TData>(): Promise<PtuneSyncStatusDto<TData>> {
     const prepared = await this.writer.write("auth-login");
     const uri = this.builder.buildAuthLogin(prepared.requestFile);
 
@@ -66,7 +66,7 @@ export class PtuneTaskUriClient implements PtuneSyncClient {
     return this.watcher.waitForAuthLoginCompletion<TData>(prepared.requestNonce, baseline);
   }
 
-  async pull<TData>(query: PullQuery): Promise<PtuneSyncStatusEnvelope<TData>> {
+  async pull<TData>(query: PullQuery): Promise<PtuneSyncStatusDto<TData>> {
     const prepared = await this.writer.writePull(query);
     const uri = this.builder.buildPull(prepared.requestFile);
 
@@ -84,7 +84,7 @@ export class PtuneTaskUriClient implements PtuneSyncClient {
     return this.watcher.waitForCompletion<TData>(prepared.requestNonce, baseline);
   }
 
-  async review<TData>(query: ReviewQuery): Promise<PtuneSyncStatusEnvelope<TData>> {
+  async review<TData>(query: ReviewQuery): Promise<PtuneSyncStatusDto<TData>> {
     const prepared = await this.writer.writeReview(query);
     const uri = this.builder.buildReview(prepared.requestFile);
 
@@ -105,7 +105,7 @@ export class PtuneTaskUriClient implements PtuneSyncClient {
   async diff<TData>(
     payload: string,
     query: PushQuery,
-  ): Promise<PtuneSyncStatusEnvelope<TData>> {
+  ): Promise<PtuneSyncStatusDto<TData>> {
     const prepared = await this.writer.writeDiff(query, payload);
     const uri = this.builder.buildDiff(prepared.requestFile);
 
@@ -126,7 +126,7 @@ export class PtuneTaskUriClient implements PtuneSyncClient {
   async push<TData>(
     payload: string,
     query: PushQuery,
-  ): Promise<PtuneSyncStatusEnvelope<TData>> {
+  ): Promise<PtuneSyncStatusDto<TData>> {
     const prepared = await this.writer.writePush(query, payload);
     const uri = this.builder.buildPush(prepared.requestFile);
 
