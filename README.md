@@ -1,90 +1,97 @@
-# Ptune Task Plugin
+# ptune-task
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+## Overview / 概要
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
+**English**  
+**ptune-task** is an Obsidian plugin for the ptune task workflow.  
+It supports daily planning, Google Tasks synchronization through **PtuneSync**, and end-of-day review around Obsidian Daily Notes.
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open modal (simple)" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+**日本語**  
+**ptune-task** は、ptune のタスク管理ワークフロー向け Obsidian プラグインです。  
+Obsidian Daily Notes を中心に、日次計画、**PtuneSync** 経由の Google Tasks 同期、日次振り返りを支援します。
 
-## First time developing plugins?
+---
 
-Quick starting guide for new plugin devs:
+## Documentation / ドキュメント
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+**English**  
+Full setup guides and detailed documentation are available on the official site:
 
-## Releasing new releases
+👉 https://ptune.getperf.net/en/
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+**日本語**  
+セットアップ手順や詳細な使い方は公式サイトを参照してください：
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+👉 https://ptune.getperf.net/
 
-## Adding your plugin to the community plugin list
+README は最小限に留め、詳細は公式ドキュメントへ集約します。
 
-- Check the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+---
 
-## How to use
+## Features / 機能概要
 
-- Clone this repo.
-- Make sure your NodeJS is at least v16 (`node --version`).
-- `npm i` or `yarn` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
+**English**
+- Plan and edit today's tasks in Obsidian Daily Notes
+- Synchronize tasks with Google Tasks through PtuneSync
+- Rebuild daily task sections after synchronization
+- Generate daily review content from task data
 
-## Manually installing the plugin
+**日本語**
+- Obsidian Daily Note 上で今日の予定タスクを計画・編集
+- PtuneSync 経由で Google Tasks と同期
+- 同期後に日次タスクセクションを再構築
+- タスク実績から日次振り返りを生成
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
+---
 
-## Improve code quality with eslint
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- This project already has eslint preconfigured, you can invoke a check by running`npm run lint`
-- Together with a custom eslint [plugin](https://github.com/obsidianmd/eslint-plugin) for Obsidan specific code guidelines.
-- A GitHub action is preconfigured to automatically lint every commit on all branches.
+## Project Scope / 位置づけ
 
-## Funding URL
+**English**  
+The ptune ecosystem is being split into two complementary tools:
 
-You can include funding URLs where people who use your plugin can financially support it.
+- **ptune-task**: task-centered daily planning, synchronization, and review
+- **ptune-log**: work-log organization, knowledge capture, and continuous improvement
 
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
+`ptune-task` focuses on stable daily task operations around Obsidian, Google Tasks, and PtuneSync.  
+`ptune-log` focuses on personal knowledge work such as AI chat logs, snippets, research notes, and document analysis.
 
-```json
-{
-    "fundingUrl": "https://buymeacoffee.com"
-}
-```
+**日本語**  
+ptune は今後、役割の異なる 2 つのツールへ分離していきます。
 
-If you have multiple URLs, you can also do:
+- **ptune-task**: 日次のタスク管理、同期、振り返り
+- **ptune-log**: 作業ログ整理、知識蓄積、継続的改善
 
-```json
-{
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
-}
-```
+`ptune-task` は Obsidian・Google Tasks・PtuneSync を中心とした安定的なタスク運用を重視します。  
+`ptune-log` は AI チャット履歴、コードスニペット、調査メモ、実験記録など、個人の知識労働の整理と改善を重視します。
 
-## API Documentation
+---
 
-See https://docs.obsidian.md
+## Compatibility / 対応環境
+
+**English**  
+- **Obsidian Desktop only**
+- **Windows**
+
+**日本語**  
+- **Obsidian デスクトップ版のみ対応**
+- **Windows に対応**
+
+---
+
+## License / ライセンス
+
+**English**  
+MIT License
+
+**日本語**  
+MIT ライセンス
+
+---
+
+## Issues / フィードバック
+
+**English**  
+Please submit issues and feature requests via GitHub.
+
+**日本語**  
+不具合報告や改善要望は GitHub Issues へお願いします。

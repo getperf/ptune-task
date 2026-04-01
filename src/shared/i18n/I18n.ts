@@ -18,6 +18,10 @@ export class I18n {
 	get common() {
 		return this.dict.common;
 	}
+
+	get prompts() {
+		return this.dict.prompts;
+	}
 }
 
 export const i18n = new I18n();

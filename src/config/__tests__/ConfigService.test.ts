@@ -39,6 +39,96 @@ describe("ConfigService", () => {
 		});
 	});
 
+	test("load(): nested review settings preserve defaults", async () => {
+		const service = new ConfigService();
+
+		const plugin = createPluginMock({
+			review: {
+				sentenceMode: "none",
+			},
+		}) as unknown as Plugin;
+
+		await service.load(plugin);
+
+		expect(service.getSettings().review).toEqual({
+			...DEFAULT_SETTINGS.review,
+			sentenceMode: "none",
+		});
+	});
+
+	test("load(): nested projectIndex settings preserve defaults", async () => {
+		const service = new ConfigService();
+
+		const plugin = createPluginMock({
+			projectIndex: {
+				enableBasesSection: false,
+			},
+		}) as unknown as Plugin;
+
+		await service.load(plugin);
+
+		expect(service.getSettings().projectIndex).toEqual({
+			...DEFAULT_SETTINGS.projectIndex,
+			enableBasesSection: false,
+		});
+	});
+
+	test("load(): reviewPointOutputFormat falls back to legacy noteSummaryOutputFormat", async () => {
+		const service = new ConfigService();
+
+		const plugin = createPluginMock({
+			review: {
+				noteSummaryOutputFormat: "xmind",
+			},
+		}) as unknown as Plugin;
+
+		await service.load(plugin);
+
+		expect(service.getSettings().review.reviewPointOutputFormat).toBe("xmind");
+	});
+
+	test("load(): dailyNoteTask.habit falls back to legacy habitTasks when not configured", async () => {
+		const service = new ConfigService();
+
+		const plugin = createPluginMock({
+			habitTasks: {
+				morning: ["<朝>起床🚫"],
+				evening: ["<夜>プール🚫"],
+			},
+		}) as unknown as Plugin;
+
+		await service.load(plugin);
+
+		expect(service.getSettings().dailyNoteTask?.habit).toEqual({
+			morning: ["<朝>起床🚫"],
+			evening: ["<夜>プール🚫"],
+		});
+	});
+
+	test("load(): explicit dailyNoteTask.habit overrides legacy habitTasks", async () => {
+		const service = new ConfigService();
+
+		const plugin = createPluginMock({
+			habitTasks: {
+				morning: ["<朝>起床🚫"],
+				evening: ["<夜>プール🚫"],
+			},
+			dailyNoteTask: {
+				habit: {
+					morning: [],
+					evening: [],
+				},
+			},
+		}) as unknown as Plugin;
+
+		await service.load(plugin);
+
+		expect(service.getSettings().dailyNoteTask?.habit).toEqual({
+			morning: [],
+			evening: [],
+		});
+	});
+
 	test("save(): saveData called", async () => {
 		const service = new ConfigService();
 

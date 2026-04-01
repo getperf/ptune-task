@@ -31,6 +31,8 @@ data.json
 
 logs/
 *.log
+work/
+.obsidian/plugins/ptune-task/work/
 
 # =========================
 # OS files
