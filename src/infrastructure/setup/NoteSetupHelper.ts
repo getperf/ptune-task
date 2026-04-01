@@ -1,5 +1,6 @@
 import { App, normalizePath } from "obsidian";
 import { config } from "../../config/config";
+import { TEMPLATE_ANALYSIS_XMIND_BASE64 } from "../../generated/templateAnalysisXmind";
 
 export type NoteSetupResult = {
   createdPaths: string[];
@@ -34,10 +35,7 @@ export class NoteSetupHelper {
     await this.ensureParentFolders(templatePath, createdPaths);
 
     if (!(await this.app.vault.adapter.exists(templatePath))) {
-      const sourcePath = normalizePath(
-        `${this.app.vault.configDir}/plugins/${NoteSetupHelper.PLUGIN_ID}/${NoteSetupHelper.SOURCE_TEMPLATE_PATH}`,
-      );
-      const data = await this.app.vault.adapter.readBinary(sourcePath);
+      const data = await this.readTemplateBinary();
       await this.app.vault.adapter.writeBinary(templatePath, data);
       updatedTemplates.push(templatePath);
     }
@@ -59,4 +57,24 @@ export class NoteSetupHelper {
       createdPaths.push(current);
     }
   }
+
+  private async readTemplateBinary(): Promise<ArrayBuffer> {
+    const sourcePath = normalizePath(
+      `${this.app.vault.configDir}/plugins/${NoteSetupHelper.PLUGIN_ID}/${NoteSetupHelper.SOURCE_TEMPLATE_PATH}`,
+    );
+
+    if (await this.app.vault.adapter.exists(sourcePath)) {
+      return await this.app.vault.adapter.readBinary(sourcePath);
+    }
+
+    return decodeBase64ToArrayBuffer(TEMPLATE_ANALYSIS_XMIND_BASE64);
+  }
+}
+
+function decodeBase64ToArrayBuffer(base64: string): ArrayBuffer {
+  const buffer = Buffer.from(base64, "base64");
+  return buffer.buffer.slice(
+    buffer.byteOffset,
+    buffer.byteOffset + buffer.byteLength,
+  );
 }

@@ -5,10 +5,15 @@
 	"main": "main.js",
 	"type": "module",
 	"scripts": {
+		"codegen:xmind-template": "node scripts/generate-xmind-template.mjs",
 		"dev": "node esbuild.config.mjs --watch",
 		"build": "node esbuild.config.mjs",
 		"prepare-dist": "node scripts/prepare-dist.mjs",
 		"package": "npm run build && npm run prepare-dist && node scripts/make-zip.mjs",
+		"predev": "npm run codegen:xmind-template",
+		"prebuild": "npm run codegen:xmind-template",
+		"prelint": "npm run codegen:xmind-template",
+		"pretest": "npm run codegen:xmind-template",
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
 		"lint": "eslint src tests",
 		"test": "jest"
