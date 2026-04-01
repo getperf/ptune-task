@@ -31,7 +31,6 @@ import { ReviewPointXMindInputFileService } from "../infrastructure/review/Revie
 import { SetupChecklistService } from "../application/setup/services/SetupChecklistService";
 import { NoteSetupHelper } from "../infrastructure/setup/NoteSetupHelper";
 import { SetupWizardDialog } from "../presentation/setup/SetupWizardDialog";
-import { PtuneTaskRunCleanupService } from "../infrastructure/sync/ptune-task-uri/PtuneTaskRunCleanupService";
 import { AuthLoginProgressService } from "../presentation/auth/AuthLoginProgressService";
 
 export class Container {
@@ -151,10 +150,6 @@ export class Container {
 
   createAuthLoginProgressService(): AuthLoginProgressService {
     return new AuthLoginProgressService(this.app);
-  }
-
-  createRunCleanupService(): PtuneTaskRunCleanupService {
-    return new PtuneTaskRunCleanupService(this.app);
   }
 
   createSetupWizardDialog(): SetupWizardDialog {
