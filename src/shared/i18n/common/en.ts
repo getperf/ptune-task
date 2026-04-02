@@ -224,6 +224,10 @@ export const commonEn = {
 		refreshDesc: "Reload the current setup status.",
 		requiredSection: "Required",
 		recommendedSection: "Recommended",
+		requiredSectionDesc: "If an item is not configured, open the manual link and complete the setup.",
+		recommendedSectionDesc: "See the following manual for recommended plugin setup.",
+		recommendedSectionGuideUrl: "https://ptune.getperf.net/ptune-task/setup/recommended-plugins/",
+		manualLinkLabel: "Manual link",
 		openGuide: "Open guide",
 		status: {
 			ok: "OK",

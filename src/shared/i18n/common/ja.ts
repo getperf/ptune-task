@@ -221,6 +221,10 @@ export const commonJa = {
 		refreshDesc: "現在の設定状態を再確認します",
 		requiredSection: "必須項目",
 		recommendedSection: "推奨項目",
+		requiredSectionDesc: "未設定の項目は、各マニュアルリンクを開いて設定してください。",
+		recommendedSectionDesc: "推奨プラグインの導入手順は次のマニュアルを参照してください。",
+		recommendedSectionGuideUrl: "https://ptune.getperf.net/ptune-task/setup/recommended-plugins/",
+		manualLinkLabel: "マニュアルリンク",
 		openGuide: "案内を開く",
 		status: {
 			ok: "OK",

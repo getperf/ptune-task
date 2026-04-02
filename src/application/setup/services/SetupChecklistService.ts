@@ -12,6 +12,12 @@ type RecommendedPlugin = {
 };
 
 export class SetupChecklistService {
+  private static readonly DAILY_NOTES_GUIDE_URL =
+    "https://ptune.getperf.net/ptune-task/setup/notes-setup/";
+
+  private static readonly PTUNESYNC_GUIDE_URL =
+    "https://ptune.getperf.net/ptune-task/setup/install-ptunesync/";
+
   private static readonly NOTE_RESOURCE_PATHS = [
     "_project",
     "_journal",
@@ -93,6 +99,7 @@ export class SetupChecklistService {
         level: "required",
         status: "missing",
         message: i18n.common.setup.messages.dailyNotesPluginMissing,
+        actionUrl: SetupChecklistService.DAILY_NOTES_GUIDE_URL,
       };
     }
 
@@ -104,6 +111,7 @@ export class SetupChecklistService {
         level: "required",
         status: "missing",
         message: i18n.common.setup.messages.dailyNotesConfigMissing,
+        actionUrl: SetupChecklistService.DAILY_NOTES_GUIDE_URL,
       };
     }
 
@@ -123,6 +131,7 @@ export class SetupChecklistService {
           message: i18n.common.setup.messages.dailyNotesReady
             .replace("{folder}", normalizedFolder)
             .replace("{template}", ""),
+          actionUrl: SetupChecklistService.DAILY_NOTES_GUIDE_URL,
         }
       : {
           id: "daily_notes",
@@ -130,6 +139,7 @@ export class SetupChecklistService {
           level: "required",
           status: "warning",
           message: warnings.join("; "),
+          actionUrl: SetupChecklistService.DAILY_NOTES_GUIDE_URL,
         };
   }
 
@@ -141,6 +151,7 @@ export class SetupChecklistService {
         level: "required",
         status: "skipped",
         message: i18n.common.setup.messages.ptunesyncSkipped,
+        actionUrl: SetupChecklistService.PTUNESYNC_GUIDE_URL,
       };
     }
 
@@ -152,6 +163,7 @@ export class SetupChecklistService {
         level: "required",
         status: "ok",
         message: i18n.common.setup.messages.ptunesyncReady,
+        actionUrl: SetupChecklistService.PTUNESYNC_GUIDE_URL,
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -161,6 +173,7 @@ export class SetupChecklistService {
         level: "required",
         status: "missing",
         message: `${i18n.common.setup.messages.ptunesyncMissing}: ${message}`,
+        actionUrl: SetupChecklistService.PTUNESYNC_GUIDE_URL,
       };
     }
   }

@@ -197,6 +197,19 @@
   margin: 0 0 0.35rem;
 }
 
+.ptune-setup-header,
+.ptune-setup-note-resources-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.ptune-setup-header > button,
+.ptune-setup-note-resources-header > button {
+  flex: 0 0 auto;
+}
+
 .ptune-setup-section-title {
   margin: 0.8rem 0 0.2rem;
   font-size: var(--font-ui-medium);

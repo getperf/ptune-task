@@ -29,28 +29,22 @@ export class SetupWizardDialog extends Modal {
     const { contentEl } = this;
     contentEl.empty();
 
-    contentEl.createEl("h2", { text: t.title, cls: "ptune-setup-title" });
-
-    new Setting(contentEl)
-      .setName(t.refresh)
-      .setDesc(t.refreshDesc)
-      .addButton((button) =>
-        button.setButtonText(t.refresh).onClick(() => {
-          void this.render();
-        }),
-      );
+    const headerEl = contentEl.createDiv({ cls: "ptune-setup-header" });
+    headerEl.createEl("h2", { text: t.title, cls: "ptune-setup-title" });
+    const refreshButton = headerEl.createEl("button", { text: t.refresh });
+    refreshButton.addClass("mod-cta");
+    refreshButton.onClickEvent(() => {
+      void this.render();
+    });
 
     const checklist = await this.checklistService.getChecklist();
     const noteResources = checklist.required.find((item) => item.id === "note_resources");
-
-    if (noteResources) {
-      this.renderNoteResources(contentEl, noteResources);
-    }
 
     this.renderSection(
       contentEl,
       t.requiredSection,
       checklist.required.filter((item) => item.id !== "note_resources"),
+      noteResources,
     );
     this.renderSection(contentEl, t.recommendedSection, checklist.recommended);
   }
@@ -58,35 +52,40 @@ export class SetupWizardDialog extends Modal {
   private renderNoteResources(container: HTMLElement, item: SetupItem): void {
     const t = i18n.common.setup.noteResources;
 
-    container.createEl("h3", { text: t.title, cls: "ptune-setup-section-title" });
+    const headerEl = container.createDiv({ cls: "ptune-setup-note-resources-header" });
+    headerEl.createEl("h3", { text: t.title, cls: "ptune-setup-section-title" });
+    const runButton = headerEl.createEl("button", { text: t.run });
+    runButton.addClass("mod-cta");
+    runButton.onClickEvent(() => {
+      void this.runNoteSetup();
+    });
 
-    new Setting(container)
-      .setName(t.statusTitle)
-      .setDesc(`${this.resolveStatusLabel(item.status)}: ${item.message}`);
-
-    new Setting(container)
-      .setName(t.run)
-      .setDesc(t.desc)
-      .addButton((button) =>
-        button.setButtonText(t.run).onClick(() => {
-          void this.runNoteSetup();
-        }),
-      );
+    container.createEl("div", {
+      text: `${this.resolveStatusLabel(item.status)}: ${item.message}`,
+      cls: "setting-item-description",
+    });
   }
 
   private renderSection(
     container: HTMLElement,
     title: string,
     items: SetupItem[],
+    noteResources?: SetupItem,
   ): void {
     container.createEl("h3", { text: title, cls: "ptune-setup-section-title" });
+    this.renderSectionHelp(container, title);
+
+    if (title === i18n.common.setup.requiredSection && noteResources) {
+      this.renderNoteResources(container, noteResources);
+    }
 
     for (const item of items) {
       const setting = new Setting(container)
-        .setName(item.title)
-        .setDesc(`${this.resolveStatusLabel(item.status)}: ${item.message}`);
+        .setName(item.title);
 
-      if (item.actionUrl) {
+      setting.setDesc(this.buildItemDescription(item));
+
+      if (item.level === "recommended" && item.actionUrl) {
         setting.addExtraButton((button) => {
           button
             .setIcon("link")
@@ -97,6 +96,53 @@ export class SetupWizardDialog extends Modal {
         });
       }
     }
+  }
+
+  private renderSectionHelp(container: HTMLElement, title: string): void {
+    const t = i18n.common.setup;
+
+    if (title === t.requiredSection) {
+      container.createEl("div", {
+        text: t.requiredSectionDesc,
+        cls: "setting-item-description",
+      });
+      return;
+    }
+
+    if (title === t.recommendedSection) {
+      const descEl = container.createEl("div", {
+        cls: "setting-item-description",
+      });
+      descEl.appendText(`${t.recommendedSectionDesc} `);
+      const linkEl = descEl.createEl("a", {
+        text: `${t.manualLinkLabel}: ${t.recommendedSectionGuideUrl}`,
+        href: t.recommendedSectionGuideUrl,
+      });
+      linkEl.target = "_blank";
+      linkEl.rel = "noopener noreferrer";
+    }
+  }
+
+  private buildItemDescription(item: SetupItem): DocumentFragment {
+    const t = i18n.common.setup;
+    const fragment = document.createDocumentFragment();
+    fragment.appendText(`${this.resolveStatusLabel(item.status)}: ${item.message}`);
+
+    if (item.level === "required" && item.actionUrl) {
+      fragment.appendChild(document.createElement("br"));
+      const linkEl = document.createElement("a");
+      linkEl.textContent = `${t.manualLinkLabel}: ${item.actionUrl}`;
+      linkEl.href = item.actionUrl;
+      linkEl.target = "_blank";
+      linkEl.rel = "noopener noreferrer";
+      fragment.appendChild(linkEl);
+      linkEl.addEventListener("click", (event) => {
+        event.preventDefault();
+        window.open(item.actionUrl, "_blank");
+      });
+    }
+
+    return fragment;
   }
 
   private resolveStatusLabel(status: SetupItem["status"]): string {
