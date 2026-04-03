@@ -4,7 +4,7 @@ import { NoteSummaries } from "../../../domain/note/NoteSummaries";
 import { GenerateDailyNotesReviewUseCase } from "../usecases/GenerateDailyNotesReviewUseCase";
 
 describe("GenerateDailyNotesReviewUseCase", () => {
-  test("writes note list without summaries or reflection when llm-dependent output is disabled", async () => {
+  test("shows existing summaries in report even when auto summary generation is disabled", async () => {
     const originalFormat = config.settings.review.reviewPointOutputFormat;
     config.settings.review.reviewPointOutputFormat = "outline";
 
@@ -42,6 +42,7 @@ describe("GenerateDailyNotesReviewUseCase", () => {
       };
       const textGenerator = {
         generate: jest.fn(),
+        hasValidApiKey: jest.fn().mockReturnValue(false),
       };
       const writer = {
         write: jest.fn().mockReturnValue(updated),
@@ -57,6 +58,7 @@ describe("GenerateDailyNotesReviewUseCase", () => {
           [
             "- push時の差分ロジック見直し",
             "  - [新規作成で親見出し追加](_project/331_push%E6%99%82%E3%81%AE%E5%B7%AE%E5%88%86%E3%83%AD%E3%82%B8%E3%83%83%E3%82%AF%E8%A6%8B%E7%9B%B4%E3%81%97/01_%E6%96%B0%E8%A6%8F%E4%BD%9C%E6%88%90%E3%81%A7%E8%A6%AA%E8%A6%8B%E5%87%BA%E3%81%97%E8%BF%BD%E5%8A%A0.md)",
+            "    - これは表示しない",
           ].join("\n"),
         ),
       };
@@ -78,7 +80,7 @@ describe("GenerateDailyNotesReviewUseCase", () => {
       const result = await useCase.execute("2026-03-16", {
         reviewPointOutputFormat: "outline",
         enableSummaries: false,
-        enableReflection: false,
+        enableReflection: true,
       });
 
       expect(noteSummaryGenerator.generate).not.toHaveBeenCalled();
@@ -86,15 +88,16 @@ describe("GenerateDailyNotesReviewUseCase", () => {
       expect(reviewPointXMindTemplateService.ensureForDailyNote).not.toHaveBeenCalled();
       expect(reportBuilder.build).toHaveBeenCalledWith(
         summaries,
-        { includeSummaries: false },
+        { includeSummaries: true },
       );
       expect(writer.write).toHaveBeenCalledWith(
         note,
         [
           "- push時の差分ロジック見直し",
           "  - [新規作成で親見出し追加](_project/331_push%E6%99%82%E3%81%AE%E5%B7%AE%E5%88%86%E3%83%AD%E3%82%B8%E3%83%83%E3%82%AF%E8%A6%8B%E7%9B%B4%E3%81%97/01_%E6%96%B0%E8%A6%8F%E4%BD%9C%E6%88%90%E3%81%A7%E8%A6%AA%E8%A6%8B%E5%87%BA%E3%81%97%E8%BF%BD%E5%8A%A0.md)",
+          "    - これは表示しない",
         ].join("\n"),
-        "",
+        expect.stringContaining("下記は手動で振り返りポイントを整理するための作業エリアです。"),
       );
       expect(dailyNoteRepository.save).toHaveBeenCalledWith(updated);
       expect(result).toEqual({
@@ -146,6 +149,7 @@ describe("GenerateDailyNotesReviewUseCase", () => {
       };
       const textGenerator = {
         generate: jest.fn(),
+        hasValidApiKey: jest.fn().mockReturnValue(false),
       };
       const writer = {
         write: jest.fn().mockReturnValue(updated),
@@ -255,6 +259,7 @@ describe("GenerateDailyNotesReviewUseCase", () => {
           "- 先頭のゴミ見出しを生成する箇所を特定した。",
           "- 3月21日以降の複数ノートで再現している。",
         ].join("\n")),
+        hasValidApiKey: jest.fn().mockReturnValue(true),
       };
       const writer = {
         write: jest.fn().mockReturnValue(updated),

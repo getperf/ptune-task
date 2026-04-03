@@ -107,7 +107,7 @@ describe("GenerateDailyReviewFlowUseCase", () => {
       expect.objectContaining({
         reviewPointOutputFormat: "outline",
         enableSummaries: false,
-        enableReflection: false,
+        enableReflection: true,
       }),
     );
     expect(result).toEqual({

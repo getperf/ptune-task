@@ -109,7 +109,7 @@ export class GenerateDailyNotesReviewUseCase {
       }
 
       const report = this.reportBuilder.build(summaries, {
-        includeSummaries: enableSummaries,
+        includeSummaries: true,
       });
       options?.onProgress?.({
         type: "writing_report",
@@ -152,6 +152,10 @@ export class GenerateDailyNotesReviewUseCase {
     const xmindLinks = outputFormat === "xmind"
       ? await this.prepareXMindFiles(note)
       : {};
+
+    if (!this.textGenerator.hasValidApiKey()) {
+      return await this.finalizeManualReflectionOutput(doc, note, outputFormat, xmindLinks);
+    }
 
     if (config.settings.review.sentenceMode !== "llm") {
       return await this.finalizeReflectionOutput(doc, note, outputFormat, xmindLinks);
@@ -245,6 +249,26 @@ export class GenerateDailyNotesReviewUseCase {
     }
 
     return this.reflectionBuilder.buildStructured(structured, outputFormat, {
+      xmindFileLink: links.xmindFileLink,
+      xmindInputFileLink,
+    });
+  }
+
+  private async finalizeManualReflectionOutput(
+    doc: DailyNotesReflectionDocument,
+    note: DailyNote,
+    outputFormat: ReviewOutputFormat,
+    links: { xmindFileLink?: string },
+  ): Promise<string> {
+    let xmindInputFileLink: string | undefined;
+
+    if (outputFormat === "xmind" && this.reviewPointXMindInputFileService) {
+      const inputText = this.reflectionBuilder.buildXmindInput(doc);
+      const inputFile = await this.reviewPointXMindInputFileService.writeForDailyNote(note, inputText);
+      xmindInputFileLink = inputFile.markdownLinkPath;
+    }
+
+    return this.reflectionBuilder.buildManual(outputFormat, {
       xmindFileLink: links.xmindFileLink,
       xmindInputFileLink,
     });

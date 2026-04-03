@@ -79,7 +79,7 @@ export class GenerateDailyReviewFlowUseCase {
       const dailyNotesReviewOptions: GenerateDailyNotesReviewOptions = {
         reviewPointOutputFormat: options.reviewPointOutputFormat,
         enableSummaries: llmAvailable,
-        enableReflection: llmAvailable,
+        enableReflection: true,
         onProgress: (progress) => {
           if (progress.type === "targets_resolved") {
             targetCount = progress.total;

@@ -10,6 +10,17 @@ export type DailyNotesReflectionBuildOptions = {
 };
 
 export class DailyNotesReflectionBuilder {
+  buildManual(
+    outputFormat: ReviewOutputFormat,
+    options?: DailyNotesReflectionBuildOptions,
+  ): string {
+    if (outputFormat === "xmind") {
+      return this.buildManualXmind(options);
+    }
+
+    return buildCommentBlock(i18n.common.daily.reviewpoint.comment.manualOutline);
+  }
+
   build(
     doc: DailyNotesReflectionDocument,
     outputFormat: ReviewOutputFormat,
@@ -57,6 +68,30 @@ export class DailyNotesReflectionBuilder {
     const t = i18n.common.daily.reviewpoint;
     const lines = [
       buildCommentBlock(t.comment.xmind),
+      "",
+    ];
+
+    if (options?.xmindFileLink) {
+      lines.push(`[${t.xmindFileLinkLabel}](${options.xmindFileLink})`, "");
+    }
+
+    if (options?.xmindInputFileLink) {
+      lines.push(`[${t.xmindInputFileLinkLabel}](${options.xmindInputFileLink})`, "");
+    }
+
+    lines.push(
+      `**${t.xmindOutputHeading}**`,
+      "",
+      wrapWithCodeBlock("", "text"),
+    );
+
+    return lines.join("\n").trim();
+  }
+
+  private buildManualXmind(options?: DailyNotesReflectionBuildOptions): string {
+    const t = i18n.common.daily.reviewpoint;
+    const lines = [
+      buildCommentBlock(t.comment.manualXmind),
       "",
     ];
 
