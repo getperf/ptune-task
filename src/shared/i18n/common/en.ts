@@ -60,6 +60,7 @@ export const commonEn = {
 		},
 		modal: {
 			title: "Note Summary",
+			manualDescription: "LLM is not configured, so automatic generation is unavailable. Review the note body and enter the key points manually at a level that will be useful for later reflection.",
 			summaryLabel: "Summary",
 			save: "Save",
 			regenerate: "Regenerate",

@@ -89,10 +89,9 @@
   word-break: break-all;
 }
 
-.ptune-note-summary-textarea {
-  width: 100%;
-  min-height: min(60vh, 32rem);
-  resize: vertical;
+.ptune-note-summary-description {
+  margin: 0;
+  line-height: 1.5;
 }
 
 .ptune-note-summary-modal .modal {
@@ -103,12 +102,14 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  min-height: min(75vh, 52rem);
+  height: min(75vh, 52rem);
+  max-height: min(75vh, 52rem);
+  overflow: hidden;
 }
 
 .ptune-note-summary-field {
   display: flex;
-  flex: 1 1 auto;
+  flex: 1 1 0;
   flex-direction: column;
   gap: 0.5rem;
   min-height: 0;
@@ -120,11 +121,14 @@
 }
 
 .ptune-note-summary-textarea {
+  width: 100%;
   flex: 1 1 auto;
-  min-height: min(60vh, 32rem);
+  min-height: 12rem;
   padding: 0.75rem;
   line-height: 1.5;
   box-sizing: border-box;
+  overflow: auto;
+  resize: vertical;
 }
 
 .ptune-note-summary-actions {

@@ -1,5 +1,6 @@
 import { App } from "obsidian";
 import { NoteSummaryGenerator } from "../../application/note_review/services/NoteSummaryGenerator";
+import { LoadNoteSummaryUseCase } from "../../application/note_review/usecases/LoadNoteSummaryUseCase";
 import { PreviewNoteSummaryUseCase } from "../../application/note_review/usecases/PreviewNoteSummaryUseCase";
 import { SaveNoteSummaryUseCase } from "../../application/note_review/usecases/SaveNoteSummaryUseCase";
 import { LlmClient } from "../../infrastructure/llm/LlmClient";
@@ -17,6 +18,7 @@ export class ReviewFeatureFactory {
     return new NoteReviewFeature(
       this.app,
       llm,
+      new LoadNoteSummaryUseCase(repo),
       new PreviewNoteSummaryUseCase(generator),
       new SaveNoteSummaryUseCase(repo),
     );

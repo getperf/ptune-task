@@ -1,18 +1,26 @@
 import { App, Modal, Setting } from "obsidian";
 import { i18n } from "../../shared/i18n/I18n";
 
+type NoteSummaryModalOptions = {
+  description?: string;
+  canRegenerate?: boolean;
+};
+
 export class NoteSummaryModal extends Modal {
   private value: string;
   private textAreaEl: HTMLTextAreaElement | null = null;
+  private readonly options: NoteSummaryModalOptions;
 
   constructor(
     app: App,
     initialValue: string,
     private readonly onSave: (value: string) => Promise<void>,
     private readonly onRegenerate: () => Promise<string>,
+    options?: NoteSummaryModalOptions,
   ) {
     super(app);
     this.value = initialValue;
+    this.options = options ?? {};
   }
 
   onOpen(): void {
@@ -21,6 +29,13 @@ export class NoteSummaryModal extends Modal {
 
     this.modalEl.addClass("ptune-note-summary-modal");
     contentEl.createEl("h2", { text: t.modal.title });
+
+    if (this.options.description) {
+      contentEl.createEl("p", {
+        text: this.options.description,
+        cls: "ptune-note-summary-description",
+      });
+    }
 
     const fieldEl = contentEl.createDiv({ cls: "ptune-note-summary-field" });
     fieldEl.createEl("label", {
@@ -36,16 +51,20 @@ export class NoteSummaryModal extends Modal {
       this.value = this.textAreaEl?.value ?? "";
     });
 
-    new Setting(contentEl)
-      .setClass("ptune-note-summary-actions")
-      .addButton((button) =>
+    const actionSetting = new Setting(contentEl)
+      .setClass("ptune-note-summary-actions");
+
+    if (this.options.canRegenerate ?? true) {
+      actionSetting.addButton((button) =>
         button
           .setButtonText(t.modal.regenerate)
           .onClick(() => {
             void this.regenerate();
           }),
-      )
-      .addButton((button) =>
+      );
+    }
+
+    actionSetting.addButton((button) =>
         button
           .setButtonText(t.modal.save)
           .setCta()

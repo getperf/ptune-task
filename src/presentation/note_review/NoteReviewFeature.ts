@@ -1,5 +1,6 @@
 import { App, Notice, Plugin, TFile } from "obsidian";
 import { TextGenerationPort } from "../../application/llm/ports/TextGenerationPort";
+import { LoadNoteSummaryUseCase } from "../../application/note_review/usecases/LoadNoteSummaryUseCase";
 import { PreviewNoteSummaryUseCase } from "../../application/note_review/usecases/PreviewNoteSummaryUseCase";
 import { SaveNoteSummaryUseCase } from "../../application/note_review/usecases/SaveNoteSummaryUseCase";
 import { i18n } from "../../shared/i18n/I18n";
@@ -10,6 +11,7 @@ export class NoteReviewFeature {
   constructor(
     private readonly app: App,
     private readonly textGenerator: TextGenerationPort,
+    private readonly loadUseCase: LoadNoteSummaryUseCase,
     private readonly previewUseCase: PreviewNoteSummaryUseCase,
     private readonly saveUseCase: SaveNoteSummaryUseCase,
   ) {}
@@ -53,13 +55,11 @@ export class NoteReviewFeature {
   }
 
   private async open(file: TFile): Promise<void> {
-    if (!this.textGenerator.hasValidApiKey()) {
-      new Notice(i18n.common.noteReview.notice.apiKeyNotSet);
-      return;
-    }
-
     try {
-      const preview = await this.previewUseCase.execute(file);
+      const llmAvailable = this.textGenerator.hasValidApiKey();
+      const preview = llmAvailable
+        ? await this.previewUseCase.execute(file)
+        : await this.loadUseCase.execute(file);
       new NoteSummaryModal(
         this.app,
         preview,
@@ -68,6 +68,12 @@ export class NoteReviewFeature {
           new Notice(i18n.common.noteReview.notice.saved);
         },
         async () => await this.previewUseCase.execute(file),
+        llmAvailable
+          ? undefined
+          : {
+              description: i18n.common.noteReview.modal.manualDescription,
+              canRegenerate: false,
+            },
       ).open();
     } catch (error) {
       logger.warn("[Command] NoteReviewFeature.open failed", error);
