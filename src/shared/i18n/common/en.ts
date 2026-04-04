@@ -28,6 +28,13 @@ export const commonEn = {
 		authStatus: "Auth Status",
 	},
 
+	pull: {
+		notice: {
+			createdAndPulled: "Daily note created and pulled.",
+			completed: "Pull completed.",
+		},
+	},
+
 	noteCreation: {
 		menu: {
 			createProjectFolder: "Create Project Folder",
@@ -183,6 +190,13 @@ export const commonEn = {
 		},
 	},
 
+	reviewCommand: {
+		notice: {
+			generated: "Review generated ({taskCount} tasks, notes {noteCount}/{generatedCount})",
+			generatedWithoutNotesReview: "Review generated ({taskCount} tasks, notes review skipped: {reason})",
+		},
+	},
+
 	auth: {
 		progress: {
 			title: "Running Google Sign-in",
@@ -210,6 +224,21 @@ export const commonEn = {
 	},
 
 	push: {
+		notice: {
+			cancelled: "Push cancelled.",
+			blockedByDiff: "Push blocked by diff ({count} errors)",
+			completed: "Push and rebuild completed.",
+			details: {
+				summaryTitle: "=== Summary ===",
+				errorsTitle: "=== Errors ===",
+				warningsTitle: "=== Warnings ===",
+				create: "create",
+				update: "update",
+				delete: "delete",
+				errors: "errors",
+				warnings: "warnings",
+			},
+		},
 		confirm: {
 			planning: {
 				title: "Sync with replacement",

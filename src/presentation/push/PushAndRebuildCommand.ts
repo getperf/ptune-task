@@ -10,6 +10,7 @@ import { TodayResolver } from "../../application/calendar/services/TodayResolver
 import { DailyNoteRepository } from "../../infrastructure/repository/DailyNoteRepository";
 import { DailyNoteDocumentAdapter } from "../../infrastructure/document/adapter/DailyNoteDocumentAdapter";
 import { SyncPhase } from "../../domain/task/SyncPhase";
+import { i18n } from "../../shared/i18n/I18n";
 
 export class PushAndRebuildCommand {
   constructor(
@@ -43,7 +44,7 @@ export class PushAndRebuildCommand {
         await this.syncUseCase.execute(phase, allowDelete);
 
       if (result === false) {
-        this.presenter.showInfo("Push cancelled.");
+        this.presenter.showInfo(i18n.common.push.notice.cancelled);
         return;
       }
 
@@ -51,7 +52,8 @@ export class PushAndRebuildCommand {
         const diff = result as DiffResult;
 
         if (diff.isValidationFailure() || diff.hasErrors()) {
-          const message = `Push blocked by diff (${diff.summary.errors} errors)`;
+          const message = i18n.common.push.notice.blockedByDiff
+            .replace("{count}", String(diff.summary.errors));
           const details = this.buildValidationMessage(diff);
           this.presenter.showWarningWithDetails(message, details);
           return;
@@ -63,7 +65,7 @@ export class PushAndRebuildCommand {
       await this.presenter.openNote(updated);
       await this.presenter.refreshCalendar();
 
-      this.presenter.showInfo("Push and rebuild completed.");
+      this.presenter.showInfo(i18n.common.push.notice.completed);
       logger.debug(`[Command:end] PushAndRebuildCommand path=${updated.filePath}`);
     } catch (err) {
       logger.error("[Command] PushAndRebuildCommand failed", err);
@@ -100,22 +102,23 @@ export class PushAndRebuildCommand {
   }
 
   private buildValidationMessage(diff: DiffResult): string {
+    const t = i18n.common.push.notice.details;
     const summaries = [
-      `create: ${diff.summary.create}`,
-      `update: ${diff.summary.update}`,
-      `delete: ${diff.summary.delete}`,
-      `errors: ${diff.summary.errors}`,
-      `warnings: ${diff.summary.warnings}`,
+      `${t.create}: ${diff.summary.create}`,
+      `${t.update}: ${diff.summary.update}`,
+      `${t.delete}: ${diff.summary.delete}`,
+      `${t.errors}: ${diff.summary.errors}`,
+      `${t.warnings}: ${diff.summary.warnings}`,
     ];
 
-    const lines = ["=== Summary ===", summaries.join(" / "), ""];
+    const lines = [t.summaryTitle, summaries.join(" / "), ""];
 
     if (diff.errors.length > 0) {
-      lines.push("=== Errors ===", ...diff.errors, "");
+      lines.push(t.errorsTitle, ...diff.errors, "");
     }
 
     if (diff.warnings.length > 0) {
-      lines.push("=== Warnings ===", ...diff.warnings);
+      lines.push(t.warningsTitle, ...diff.warnings);
     }
 
     return lines.join("\n");

@@ -28,6 +28,13 @@ export const commonJa = {
 		authStatus: "認証ステータス",
 	},
 
+	pull: {
+		notice: {
+			createdAndPulled: "デイリーノートを作成して Pull しました",
+			completed: "Pull が完了しました",
+		},
+	},
+
 	noteCreation: {
 		menu: {
 			createProjectFolder: "プロジェクトフォルダ作成",
@@ -181,6 +188,13 @@ export const commonJa = {
 		},
 	},
 
+	reviewCommand: {
+		notice: {
+			generated: "レビューを生成しました（タスク {taskCount} 件、ノート {noteCount}/{generatedCount} 件）",
+			generatedWithoutNotesReview: "レビューを生成しました（タスク {taskCount} 件、ノートレビューはスキップ: {reason}）",
+		},
+	},
+
 	auth: {
 		progress: {
 			title: "Google 認証を実行中",
@@ -208,6 +222,21 @@ export const commonJa = {
 	},
 
 	push: {
+		notice: {
+			cancelled: "Push をキャンセルしました",
+			blockedByDiff: "差分チェックにより Push を中止しました（エラー {count} 件）",
+			completed: "Push と再構築が完了しました",
+			details: {
+				summaryTitle: "=== Summary ===",
+				errorsTitle: "=== Errors ===",
+				warningsTitle: "=== Warnings ===",
+				create: "create",
+				update: "update",
+				delete: "delete",
+				errors: "errors",
+				warnings: "warnings",
+			},
+		},
 		confirm: {
 			planning: {
 				title: "洗い替えで同期します",

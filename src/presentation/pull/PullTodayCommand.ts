@@ -2,6 +2,7 @@
 
 import { PullAndMergeTodayUseCase } from "../../application/sync/pull/PullAndMergeTodayUseCase";
 import { DailyNote } from "../../domain/daily/DailyNote";
+import { i18n } from "../../shared/i18n/I18n";
 import { logger } from "../../shared/logger/loggerInstance";
 
 export interface PullTodayPresenter {
@@ -28,7 +29,9 @@ export class PullTodayCommand {
       await this.presenter.refreshCalendar();
 
       this.presenter.showInfo(
-        result.created ? "Daily note created and pulled." : "Pull completed.",
+        result.created
+          ? i18n.common.pull.notice.createdAndPulled
+          : i18n.common.pull.notice.completed,
       );
       logger.debug(`[Command:end] PullTodayCommand created=${result.created} path=${result.note.filePath}`);
     } catch (err) {

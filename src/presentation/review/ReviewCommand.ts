@@ -6,6 +6,7 @@ import { ReviewFlowDialogOptions } from "../../application/review_flow/types/Rev
 import { ReviewFlowRunOptions } from "../../application/review_flow/types/ReviewFlowRunOptions";
 import { GenerateDailyReviewFlowUseCase } from "../../application/review_flow/usecases/GenerateDailyReviewFlowUseCase";
 import { ReviewFlowOptionsResolver } from "../../application/review_flow/services/ReviewFlowOptionsResolver";
+import { i18n } from "../../shared/i18n/I18n";
 import { logger } from "../../shared/logger/loggerInstance";
 import { DailyNote } from "../../domain/daily/DailyNote";
 import { ReviewProgressController } from "./ReviewProgressController";
@@ -78,11 +79,17 @@ export class ReviewCommand {
   }
 
   private buildMessage(result: DailyReviewFlowResult): string {
+    const t = i18n.common.reviewCommand.notice;
     if (!result.dailyNotesReview.executed) {
-      return `Review generated (${result.taskReview.taskCount} tasks, notes review skipped: ${result.dailyNotesReview.skippedReason})`;
+      return t.generatedWithoutNotesReview
+        .replace("{taskCount}", String(result.taskReview.taskCount))
+        .replace("{reason}", result.dailyNotesReview.skippedReason);
     }
 
-    return `Review generated (${result.taskReview.taskCount} tasks, notes ${result.dailyNotesReview.noteCount}/${result.dailyNotesReview.generatedCount})`;
+    return t.generated
+      .replace("{taskCount}", String(result.taskReview.taskCount))
+      .replace("{noteCount}", String(result.dailyNotesReview.noteCount))
+      .replace("{generatedCount}", String(result.dailyNotesReview.generatedCount));
   }
 
   private buildRecentDates(today: string, days: number): string[] {
