@@ -20,6 +20,24 @@ export const settingsJa = {
 			name: "ログファイル出力",
 			desc: "ログをファイルに保存します",
 		},
+
+		eventHook: {
+			heading: "ptune-log イベントフック",
+			enabled: {
+				name: "イベントフックを有効化",
+				desc: "note-create / note-review のイベントを codex-md-export ブリッジへ送信します",
+			},
+			interopRoot: {
+				name: "Interop ルート",
+				desc: "event/status ファイル連携のルートパス（空欄で既定値）",
+				placeholder: "C:/Users/<user>/.codex-md-export",
+			},
+			statusWaitMs: {
+				name: "ステータス待機時間 (ms)",
+				desc: "status 応答待機のタイムアウト時間",
+				placeholder: "2500",
+			},
+		},
 	},
 
 	llm: {

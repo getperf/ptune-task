@@ -80,6 +80,15 @@ export const commonJa = {
 		},
 	},
 
+	eventHook: {
+		notice: {
+			success: "イベントを送信しました",
+			skipped: "イベントをスキップしました",
+			timeout: "codex-md-export のデーモンが起動していないか、応答がありません",
+			errorPrefix: "イベントフックに失敗しました",
+		},
+	},
+
 	projectIndex: {
 		section: {
 			noteUpdateHistory: {

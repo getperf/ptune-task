@@ -20,6 +20,24 @@ export const settingsEn = {
 			name: "Enable Log File",
 			desc: "Save logs to a file",
 		},
+
+		eventHook: {
+			heading: "ptune-log Event Hook",
+			enabled: {
+				name: "Enable event hook",
+				desc: "Emit note-create and note-review events to the codex-md-export bridge",
+			},
+			interopRoot: {
+				name: "Interop root",
+				desc: "Root directory for event/status file bridge (empty = default)",
+				placeholder: "C:/Users/<user>/.codex-md-export",
+			},
+			statusWaitMs: {
+				name: "Status wait (ms)",
+				desc: "How long to wait for status response before notice timeout",
+				placeholder: "2500",
+			},
+		},
 	},
 
 	llm: {

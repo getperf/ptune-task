@@ -105,6 +105,10 @@ function mergeSettings(
 			...(data.snippet ?? {}),
 		},
 		review: mergedReview,
+		eventHook: {
+			...defaults.eventHook,
+			...(data.eventHook ?? {}),
+		},
 		habitTasks: mergedLegacyHabitTasks,
 		dailyNoteTask: mergedDailyNoteTask,
 	};

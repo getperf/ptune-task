@@ -80,6 +80,15 @@ export const commonEn = {
 		},
 	},
 
+	eventHook: {
+		notice: {
+			success: "Event sent",
+			skipped: "Event skipped",
+			timeout: "codex-md-export daemon is not running or not responding",
+			errorPrefix: "Event hook failed",
+		},
+	},
+
 	projectIndex: {
 		section: {
 			noteUpdateHistory: {

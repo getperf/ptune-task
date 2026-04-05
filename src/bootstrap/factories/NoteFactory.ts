@@ -5,6 +5,8 @@ import { TaskKeyOptionBuilder } from "../../application/note/TaskKeyOptionBuilde
 import { ProjectIndexBasesTemplateBuilder } from "../../infrastructure/document/project/ProjectIndexBasesTemplateBuilder";
 import { ProjectIndexBuilder } from "../../infrastructure/document/project/ProjectIndexBuilder";
 import { ProjectNoteBuilder } from "../../infrastructure/document/note/ProjectNoteBuilder";
+import { EventHookNoticeMapper } from "../../infrastructure/event_hook/EventHookNoticeMapper";
+import { EventHookService } from "../../infrastructure/event_hook/EventHookService";
 import { TodayTaskKeyReader } from "../../infrastructure/obsidian/TodayTaskKeyReader";
 import { ProjectRepository } from "../../infrastructure/repository/ProjectRepository";
 import { NoteCreationFeature } from "../../presentation/note/NoteCreationFeature";
@@ -39,6 +41,8 @@ export class NoteFactory {
         this.calendarFactory.createTodayResolver(),
         new TaskKeyOptionBuilder(),
       ),
+      new EventHookService(this.app),
+      new EventHookNoticeMapper(),
     );
   }
 }

@@ -55,4 +55,48 @@ export function renderBasicSettings(containerEl: HTMLElement) {
 					);
 				}),
 		);
+
+	new Setting(containerEl).setName(t.eventHook.heading).setHeading();
+
+	new Setting(containerEl)
+		.setName(t.eventHook.enabled.name)
+		.setDesc(t.eventHook.enabled.desc)
+		.addToggle((toggle) =>
+			toggle
+				.setValue(config.settings.eventHook.enabled)
+				.onChange(async (value) => {
+					config.settings.eventHook.enabled = value;
+					await config.save();
+				}),
+		);
+
+	new Setting(containerEl)
+		.setName(t.eventHook.interopRoot.name)
+		.setDesc(t.eventHook.interopRoot.desc)
+		.addText((text) =>
+			text
+				.setPlaceholder(t.eventHook.interopRoot.placeholder)
+				.setValue(config.settings.eventHook.interopRoot)
+				.onChange(async (value) => {
+					config.settings.eventHook.interopRoot = value.trim();
+					await config.save();
+				}),
+		);
+
+	new Setting(containerEl)
+		.setName(t.eventHook.statusWaitMs.name)
+		.setDesc(t.eventHook.statusWaitMs.desc)
+		.addText((text) =>
+			text
+				.setPlaceholder(t.eventHook.statusWaitMs.placeholder)
+				.setValue(String(config.settings.eventHook.statusWaitMs))
+				.onChange(async (value) => {
+					const parsed = Number.parseInt(value, 10);
+					if (Number.isNaN(parsed)) {
+						return;
+					}
+					config.settings.eventHook.statusWaitMs = Math.max(300, parsed);
+					await config.save();
+				}),
+		);
 }

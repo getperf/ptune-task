@@ -3,6 +3,8 @@ import { TextGenerationPort } from "../../application/llm/ports/TextGenerationPo
 import { LoadNoteSummaryUseCase } from "../../application/note_review/usecases/LoadNoteSummaryUseCase";
 import { PreviewNoteSummaryUseCase } from "../../application/note_review/usecases/PreviewNoteSummaryUseCase";
 import { SaveNoteSummaryUseCase } from "../../application/note_review/usecases/SaveNoteSummaryUseCase";
+import { EventHookNoticeMapper } from "../../infrastructure/event_hook/EventHookNoticeMapper";
+import { EventHookService } from "../../infrastructure/event_hook/EventHookService";
 import { i18n } from "../../shared/i18n/I18n";
 import { logger } from "../../shared/logger/loggerInstance";
 import { NoteSummaryModal } from "./NoteSummaryModal";
@@ -14,6 +16,8 @@ export class NoteReviewFeature {
     private readonly loadUseCase: LoadNoteSummaryUseCase,
     private readonly previewUseCase: PreviewNoteSummaryUseCase,
     private readonly saveUseCase: SaveNoteSummaryUseCase,
+    private readonly eventHookService: EventHookService,
+    private readonly eventHookNoticeMapper: EventHookNoticeMapper,
   ) {}
 
   start(plugin: Plugin): void {
@@ -66,6 +70,7 @@ export class NoteReviewFeature {
         async (value) => {
           await this.saveUseCase.execute(file, value);
           new Notice(i18n.common.noteReview.notice.saved);
+          void this.emitNoteReviewEvent(file.path);
         },
         async () => await this.previewUseCase.execute(file),
         llmAvailable
@@ -79,5 +84,26 @@ export class NoteReviewFeature {
       logger.warn("[Command] NoteReviewFeature.open failed", error);
       new Notice(i18n.common.noteReview.notice.failed);
     }
+  }
+
+  private async emitNoteReviewEvent(notePath: string): Promise<void> {
+    try {
+      const result = await this.eventHookService.emitNoteReview(notePath);
+      const message = this.eventHookNoticeMapper.map(result);
+      logger.info(`[EventHook] note-review status=${result.status} requestId=${result.requestId} note=${notePath}`);
+      if (this.shouldShowEventHookNotice(result.status, result.message)) {
+        new Notice(message);
+      }
+    } catch (error) {
+      logger.warn("[EventHook] note-review emit failed", error);
+      new Notice(i18n.common.eventHook.notice.timeout);
+    }
+  }
+
+  private shouldShowEventHookNotice(status: string, rawMessage: string): boolean {
+    if (status === "skipped" && rawMessage === "event-hook is disabled") {
+      return false;
+    }
+    return true;
   }
 }

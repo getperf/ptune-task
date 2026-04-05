@@ -50,4 +50,10 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 	dailyNoteTask: {
 		...createEmptyDailyNoteTaskSettings(),
 	},
+
+	eventHook: {
+		enabled: false,
+		interopRoot: "",
+		statusWaitMs: 2500,
+	},
 }

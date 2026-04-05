@@ -11,6 +11,8 @@ import { NoteCreationRequest } from "../../application/note/NoteCreationModels";
 import { NoteCreationUseCase } from "../../application/note/NoteCreationUseCase";
 import { ProjectFolder } from "../../domain/project/ProjectFolder";
 import { TodayTaskKeyReader } from "../../infrastructure/obsidian/TodayTaskKeyReader";
+import { EventHookNoticeMapper } from "../../infrastructure/event_hook/EventHookNoticeMapper";
+import { EventHookService } from "../../infrastructure/event_hook/EventHookService";
 import { i18n } from "../../shared/i18n/I18n";
 import { logger } from "../../shared/logger/loggerInstance";
 import { NoteCreatorModal } from "./NoteCreatorModal";
@@ -20,6 +22,8 @@ export class NoteCreationFeature {
     private readonly app: App,
     private readonly useCase: NoteCreationUseCase,
     private readonly taskKeyReader: TodayTaskKeyReader,
+    private readonly eventHookService: EventHookService,
+    private readonly eventHookNoticeMapper: EventHookNoticeMapper,
   ) {}
 
   start(plugin: Plugin): void {
@@ -130,6 +134,7 @@ export class NoteCreationFeature {
             await this.openFileIfExists(created.notePath);
             logger.info(`[Command] NoteCreationFeature.notice ${i18n.common.noteCreation.notice.projectNoteCreated} path=${created.notePath}`);
             new Notice(i18n.common.noteCreation.notice.projectNoteCreated);
+            void this.emitNoteCreateEvent(created.notePath);
             return true;
           } catch (error) {
             logger.warn("[Command] NoteCreationFeature.openProjectNoteModal failed", error);
@@ -197,5 +202,26 @@ export class NoteCreationFeature {
     }
 
     return base;
+  }
+
+  private async emitNoteCreateEvent(notePath: string): Promise<void> {
+    try {
+      const result = await this.eventHookService.emitNoteCreate(notePath);
+      const message = this.eventHookNoticeMapper.map(result);
+      logger.info(`[EventHook] note-create status=${result.status} requestId=${result.requestId} note=${notePath}`);
+      if (this.shouldShowEventHookNotice(result.status, result.message)) {
+        new Notice(message);
+      }
+    } catch (error) {
+      logger.warn("[EventHook] note-create emit failed", error);
+      new Notice(i18n.common.eventHook.notice.timeout);
+    }
+  }
+
+  private shouldShowEventHookNotice(status: string, rawMessage: string): boolean {
+    if (status === "skipped" && rawMessage === "event-hook is disabled") {
+      return false;
+    }
+    return true;
   }
 }

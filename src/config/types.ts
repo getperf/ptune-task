@@ -54,6 +54,12 @@ export interface DailyNoteTaskSettings {
 	subTaskTemplates: string[];
 }
 
+export interface EventHookSettings {
+	enabled: boolean;
+	interopRoot: string;
+	statusWaitMs: number;
+}
+
 export interface PluginSettings {
 	language: Lang;
 
@@ -67,4 +73,5 @@ export interface PluginSettings {
 	review: ReviewSettings;
 	habitTasks: HabitTaskSettings;
 	dailyNoteTask?: DailyNoteTaskSettings;
+	eventHook: EventHookSettings;
 }
