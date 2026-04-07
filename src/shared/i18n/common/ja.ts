@@ -49,6 +49,8 @@ export const commonJa = {
 			taskKeyEmptyOption: "(選択なし)",
 			titleLabel: "タイトル",
 			titlePlaceholder: "タイトルを入力",
+			ptuneLogHookLabel: "ptune-log フックを有効にする",
+			ptuneLogHookDesc: "OFF の場合、ノート作成時に ptune-log 連携イベントを送信しません。",
 		},
 
 		notice: {

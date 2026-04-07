@@ -49,6 +49,8 @@ export const commonEn = {
 			taskKeyEmptyOption: "(None)",
 			titleLabel: "Title",
 			titlePlaceholder: "Enter title",
+			ptuneLogHookLabel: "Enable ptune-log hook",
+			ptuneLogHookDesc: "When OFF, no ptune-log integration event is sent after note creation.",
 		},
 
 		notice: {

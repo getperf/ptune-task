@@ -8,11 +8,13 @@ export interface NoteCreatorModalSubmit {
   title: string;
   taskKey?: string;
   goal?: string;
+  eventHookEnabled?: boolean;
 }
 
 export class NoteCreatorModal extends Modal {
   private title = "";
   private taskKey: string | undefined;
+  private eventHookEnabled: boolean;
   private isTitleEdited = false;
 
   constructor(
@@ -21,9 +23,11 @@ export class NoteCreatorModal extends Modal {
     private readonly targetPath: string,
     private readonly prefix: string,
     private readonly taskKeyOptions: TaskKeyOption[],
+    initialEventHookEnabled: boolean,
     private readonly onSubmit: (input: NoteCreatorModalSubmit) => Promise<boolean>,
   ) {
     super(app);
+    this.eventHookEnabled = initialEventHookEnabled;
   }
 
   onOpen(): void {
@@ -95,6 +99,19 @@ export class NoteCreatorModal extends Modal {
         setTimeout(() => text.inputEl.focus(), 0);
       });
 
+    if (this.kind === "project-note") {
+      new Setting(contentEl)
+        .setName(t.modal.ptuneLogHookLabel)
+        .setDesc(t.modal.ptuneLogHookDesc)
+        .addToggle((toggle) => {
+          toggle
+            .setValue(this.eventHookEnabled)
+            .onChange((value) => {
+              this.eventHookEnabled = value;
+            });
+        });
+    }
+
     new Setting(contentEl).addButton((button) =>
       button
         .setButtonText(action.create)
@@ -139,6 +156,7 @@ export class NoteCreatorModal extends Modal {
     const completed = await this.onSubmit({
       title: this.title.trim(),
       taskKey: this.taskKey,
+      eventHookEnabled: this.eventHookEnabled,
     });
 
     if (completed) {

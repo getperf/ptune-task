@@ -9,6 +9,7 @@ import {
 } from "obsidian";
 import { NoteCreationRequest } from "../../application/note/NoteCreationModels";
 import { NoteCreationUseCase } from "../../application/note/NoteCreationUseCase";
+import { config } from "../../config/config";
 import { ProjectFolder } from "../../domain/project/ProjectFolder";
 import { TodayTaskKeyReader } from "../../infrastructure/obsidian/TodayTaskKeyReader";
 import { EventHookNoticeMapper } from "../../infrastructure/event_hook/EventHookNoticeMapper";
@@ -77,6 +78,7 @@ export class NoteCreationFeature {
         folder.path,
         prefix,
         taskKeyOptions,
+        config.settings.eventHook.enabled,
         async (input) => {
           if (!this.validateTitle(input.title)) {
             return false;
@@ -122,6 +124,7 @@ export class NoteCreationFeature {
         folder.path,
         prefix,
         taskKeyOptions,
+        config.settings.eventHook.enabled,
         async (input) => {
           if (!this.validateTitle(input.title)) {
             return false;
@@ -134,7 +137,7 @@ export class NoteCreationFeature {
             await this.openFileIfExists(created.notePath);
             logger.info(`[Command] NoteCreationFeature.notice ${i18n.common.noteCreation.notice.projectNoteCreated} path=${created.notePath}`);
             new Notice(i18n.common.noteCreation.notice.projectNoteCreated);
-            void this.emitNoteCreateEvent(created.notePath);
+            void this.emitNoteCreateEvent(created.notePath, input.eventHookEnabled);
             return true;
           } catch (error) {
             logger.warn("[Command] NoteCreationFeature.openProjectNoteModal failed", error);
@@ -204,9 +207,14 @@ export class NoteCreationFeature {
     return base;
   }
 
-  private async emitNoteCreateEvent(notePath: string): Promise<void> {
+  private async emitNoteCreateEvent(notePath: string, eventHookEnabled?: boolean): Promise<void> {
+    if (eventHookEnabled === false) {
+      logger.info(`[EventHook] note-create skipped by modal toggle note=${notePath}`);
+      return;
+    }
+
     try {
-      const result = await this.eventHookService.emitNoteCreate(notePath);
+      const result = await this.eventHookService.emitNoteCreate(notePath, { enabledOverride: eventHookEnabled });
       const message = this.eventHookNoticeMapper.map(result);
       logger.info(`[EventHook] note-create status=${result.status} requestId=${result.requestId} note=${notePath}`);
       if (this.shouldShowEventHookNotice(result.status, result.message)) {
@@ -220,6 +228,10 @@ export class NoteCreationFeature {
 
   private shouldShowEventHookNotice(status: string, rawMessage: string): boolean {
     if (status === "skipped" && rawMessage === "event-hook is disabled") {
+      return false;
+    }
+    if (status === "timeout") {
+      // Timeout is occasionally observed as a false negative while daemon processes in background.
       return false;
     }
     return true;

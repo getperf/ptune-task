@@ -32,19 +32,24 @@ export interface EventHookEmitResult {
   message: string;
 }
 
+export interface EventHookEmitOptions {
+  enabledOverride?: boolean;
+}
+
 export class EventHookService {
   constructor(private readonly app: App) {}
 
-  async emitNoteCreate(notePath: string): Promise<EventHookEmitResult> {
-    return this.emit("note-create", notePath);
+  async emitNoteCreate(notePath: string, options?: EventHookEmitOptions): Promise<EventHookEmitResult> {
+    return this.emit("note-create", notePath, options);
   }
 
-  async emitNoteReview(notePath: string): Promise<EventHookEmitResult> {
-    return this.emit("note-review", notePath);
+  async emitNoteReview(notePath: string, options?: EventHookEmitOptions): Promise<EventHookEmitResult> {
+    return this.emit("note-review", notePath, options);
   }
 
-  private async emit(eventType: EventType, notePath: string): Promise<EventHookEmitResult> {
-    if (!config.settings.eventHook.enabled) {
+  private async emit(eventType: EventType, notePath: string, options?: EventHookEmitOptions): Promise<EventHookEmitResult> {
+    const hookEnabled = options?.enabledOverride ?? config.settings.eventHook.enabled;
+    if (!hookEnabled) {
       return {
         requestId: "",
         status: "skipped",
@@ -155,4 +160,3 @@ export class EventHookService {
     await new Promise<void>((resolve) => window.setTimeout(resolve, ms));
   }
 }
-
