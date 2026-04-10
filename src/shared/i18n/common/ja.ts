@@ -66,6 +66,7 @@ export const commonJa = {
 		command: {
 			current: "ノート要約を生成",
 			menu: "ノート要約",
+			hookMenu: "Transcript キャプチャー再接続",
 		},
 		modal: {
 			title: "ノート要約",

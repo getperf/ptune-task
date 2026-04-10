@@ -66,6 +66,7 @@ export const commonEn = {
 		command: {
 			current: "Generate Note Summary",
 			menu: "Note Summary",
+			hookMenu: "Reconnect Transcript Capture",
 		},
 		modal: {
 			title: "Note Summary",

@@ -3,6 +3,7 @@ import { TextGenerationPort } from "../../application/llm/ports/TextGenerationPo
 import { LoadNoteSummaryUseCase } from "../../application/note_review/usecases/LoadNoteSummaryUseCase";
 import { PreviewNoteSummaryUseCase } from "../../application/note_review/usecases/PreviewNoteSummaryUseCase";
 import { SaveNoteSummaryUseCase } from "../../application/note_review/usecases/SaveNoteSummaryUseCase";
+import { config } from "../../config/config";
 import { EventHookNoticeMapper } from "../../infrastructure/event_hook/EventHookNoticeMapper";
 import { EventHookService } from "../../infrastructure/event_hook/EventHookService";
 import { i18n } from "../../shared/i18n/I18n";
@@ -43,6 +44,17 @@ export class NoteReviewFeature {
               void this.open(file);
             }),
         );
+
+        if (config.settings.eventHook.enabled) {
+          menu.addItem((item) =>
+            item
+              .setTitle(i18n.common.noteReview.command.hookMenu)
+              .setIcon("cable")
+              .onClick(() => {
+                void this.emitNoteHookEvent(file.path);
+              }),
+          );
+        }
       }),
     );
   }
@@ -96,6 +108,20 @@ export class NoteReviewFeature {
       }
     } catch (error) {
       logger.warn("[EventHook] note-review emit failed", error);
+      new Notice(i18n.common.eventHook.notice.timeout);
+    }
+  }
+
+  private async emitNoteHookEvent(notePath: string): Promise<void> {
+    try {
+      const result = await this.eventHookService.emitNoteHook(notePath);
+      const message = this.eventHookNoticeMapper.map(result);
+      logger.info(`[EventHook] note-hook status=${result.status} requestId=${result.requestId} note=${notePath}`);
+      if (this.shouldShowEventHookNotice(result.status, result.message)) {
+        new Notice(message);
+      }
+    } catch (error) {
+      logger.warn("[EventHook] note-hook emit failed", error);
       new Notice(i18n.common.eventHook.notice.timeout);
     }
   }
