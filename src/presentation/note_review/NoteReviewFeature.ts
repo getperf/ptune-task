@@ -117,17 +117,25 @@ export class NoteReviewFeature {
       const result = await this.eventHookService.emitNoteHook(notePath);
       const message = this.eventHookNoticeMapper.map(result);
       logger.info(`[EventHook] note-hook status=${result.status} requestId=${result.requestId} note=${notePath}`);
-      if (this.shouldShowEventHookNotice(result.status, result.message)) {
+      if (this.shouldShowEventHookNotice(result.status, result.message, { suppressTimeout: true })) {
         new Notice(message);
       }
     } catch (error) {
       logger.warn("[EventHook] note-hook emit failed", error);
-      new Notice(i18n.common.eventHook.notice.timeout);
+      // note-hook timeout is often a false negative while daemon continues processing.
+      // Keep this path silent to avoid noisy "daemon not running" notices.
     }
   }
 
-  private shouldShowEventHookNotice(status: string, rawMessage: string): boolean {
+  private shouldShowEventHookNotice(
+    status: string,
+    rawMessage: string,
+    options?: { suppressTimeout?: boolean },
+  ): boolean {
     if (status === "skipped" && rawMessage === "event-hook is disabled") {
+      return false;
+    }
+    if (options?.suppressTimeout === true && status === "timeout") {
       return false;
     }
     return true;
