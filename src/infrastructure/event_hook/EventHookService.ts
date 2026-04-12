@@ -5,7 +5,7 @@ import { mkdir, readFile, rename, writeFile } from "fs/promises";
 import { config } from "../../config/config";
 import { logger } from "../../shared/logger/loggerInstance";
 
-type EventType = "note-create" | "note-review" | "note-hook";
+type EventType = "note-create" | "note-work-finished" | "note-hook";
 type HookStatus = "success" | "skipped" | "error" | "timeout";
 type PythonStatus = "success" | "skipped" | "error";
 
@@ -43,8 +43,8 @@ export class EventHookService {
     return this.emit("note-create", notePath, options);
   }
 
-  async emitNoteReview(notePath: string, options?: EventHookEmitOptions): Promise<EventHookEmitResult> {
-    return this.emit("note-review", notePath, options);
+  async emitNoteWorkFinished(notePath: string, options?: EventHookEmitOptions): Promise<EventHookEmitResult> {
+    return this.emit("note-work-finished", notePath, options);
   }
 
   async emitNoteHook(notePath: string, options?: EventHookEmitOptions): Promise<EventHookEmitResult> {

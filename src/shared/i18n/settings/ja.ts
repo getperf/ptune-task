@@ -25,7 +25,7 @@ export const settingsJa = {
 			heading: "ptune-log イベントフック",
 			enabled: {
 				name: "イベントフックを有効化",
-				desc: "note-create / note-review / note-hook のイベントを codex-md-export ブリッジへ送信します",
+				desc: "note-create / note-work-finished / note-hook のイベントを codex-md-export ブリッジへ送信します",
 			},
 			interopRoot: {
 				name: "Interop ルート",

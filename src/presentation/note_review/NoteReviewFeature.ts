@@ -82,7 +82,7 @@ export class NoteReviewFeature {
         async (value) => {
           await this.saveUseCase.execute(file, value);
           new Notice(i18n.common.noteReview.notice.saved);
-          void this.emitNoteReviewEvent(file.path);
+          void this.emitNoteWorkFinishedEvent(file.path);
         },
         async () => await this.previewUseCase.execute(file),
         llmAvailable
@@ -98,16 +98,16 @@ export class NoteReviewFeature {
     }
   }
 
-  private async emitNoteReviewEvent(notePath: string): Promise<void> {
+  private async emitNoteWorkFinishedEvent(notePath: string): Promise<void> {
     try {
-      const result = await this.eventHookService.emitNoteReview(notePath);
+      const result = await this.eventHookService.emitNoteWorkFinished(notePath);
       const message = this.eventHookNoticeMapper.map(result);
-      logger.info(`[EventHook] note-review status=${result.status} requestId=${result.requestId} note=${notePath}`);
+      logger.info(`[EventHook] note-work-finished status=${result.status} requestId=${result.requestId} note=${notePath}`);
       if (this.shouldShowEventHookNotice(result.status, result.message)) {
         new Notice(message);
       }
     } catch (error) {
-      logger.warn("[EventHook] note-review emit failed", error);
+      logger.warn("[EventHook] note-work-finished emit failed", error);
       new Notice(i18n.common.eventHook.notice.timeout);
     }
   }

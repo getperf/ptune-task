@@ -25,7 +25,7 @@ export const settingsEn = {
 			heading: "ptune-log Event Hook",
 			enabled: {
 				name: "Enable event hook",
-				desc: "Emit note-create, note-review, and note-hook events to the codex-md-export bridge",
+				desc: "Emit note-create, note-work-finished, and note-hook events to the codex-md-export bridge",
 			},
 			interopRoot: {
 				name: "Interop root",
