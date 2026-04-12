@@ -3,7 +3,7 @@
 	"name": "ptune-task",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Daily task planning, Google Tasks sync, and review workflow for Obsidian.",
+	"description": "Daily task planning, Google Tasks sync via PtuneSync, and review workflow for Obsidian Desktop.",
 	"author": "Minoru Furusawa",
 	"authorUrl": "https://ptune.getperf.net/",
 	"isDesktopOnly": true
