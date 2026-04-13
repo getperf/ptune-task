@@ -5,6 +5,7 @@ import { PreviewNoteSummaryUseCase } from "../../application/note_review/usecase
 import { SaveNoteSummaryUseCase } from "../../application/note_review/usecases/SaveNoteSummaryUseCase";
 import { EventHookNoticeMapper } from "../../infrastructure/event_hook/EventHookNoticeMapper";
 import { EventHookService } from "../../infrastructure/event_hook/EventHookService";
+import { PythonReviewConfigSyncService } from "../../infrastructure/review/PythonReviewConfigSyncService";
 import { LlmClient } from "../../infrastructure/llm/LlmClient";
 import { ProjectNoteFrontmatterRepository } from "../../infrastructure/repository/ProjectNoteFrontmatterRepository";
 import { NoteReviewFeature } from "../../presentation/note_review/NoteReviewFeature";
@@ -25,6 +26,7 @@ export class ReviewFeatureFactory {
       new SaveNoteSummaryUseCase(repo),
       new EventHookService(this.app),
       new EventHookNoticeMapper(),
+      new PythonReviewConfigSyncService(),
     );
   }
 }

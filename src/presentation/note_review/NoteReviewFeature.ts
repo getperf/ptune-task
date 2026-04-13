@@ -6,6 +6,7 @@ import { SaveNoteSummaryUseCase } from "../../application/note_review/usecases/S
 import { config } from "../../config/config";
 import { EventHookNoticeMapper } from "../../infrastructure/event_hook/EventHookNoticeMapper";
 import { EventHookService } from "../../infrastructure/event_hook/EventHookService";
+import { PythonReviewConfigSyncService } from "../../infrastructure/review/PythonReviewConfigSyncService";
 import { i18n } from "../../shared/i18n/I18n";
 import { logger } from "../../shared/logger/loggerInstance";
 import { NoteSummaryModal } from "./NoteSummaryModal";
@@ -19,6 +20,7 @@ export class NoteReviewFeature {
     private readonly saveUseCase: SaveNoteSummaryUseCase,
     private readonly eventHookService: EventHookService,
     private readonly eventHookNoticeMapper: EventHookNoticeMapper,
+    private readonly reviewConfigSyncService: PythonReviewConfigSyncService,
   ) {}
 
   start(plugin: Plugin): void {
@@ -72,6 +74,11 @@ export class NoteReviewFeature {
 
   private async open(file: TFile): Promise<void> {
     try {
+      if (config.settings.eventHook.enabled) {
+        await this.requestPythonReview(file);
+        return;
+      }
+
       const llmAvailable = this.textGenerator.hasValidApiKey();
       const preview = llmAvailable
         ? await this.previewUseCase.execute(file)
@@ -95,6 +102,25 @@ export class NoteReviewFeature {
     } catch (error) {
       logger.warn("[Command] NoteReviewFeature.open failed", error);
       new Notice(i18n.common.noteReview.notice.failed);
+    }
+  }
+
+  private async requestPythonReview(file: TFile): Promise<void> {
+    if (!this.textGenerator.hasValidApiKey()) {
+      new Notice(i18n.common.noteReview.notice.apiKeyNotSet);
+      return;
+    }
+
+    const synced = await this.reviewConfigSyncService.sync();
+    const result = await this.eventHookService.emitNoteReviewRequested(file.path, {
+      profiles_file: synced.profilesFile,
+      credentials_file: synced.credentialsFile,
+      profile_id: synced.profileId,
+    });
+    const message = this.eventHookNoticeMapper.map(result);
+    logger.info(`[EventHook] note-review-requested status=${result.status} requestId=${result.requestId} note=${file.path}`);
+    if (this.shouldShowEventHookNotice(result.status, result.message, { suppressTimeout: true })) {
+      new Notice(message);
     }
   }
 

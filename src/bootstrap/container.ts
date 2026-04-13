@@ -32,6 +32,7 @@ import { SetupChecklistService } from "../application/setup/services/SetupCheckl
 import { NoteSetupHelper } from "../infrastructure/setup/NoteSetupHelper";
 import { SetupWizardDialog } from "../presentation/setup/SetupWizardDialog";
 import { AuthLoginProgressService } from "../presentation/auth/AuthLoginProgressService";
+import { PythonReviewConfigSyncService } from "../infrastructure/review/PythonReviewConfigSyncService";
 
 export class Container {
   private readonly runtime: PtuneRuntime;
@@ -101,6 +102,10 @@ export class Container {
 
   createNoteReviewFeature() {
     return this.reviewFeatureFactory.createNoteReviewFeature();
+  }
+
+  createPythonReviewConfigSyncService(): PythonReviewConfigSyncService {
+    return new PythonReviewConfigSyncService();
   }
 
   createGenerateDailyReviewUseCase(): GenerateDailyReviewUseCase {

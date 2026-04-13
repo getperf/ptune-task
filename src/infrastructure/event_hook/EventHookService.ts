@@ -5,9 +5,15 @@ import { mkdir, readFile, rename, writeFile } from "fs/promises";
 import { config } from "../../config/config";
 import { logger } from "../../shared/logger/loggerInstance";
 
-type EventType = "note-create" | "note-work-finished" | "note-hook";
+type EventType = "note-create" | "note-work-finished" | "note-hook" | "note-review-requested";
 type HookStatus = "success" | "skipped" | "error" | "timeout";
 type PythonStatus = "success" | "skipped" | "error";
+
+interface ReviewRequestPayload {
+  profiles_file: string;
+  credentials_file: string;
+  profile_id: string;
+}
 
 interface EventEnvelope {
   schema_version: 1;
@@ -16,6 +22,7 @@ interface EventEnvelope {
   note_path: string;
   vault_path: string;
   created_at: string;
+  payload?: ReviewRequestPayload;
 }
 
 interface StatusEnvelope {
@@ -51,7 +58,20 @@ export class EventHookService {
     return this.emit("note-hook", notePath, options);
   }
 
-  private async emit(eventType: EventType, notePath: string, options?: EventHookEmitOptions): Promise<EventHookEmitResult> {
+  async emitNoteReviewRequested(
+    notePath: string,
+    payload: ReviewRequestPayload,
+    options?: EventHookEmitOptions,
+  ): Promise<EventHookEmitResult> {
+    return this.emit("note-review-requested", notePath, options, payload);
+  }
+
+  private async emit(
+    eventType: EventType,
+    notePath: string,
+    options?: EventHookEmitOptions,
+    payload?: ReviewRequestPayload,
+  ): Promise<EventHookEmitResult> {
     const hookEnabled = options?.enabledOverride ?? config.settings.eventHook.enabled;
     if (!hookEnabled) {
       return {
@@ -79,6 +99,7 @@ export class EventHookService {
       note_path: notePath,
       vault_path: vaultPath,
       created_at: createdAt,
+      payload,
     };
 
     const interopRoot = this.resolveInteropRoot();
