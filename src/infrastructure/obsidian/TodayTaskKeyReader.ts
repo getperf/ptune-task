@@ -2,7 +2,6 @@ import { App, TFile } from "obsidian";
 import { TodayResolver } from "../../application/calendar/services/TodayResolver";
 import { TaskKeyOptionBuilder } from "../../application/note/TaskKeyOptionBuilder";
 import { TaskKeyOption } from "../../application/note/TaskKeyOption";
-import { TaskKeys } from "../../domain/task/TaskKeys";
 import { PtuneRuntime } from "../../shared/PtuneRuntime";
 import { logger } from "../../shared/logger/loggerInstance";
 
@@ -27,7 +26,11 @@ export class TodayTaskKeyReader {
     }
 
     const cache = this.app.metadataCache.getFileCache(file);
-    const raw = cache?.frontmatter?.taskKeys;
+    const frontmatter =
+      cache?.frontmatter && typeof cache.frontmatter === "object"
+        ? cache.frontmatter as Record<string, unknown>
+        : null;
+    const raw = frontmatter?.taskKeys;
     const keys = this.extractTaskKeys(raw);
 
     logger.debug(`[Repository] TodayTaskKeyReader.readToday found count=${keys.length} path=${path}`);
@@ -41,7 +44,7 @@ export class TodayTaskKeyReader {
     }
 
     if (raw && typeof raw === "object") {
-      return Object.keys(raw as TaskKeys);
+      return Object.keys(raw);
     }
 
     return [];

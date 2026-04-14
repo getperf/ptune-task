@@ -21,7 +21,7 @@ export class NoteSummaryFormatter {
     }
 
     try {
-      const parsed = JSON.parse(normalized);
+      const parsed: unknown = JSON.parse(normalized);
       return Array.isArray(parsed)
         ? parsed.filter((item): item is string => typeof item === "string")
         : [];

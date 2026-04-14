@@ -8,6 +8,7 @@ export type NoteSummaryLike = {
 export function resolveNoteSummarySentences(note: NoteSummaryLike): string[] {
   if (Array.isArray(note.summarySentences)) {
     return note.summarySentences
+      .filter((line): line is string => typeof line === "string")
       .map((line) => line.trim())
       .filter((line) => line.length > 0);
   }

@@ -1,4 +1,5 @@
 import { MarkdownFile, Section } from "md-ast-core";
+import type { Root } from "mdast";
 import { FrontmatterMergePolicy } from "../policy/FrontmatterMergePolicy";
 import { TaskKeys } from "../../../domain/task/TaskKeys";
 import { HeadingService } from "../../../domain/heading/HeadingService";
@@ -28,7 +29,9 @@ export class DailyNoteDocumentAdapter {
     const range = section.getRange();
     const headingIndex = section.getIndex();
 
-    this.md.root().getTree().children.splice(
+    const tree = getRootTree(this.md);
+
+    tree.children.splice(
       headingIndex,
       range.contentEnd - headingIndex,
     );
@@ -237,4 +240,8 @@ export class DailyNoteDocumentAdapter {
       incoming.trimStart()
     );
   }
+}
+
+function getRootTree(md: MarkdownFile): Root {
+  return (md.root() as unknown as { getTree(): Root }).getTree();
 }

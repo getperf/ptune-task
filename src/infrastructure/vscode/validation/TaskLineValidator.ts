@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { TaskLineMetaParser } from "../../conversion/task/markdown/TaskLineMetaParser";
-import { isTaskLine } from "../completion/TaskLineDetector";
+import { isTaskLine } from "../../../application/completion/TaskLineDetector";
 
 export class TaskLineValidator {
   validateDocumentChange(event: vscode.TextDocumentChangeEvent): void {
