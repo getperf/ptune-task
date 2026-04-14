@@ -6,19 +6,19 @@ export function registerAllCommands(plugin: Plugin, container: Container): void 
   plugin.addCommand({
     id: "pull-today",
     name: i18n.common.commands.pullToday,
-    callback: () => { container.createPullTodayCommand().execute(); },
+    callback: () => { void container.createPullTodayCommand().execute(); },
   });
 
   plugin.addCommand({
     id: "sync",
     name: i18n.common.commands.pushToday,
-    callback: () => { container.createSyncAndRebuildCommand().execute(); },
+    callback: () => { void container.createSyncAndRebuildCommand().execute(); },
   });
 
   plugin.addCommand({
     id: "review",
     name: i18n.common.commands.dailyReview,
-    callback: () => { container.createReviewCommand().execute(); },
+    callback: () => { void container.createReviewCommand().execute(); },
   });
 
   plugin.addCommand({
