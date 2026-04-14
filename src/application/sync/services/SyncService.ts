@@ -7,6 +7,14 @@ import { MarkdownToJsonUseCase } from "../../planning/usecases/MarkdownToJsonUse
 import { MergeTaskTreeService } from "../merge/MergeTaskTreeService";
 import { PullQuery } from "../shared/dto/PullQuery";
 
+type EntryPayload = {
+  entries?: TaskEntry[];
+};
+
+function isEntryPayload(value: unknown): value is EntryPayload {
+  return typeof value === "object" && value !== null;
+}
+
 export class SyncService {
 
   constructor(
@@ -16,16 +24,20 @@ export class SyncService {
 
   async pullEntries(query: PullQuery): Promise<TaskEntry[]> {
     const raw = await this.syncPort.pull(query);
-    const payload = JSON.parse(raw);
+    const payload: unknown = JSON.parse(raw);
 
     return generateTaskEntries(payload);
   }
 
   buildLocalEntries(markdown: string): TaskEntry[] {
     const json = MarkdownToJsonUseCase.execute(markdown);
-    const parsed = JSON.parse(json);
+    const parsed: unknown = JSON.parse(json);
 
-    return (parsed?.entries ?? []) as TaskEntry[];
+    if (!isEntryPayload(parsed) || !Array.isArray(parsed.entries)) {
+      return [];
+    }
+
+    return parsed.entries;
   }
 
   mergeEntries(localEntries: TaskEntry[], remoteEntries: TaskEntry[]) {

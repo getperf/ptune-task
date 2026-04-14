@@ -6,6 +6,24 @@ import { extractResponsesText } from "../shared/extractResponsesText";
 import { formatRequestError } from "../shared/formatRequestError";
 import type { ProviderTextGenerator } from "./ProviderTextGenerator";
 
+type ChatCompletionsResponse = {
+  choices?: Array<{
+    message?: {
+      content?: string | null;
+    };
+  }>;
+};
+
+function readChatCompletionContent(value: unknown): string | null {
+  if (typeof value !== "object" || value === null) {
+    return null;
+  }
+
+  const { choices } = value as ChatCompletionsResponse;
+  const content = choices?.[0]?.message?.content;
+  return typeof content === "string" ? content : null;
+}
+
 export class OpenAiClient implements ProviderTextGenerator {
   private static readonly MAX_ATTEMPTS = 2;
 
@@ -98,7 +116,7 @@ export class OpenAiClient implements ProviderTextGenerator {
           throw new Error(`OpenAI-compatible API error: ${res.status}`);
         }
 
-        return res.json?.choices?.[0]?.message?.content ?? null;
+        return readChatCompletionContent(res.json);
       },
     );
   }
