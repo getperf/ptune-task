@@ -80,6 +80,8 @@ export const commonEn = {
 			failed: "Failed to generate note summary",
 			noActiveNote: "No active note",
 			apiKeyNotSet: "LLM API key is not configured",
+			reviewRequested: "Requested note summary review",
+			reviewRequestedTimeout: "Accepted the note summary review request. Check whether the review GUI opens.",
 		},
 	},
 

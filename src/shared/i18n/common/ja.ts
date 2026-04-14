@@ -80,6 +80,8 @@ export const commonJa = {
 			failed: "ノート要約の生成に失敗しました",
 			noActiveNote: "アクティブなノートがありません",
 			apiKeyNotSet: "LLM の API キーが未設定です",
+			reviewRequested: "ノート要約レビューを依頼しました",
+			reviewRequestedTimeout: "ノート要約レビュー依頼を受け付けました。GUI 起動を確認してください",
 		},
 	},
 

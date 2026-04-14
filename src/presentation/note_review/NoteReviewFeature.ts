@@ -117,9 +117,9 @@ export class NoteReviewFeature {
       credentials_file: synced.credentialsFile,
       profile_id: synced.profileId,
     });
-    const message = this.eventHookNoticeMapper.map(result);
     logger.info(`[EventHook] note-review-requested status=${result.status} requestId=${result.requestId} note=${file.path}`);
-    if (this.shouldShowEventHookNotice(result.status, result.message, { suppressTimeout: true })) {
+    if (this.shouldShowReviewRequestNotice(result.status, result.message)) {
+      const message = this.mapReviewRequestNotice(result.status, result.message);
       new Notice(message);
     }
   }
@@ -165,5 +165,23 @@ export class NoteReviewFeature {
       return false;
     }
     return true;
+  }
+
+  private shouldShowReviewRequestNotice(status: string, rawMessage: string): boolean {
+    if (status === "skipped" && rawMessage === "event-hook is disabled") {
+      return false;
+    }
+    return true;
+  }
+
+  private mapReviewRequestNotice(status: string, rawMessage: string): string {
+    const t = i18n.common.noteReview.notice;
+    if (status === "success") {
+      return t.reviewRequested;
+    }
+    if (status === "timeout") {
+      return t.reviewRequestedTimeout;
+    }
+    return this.eventHookNoticeMapper.map({ requestId: "", status, message: rawMessage });
   }
 }
