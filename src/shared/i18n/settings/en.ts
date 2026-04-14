@@ -2,10 +2,10 @@
 
 export const settingsEn = {
 	basic: {
-		heading: "Basic Settings",
+		heading: "Basic settings",
 
 		logLevel: {
-			name: "Log Level",
+			name: "Log level",
 			desc: "Select log output level",
 			options: {
 				debug: "Debug",
@@ -17,7 +17,7 @@ export const settingsEn = {
 		},
 
 		enableLogFile: {
-			name: "Enable Log File",
+			name: "Enable log file",
 			desc: "Save logs to a file",
 		},
 
@@ -41,7 +41,7 @@ export const settingsEn = {
 	},
 
 	llm: {
-		sectionTitle: "LLM Settings",
+		sectionTitle: "LLM settings",
 
 		provider: {
 			name: "Provider",
@@ -55,7 +55,7 @@ export const settingsEn = {
 		},
 
 		apiKey: {
-			name: "API Key",
+			name: "API key",
 			desc: "LLM API key",
 			placeholder: "sk-...",
 		},
@@ -78,17 +78,17 @@ export const settingsEn = {
 		},
 
 		maxTokens: {
-			name: "Max Tokens",
+			name: "Max tokens",
 			desc: "Maximum output tokens for summarization",
 			placeholder: "1200",
 		},
 	},
 
 	note: {
-		sectionTitle: "Note Settings",
+		sectionTitle: "Note settings",
 
 		folderPrefix: {
-			name: "Folder Prefix",
+			name: "Folder prefix",
 			desc: "Prefix rule for project/journal folders",
 			options: {
 				serial: "Serial",
@@ -97,7 +97,7 @@ export const settingsEn = {
 		},
 
 		notePrefix: {
-			name: "Note Prefix",
+			name: "Note prefix",
 			desc: "Prefix rule for note filenames",
 			options: {
 				serial: "Serial",
@@ -106,19 +106,19 @@ export const settingsEn = {
 		},
 
 		prefixDigits: {
-			name: "Prefix Digits",
+			name: "Prefix digits",
 			desc: "Zero-padding length for serial numbers",
 		},
 
 		template: {
-			name: "Template File",
+			name: "Template file",
 			desc: "Template used for new notes",
 			placeholder: "_templates/note/default.md",
 		},
 	},
 
 	projectIndex: {
-		sectionTitle: "Project Index Settings",
+		sectionTitle: "Project index settings",
 
 		enableBasesSection: {
 			name: "Enable Bases section",
@@ -127,7 +127,7 @@ export const settingsEn = {
 	},
 
 	review: {
-		sectionTitle: "Review Settings",
+		sectionTitle: "Review settings",
 
 		notesReviewEnabledDefault: {
 			name: "Daily notes review",
@@ -157,7 +157,7 @@ export const settingsEn = {
 	},
 
 	dailyNoteTask: {
-		sectionTitle: "Daily Task Settings",
+		sectionTitle: "Daily task settings",
 
 		templateManager: {
 			name: "Templates",
@@ -220,10 +220,10 @@ export const settingsEn = {
 	},
 
 	snippet: {
-		sectionTitle: "Snippet Settings",
+		sectionTitle: "Snippet settings",
 
 		snippetFile: {
-			name: "Snippet File",
+			name: "Snippet file",
 			desc: "Path to the snippet definition file",
 			placeholder: "_snippets/snippets.md",
 		},
