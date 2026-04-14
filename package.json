@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-ptune-task",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Ptune task plugin for daily planning and Google Tasks sync",
 	"main": "main.js",
 	"type": "module",

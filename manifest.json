@@ -1,7 +1,7 @@
 {
 	"id": "ptune-task",
 	"name": "ptune-task",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"minAppVersion": "0.15.0",
 	"description": "Daily task planning, Google Tasks sync via PtuneSync, and daily review workflow.",
 	"author": "Minoru Furusawa",
