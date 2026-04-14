@@ -19,7 +19,7 @@ export class PushAndRebuildCommand {
     private readonly syncUseCase: PushSyncUseCase,
     private readonly rebuildUseCase: SyncAndRebuildDailyNoteUseCase,
     private readonly presenter: PushPresenter,
-  ) { }
+  ) {}
 
   async execute(): Promise<void> {
     logger.debug("[Command:start] PushAndRebuildCommand");
@@ -48,9 +48,8 @@ export class PushAndRebuildCommand {
         return;
       }
 
-      if (result instanceof Object && "success" in result) {
-        const diff = result as DiffResult;
-
+      if (result !== false) {
+        const diff: DiffResult = result;
         if (diff.isValidationFailure() || diff.hasErrors()) {
           const message = i18n.common.push.notice.blockedByDiff
             .replace("{count}", String(diff.summary.errors));
@@ -77,7 +76,6 @@ export class PushAndRebuildCommand {
    * 今日のノート取得
    */
   private async getTodayNote(): Promise<DailyNote> {
-
     const today = this.todayResolver.resolve();
     logger.debug(`[Command] PushAndRebuildCommand resolvedToday=${today}`);
 
@@ -124,4 +122,3 @@ export class PushAndRebuildCommand {
     return lines.join("\n");
   }
 }
-

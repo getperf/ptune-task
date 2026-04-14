@@ -20,7 +20,7 @@ export function migrateV0ToV1(input: RawPayload): RawPayloadV1 {
 
 function extractTasks(input: RawPayload): RawTask[] {
   if (Array.isArray(input)) {
-    return input as RawTask[];
+    return input;
   }
 
   const obj = input as RawPayloadV0;
