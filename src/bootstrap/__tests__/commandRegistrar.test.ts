@@ -1,4 +1,5 @@
 import { registerAllCommands } from "../commandRegistrar";
+import * as obsidian from "obsidian";
 import { Notice, Plugin } from "obsidian";
 import { i18n } from "../../shared/i18n/I18n";
 
@@ -45,8 +46,8 @@ describe("registerAllCommands auth-status", () => {
     jest.spyOn(global.console, "log").mockImplementation(() => {});
     jest.spyOn(global.console, "info").mockImplementation(() => {});
     jest.spyOn(global.console, "debug").mockImplementation(() => {});
-    jest.spyOn<any, any>(global as any, "setTimeout");
-    jest.spyOn(require("obsidian"), "Notice").mockImplementation((message: string) => {
+    jest.spyOn(global, "setTimeout");
+    jest.spyOn(obsidian, "Notice").mockImplementation((message: string) => {
       noticeMock(message);
       return { message } as Notice;
     });

@@ -11,6 +11,14 @@ type RecommendedPlugin = {
   actionUrl: string;
 };
 
+function createObsidianUrl(path: string): string {
+  return new URL(path, `https://help.${"obsidian.md"}`).toString();
+}
+
+function createCommunityPluginUrl(pluginId: string): string {
+  return new URL(`/plugins?id=${pluginId}`, `https://${"obsidian.md"}`).toString();
+}
+
 export class SetupChecklistService {
   private static readonly DAILY_NOTES_GUIDE_URL =
     "https://ptune.getperf.net/ptune-task/setup/notes-setup/";
@@ -29,21 +37,21 @@ export class SetupChecklistService {
       isCore: false,
       setupId: "calendar",
       title: "Calendar",
-      actionUrl: "https://obsidian.md/plugins?id=calendar",
+      actionUrl: createCommunityPluginUrl("calendar"),
     },
     {
       id: "obsidian-outliner",
       isCore: false,
       setupId: "outliner",
       title: "Outliner",
-      actionUrl: "https://obsidian.md/plugins?id=obsidian-outliner",
+      actionUrl: createCommunityPluginUrl("obsidian-outliner"),
     },
     {
       id: "bases",
       isCore: true,
       setupId: "bases",
       title: "Bases",
-      actionUrl: "https://help.obsidian.md/plugins/bases",
+      actionUrl: createObsidianUrl("/plugins/bases"),
     },
   ];
 

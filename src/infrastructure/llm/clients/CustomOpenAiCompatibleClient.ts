@@ -4,6 +4,24 @@ import { logger } from "../../../shared/logger/loggerInstance";
 import { formatRequestError } from "../shared/formatRequestError";
 import type { ProviderTextGenerator } from "./ProviderTextGenerator";
 
+type ChatCompletionsResponse = {
+  choices?: Array<{
+    message?: {
+      content?: string | null;
+    };
+  }>;
+};
+
+function readChatCompletionContent(value: unknown): string | null {
+  if (typeof value !== "object" || value === null) {
+    return null;
+  }
+
+  const { choices } = value as ChatCompletionsResponse;
+  const content = choices?.[0]?.message?.content;
+  return typeof content === "string" ? content : null;
+}
+
 export class CustomOpenAiCompatibleClient implements ProviderTextGenerator {
   async generate(system: string, user: string, settings: LlmSettings): Promise<string | null> {
     try {
@@ -29,7 +47,7 @@ export class CustomOpenAiCompatibleClient implements ProviderTextGenerator {
         throw new Error(`OpenAI-compatible API error: ${res.status}`);
       }
 
-      return res.json?.choices?.[0]?.message?.content ?? null;
+      return readChatCompletionContent(res.json);
     } catch (error) {
       const message = formatRequestError("OpenAI-compatible API", error);
       logger.warn("[Service] CustomOpenAiCompatibleClient.generate rawError", error);

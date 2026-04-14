@@ -4,6 +4,26 @@ import { logger } from "../../../shared/logger/loggerInstance";
 import { formatRequestError } from "../shared/formatRequestError";
 import type { ProviderTextGenerator } from "./ProviderTextGenerator";
 
+type GeminiResponse = {
+  candidates?: Array<{
+    content?: {
+      parts?: Array<{
+        text?: string;
+      }>;
+    };
+  }>;
+};
+
+function readGeminiText(value: unknown): string | null {
+  if (typeof value !== "object" || value === null) {
+    return null;
+  }
+
+  const { candidates } = value as GeminiResponse;
+  const text = candidates?.[0]?.content?.parts?.[0]?.text;
+  return typeof text === "string" ? text : null;
+}
+
 export class GeminiClient implements ProviderTextGenerator {
   async generate(system: string, user: string, settings: LlmSettings): Promise<string | null> {
     try {
@@ -29,7 +49,7 @@ export class GeminiClient implements ProviderTextGenerator {
         throw new Error(`Gemini API error: ${res.status}`);
       }
 
-      return res.json?.candidates?.[0]?.content?.parts?.[0]?.text ?? null;
+      return readGeminiText(res.json);
     } catch (error) {
       const message = formatRequestError("Gemini API", error);
       logger.warn("[Service] GeminiClient.generate rawError", error);
