@@ -124,12 +124,12 @@ describe("registerAllCommands auth-status", () => {
     registerAllCommands(plugin, container as never);
 
     expect(commands.map((command) => ({ id: command.id, name: command.name }))).toEqual([
-      { id: "pull-today", name: "Pull Today" },
-      { id: "sync", name: "Push Today" },
-      { id: "review", name: "Generate Daily Review" },
+      { id: "pull-today", name: "Pull today" },
+      { id: "sync", name: "Push today" },
+      { id: "review", name: "Generate daily review" },
       { id: "login", name: "Login" },
-      { id: "auth-status", name: "Auth Status" },
-      { id: "setup-wizard", name: "Open Setup Wizard" },
+      { id: "auth-status", name: "Auth status" },
+      { id: "setup-wizard", name: "Open setup wizard" },
     ]);
   });
 });
