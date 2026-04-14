@@ -25,18 +25,33 @@ export interface TaskDocument {
   deletedTasks: DeletedTaskEntry[];
 }
 
+type RawTaskDocument = {
+  schema_version: number;
+  tasks: TaskDocumentTask[];
+  deleted_tasks?: DeletedTaskEntry[];
+};
+
+function isRawTaskDocument(value: unknown): value is RawTaskDocument {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  const candidate = value as Record<string, unknown>;
+  return typeof candidate.schema_version === "number" && Array.isArray(candidate.tasks);
+}
+
 export class TaskDocumentFactory {
   static fromJson(json: string): TaskDocument {
-    const obj = JSON.parse(json);
+    const obj: unknown = JSON.parse(json);
 
-    if (typeof obj !== "object" || obj === null || !Array.isArray(obj.tasks)) {
+    if (!isRawTaskDocument(obj)) {
       throw new Error("Invalid TaskDocument JSON");
     }
 
     return {
       schemaVersion: obj.schema_version,
       tasks: obj.tasks,
-      deletedTasks: obj.deleted_tasks ?? [],
+      deletedTasks: Array.isArray(obj.deleted_tasks) ? obj.deleted_tasks : [],
     };
   }
 }

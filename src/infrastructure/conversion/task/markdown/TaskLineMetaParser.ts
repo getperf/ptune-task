@@ -71,7 +71,7 @@ export class TaskLineMetaParser {
     const tagRegex = /(?:^|\s)#([^\s#|]+)/g;
     const tags: string[] = [];
 
-    const withoutTags = input.replace(tagRegex, (_, tag) => {
+    const withoutTags = input.replace(tagRegex, (_match: string, tag: string) => {
       tags.push(tag);
       return "";
     });
@@ -102,7 +102,8 @@ export class TaskLineMetaParser {
       throw new TaskLineFormatError("Invalid pomodoro format");
     }
 
-    const value = Number(match[1]);
+    const [, count] = match;
+    const value = Number(count);
 
     return {
       title: input.replace(strictRegex, "").trim(),

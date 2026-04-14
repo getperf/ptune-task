@@ -30,9 +30,6 @@ export class ReviewDocumentRenderer {
     const timetableHeading = HeadingService.resolve(
       "daily.section.timetable.title",
     );
-    const unfinishedHeading = HeadingService.resolve(
-      "daily.section.unfinished.title",
-    );
     const analysisHeading = HeadingService.resolve(
       "daily.section.timeanalysis.title",
     );

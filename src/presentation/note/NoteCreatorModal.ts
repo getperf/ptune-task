@@ -119,17 +119,17 @@ export class NoteCreatorModal extends Modal {
 
     textEl.addClass("long-text-input");
 
-    const prefixSpan = createEl("span", {
+    const prefixSpan = container.createEl("span", {
       text: `${this.prefix}_`,
       cls: "filename-prefix",
     });
     container.insertBefore(prefixSpan, textEl);
 
     if (this.kind === "project-note") {
-      container.appendChild(createEl("span", {
+      container.createEl("span", {
         text: ".md",
         cls: "filename-suffix",
-      }));
+      });
     }
   }
 

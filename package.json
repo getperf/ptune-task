@@ -1,7 +1,7 @@
 {
 	"name": "obsidian-ptune-task",
 	"version": "1.0.0",
-	"description": "Ptune task plugin for Obsidian",
+	"description": "Ptune task plugin for daily planning and Google Tasks sync",
 	"main": "main.js",
 	"type": "module",
 	"scripts": {
@@ -15,7 +15,7 @@
 		"prelint": "npm run codegen:xmind-template",
 		"pretest": "npm run codegen:xmind-template",
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
-		"lint": "eslint src tests",
+		"lint": "eslint .",
 		"test": "jest"
 	},
 	"keywords": [],
@@ -37,10 +37,13 @@
 	"dependencies": {
 		"md-ast-core": "^1.0.0",
 		"obsidian": "latest",
-		"obsidian-daily-notes-interface": "^0.9.4"
+		"obsidian-daily-notes-interface": "^0.9.4",
+		"remark-gfm": "^4.0.1",
+		"remark-parse": "^11.0.0",
+		"unified": "^11.0.5",
+		"unist-util-visit-parents": "^6.0.2"
 	},
 	"overrides": {
-		"ajv": "^8.18.0",
 		"brace-expansion": "^2.0.3",
 		"flatted": "^3.4.2",
 		"handlebars": "^4.7.9",

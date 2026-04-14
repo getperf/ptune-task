@@ -9,6 +9,7 @@ type BinaryWrite = {
 
 describe("NoteSetupHelper", () => {
   const originalTemplatePath = config.settings.review.xmindTemplatePath;
+  const configDir = "vault-config";
 
   afterEach(() => {
     config.settings.review.xmindTemplatePath = originalTemplatePath;
@@ -23,7 +24,7 @@ describe("NoteSetupHelper", () => {
 
     const app = {
       vault: {
-        configDir: ".obsidian",
+        configDir,
         adapter: {
           exists: jest.fn(async (path: string) => folders.has(path) || files.has(path)),
           readBinary: jest.fn(async () => {
@@ -58,20 +59,20 @@ describe("NoteSetupHelper", () => {
     const folders = new Set<string>([
       "_template",
       "_template/xmind",
-      ".obsidian",
-      ".obsidian/plugins",
-      ".obsidian/plugins/ptune-task",
-      ".obsidian/plugins/ptune-task/assets",
+      configDir,
+      `${configDir}/plugins`,
+      `${configDir}/plugins/ptune-task`,
+      `${configDir}/plugins/ptune-task/assets`,
     ]);
     const files = new Set<string>([
-      ".obsidian/plugins/ptune-task/assets/template_analysis.xmind",
+      `${configDir}/plugins/ptune-task/assets/template_analysis.xmind`,
     ]);
     const writes: BinaryWrite[] = [];
     const packagedData = Uint8Array.from([1, 2, 3, 4]).buffer;
 
     const app = {
       vault: {
-        configDir: ".obsidian",
+        configDir,
         adapter: {
           exists: jest.fn(async (path: string) => folders.has(path) || files.has(path)),
           readBinary: jest.fn(async () => packagedData),
@@ -90,7 +91,7 @@ describe("NoteSetupHelper", () => {
     await helper.ensureResources();
 
     expect(app.vault.adapter.readBinary).toHaveBeenCalledWith(
-      ".obsidian/plugins/ptune-task/assets/template_analysis.xmind",
+      `${configDir}/plugins/ptune-task/assets/template_analysis.xmind`,
     );
     expect(writes).toHaveLength(1);
     expect(writes[0]?.data).toBe(packagedData);

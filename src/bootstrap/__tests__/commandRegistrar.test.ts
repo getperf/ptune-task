@@ -1,4 +1,5 @@
 import { registerAllCommands } from "../commandRegistrar";
+import * as obsidian from "obsidian";
 import { Notice, Plugin } from "obsidian";
 import { i18n } from "../../shared/i18n/I18n";
 
@@ -45,8 +46,8 @@ describe("registerAllCommands auth-status", () => {
     jest.spyOn(global.console, "log").mockImplementation(() => {});
     jest.spyOn(global.console, "info").mockImplementation(() => {});
     jest.spyOn(global.console, "debug").mockImplementation(() => {});
-    jest.spyOn<any, any>(global as any, "setTimeout");
-    jest.spyOn(require("obsidian"), "Notice").mockImplementation((message: string) => {
+    jest.spyOn(global, "setTimeout");
+    jest.spyOn(obsidian, "Notice").mockImplementation((message: string) => {
       noticeMock(message);
       return { message } as Notice;
     });
@@ -123,12 +124,12 @@ describe("registerAllCommands auth-status", () => {
     registerAllCommands(plugin, container as never);
 
     expect(commands.map((command) => ({ id: command.id, name: command.name }))).toEqual([
-      { id: "pull-today", name: "Pull Today" },
-      { id: "sync", name: "Push Today" },
-      { id: "review", name: "Generate Daily Review" },
+      { id: "pull-today", name: "Pull today" },
+      { id: "sync", name: "Push today" },
+      { id: "review", name: "Generate daily review" },
       { id: "login", name: "Login" },
-      { id: "auth-status", name: "Auth Status" },
-      { id: "setup-wizard", name: "Open Setup Wizard" },
+      { id: "auth-status", name: "Auth status" },
+      { id: "setup-wizard", name: "Open setup wizard" },
     ]);
   });
 });

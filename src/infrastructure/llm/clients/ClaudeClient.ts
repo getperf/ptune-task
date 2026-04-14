@@ -47,7 +47,7 @@ export class ClaudeClient implements ProviderTextGenerator {
                 };
                 resolve(json.content?.[0]?.text ?? null);
               } catch (error) {
-                reject(error);
+                reject(error instanceof Error ? error : new Error(String(error)));
               }
             });
           },

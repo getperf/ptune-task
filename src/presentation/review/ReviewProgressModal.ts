@@ -23,19 +23,23 @@ export class ReviewProgressModal extends Modal {
     this.statusEl = contentEl.createEl("p", { text: t.running });
 
     const logContainer = contentEl.createDiv();
-    logContainer.style.border = "1px solid var(--background-modifier-border)";
-    logContainer.style.borderRadius = "8px";
-    logContainer.style.backgroundColor = "var(--background-secondary)";
-    logContainer.style.padding = "10px 12px";
-    logContainer.style.minHeight = `${ReviewProgressModal.LOG_MIN_HEIGHT_PX}px`;
-    logContainer.style.maxHeight = `${ReviewProgressModal.LOG_MAX_HEIGHT_PX}px`;
-    logContainer.style.overflowY = "auto";
+    logContainer.setCssProps({
+      border: "1px solid var(--background-modifier-border)",
+      borderRadius: "8px",
+      backgroundColor: "var(--background-secondary)",
+      padding: "10px 12px",
+      minHeight: `${ReviewProgressModal.LOG_MIN_HEIGHT_PX}px`,
+      maxHeight: `${ReviewProgressModal.LOG_MAX_HEIGHT_PX}px`,
+      overflowY: "auto",
+    });
 
     this.logEl = logContainer.createEl("pre");
-    this.logEl.style.margin = "0";
-    this.logEl.style.whiteSpace = "pre-wrap";
-    this.logEl.style.wordBreak = "break-word";
-    this.logEl.style.lineHeight = "1.5";
+    this.logEl.setCssProps({
+      margin: "0",
+      whiteSpace: "pre-wrap",
+      wordBreak: "break-word",
+      lineHeight: "1.5",
+    });
   }
 
   onClose(): void {

@@ -4,7 +4,7 @@ import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
 import { visitParents } from "unist-util-visit-parents";
-import type { Root, ListItem, Paragraph, Text, InlineCode } from "mdast";
+import type { ListItem, Paragraph } from "mdast";
 import type { Parent } from "unist";
 
 export type MdastTaskLine = {
@@ -14,12 +14,12 @@ export type MdastTaskLine = {
 
 export class TaskListMdastExtractor {
   static extract(body: string): MdastTaskLine[] {
-    const tree = unified().use(remarkParse).use(remarkGfm).parse(body) as Root;
+    const tree = unified().use(remarkParse).use(remarkGfm).parse(body);
 
     const results: MdastTaskLine[] = [];
 
     visitParents(tree, "listItem", (node, ancestors) => {
-      const listItem = node as ListItem;
+      const listItem: ListItem = node;
 
       // 未完了タスクのみ
       if (listItem.checked !== false) return;
@@ -45,11 +45,11 @@ export class TaskListMdastExtractor {
 
     for (const child of paragraph.children) {
       if (child.type === "text") {
-        text += (child as Text).value;
+        text += child.value;
         continue;
       }
       if (child.type === "inlineCode") {
-        text += (child as InlineCode).value;
+        text += child.value;
         continue;
       }
     }

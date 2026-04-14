@@ -21,11 +21,11 @@ export const commonEn = {
 	},
 
 	commands: {
-		pullToday: "Pull Today",
-		pushToday: "Push Today",
-		dailyReview: "Generate Daily Review",
+		pullToday: "Pull today",
+		pushToday: "Push today",
+		dailyReview: "Generate daily review",
 		login: "Login",
-		authStatus: "Auth Status",
+		authStatus: "Auth status",
 	},
 
 	pull: {
@@ -37,13 +37,13 @@ export const commonEn = {
 
 	noteCreation: {
 		menu: {
-			createProjectFolder: "Create Project Folder",
-			createProjectNote: "Create Note",
+			createProjectFolder: "Create project folder",
+			createProjectNote: "Create note",
 		},
 
 		modal: {
-			projectFolderTitle: "Create Project Folder",
-			projectNoteTitle: "Create Note",
+			projectFolderTitle: "Create project folder",
+			projectNoteTitle: "Create note",
 			targetLabel: "Target folder",
 			taskKeyLabel: "Select task",
 			taskKeyEmptyOption: "(None)",
@@ -62,11 +62,11 @@ export const commonEn = {
 
 	noteReview: {
 		command: {
-			current: "Generate Note Summary",
-			menu: "Note Summary",
+			current: "Generate note summary",
+			menu: "Note summary",
 		},
 		modal: {
-			title: "Note Summary",
+			title: "Note summary",
 			manualDescription: "LLM is not configured, so automatic generation is unavailable. Review the note body and enter the key points manually at a level that will be useful for later reflection.",
 			summaryLabel: "Summary",
 			save: "Save",
@@ -83,27 +83,27 @@ export const commonEn = {
 	projectIndex: {
 		section: {
 			noteUpdateHistory: {
-				title: "Note Update History",
+				title: "Note update history",
 			},
 		},
 	},
 
 	daily: {
 		section: {
-			planned: { title: "Planned Tasks" },
-			timelog: { title: "Time Log / Notes" },
-			review: { title: "Task Review" },
-			timetable: { title: "Time Table" },
-			unfinished: { title: "Unfinished Tasks" },
-			timeanalysis: { title: "Time Analysis" },
-			trend: { title: "Daily Trend" },
-			memo: { title: "Reflection Memo" },
-			tags: { title: "Tag List (Generated Today)" },
+			planned: { title: "Planned tasks" },
+			timelog: { title: "Time log / notes" },
+			review: { title: "Task review" },
+			timetable: { title: "Time table" },
+			unfinished: { title: "Unfinished tasks" },
+			timeanalysis: { title: "Time analysis" },
+			trend: { title: "Daily trend" },
+			memo: { title: "Reflection memo" },
+			tags: { title: "Tag list (generated today)" },
 			unregistered: {
-				title: "Unregistered Tag Candidates (Review Required)",
+				title: "Unregistered tag candidates (review required)",
 			},
-			report: { title: "Daily Report" },
-			reviewpoint: { title: "Reflection Points" },
+			report: { title: "Daily report" },
+			reviewpoint: { title: "Reflection points" },
 		},
 
 		planned: {
@@ -148,19 +148,19 @@ export const commonEn = {
 
 	review: {
 		flag: {
-			operationMiss: "Operation Miss",
-			toolOrEnvIssue: "Environment Issue",
+			operationMiss: "Operation miss",
+			toolOrEnvIssue: "Environment issue",
 			decisionPending: "Pending",
-			scopeExpanded: "Scope Expanded",
+			scopeExpanded: "Scope expanded",
 			unresolved: "Unresolved",
-			newIssueFound: "New Issue",
+			newIssueFound: "New issue",
 			unknown: "Unknown",
 		},
 	},
 
 	reviewFlow: {
 		setup: {
-			title: "Run Review",
+			title: "Run review",
 			dateLabel: "Target date",
 			taskReviewLabel: "Task review",
 			notesReviewLabel: "Daily notes review",
@@ -173,7 +173,7 @@ export const commonEn = {
 			},
 		},
 		progress: {
-			title: "Running Review",
+			title: "Running review",
 			running: "Running...",
 			completed: "Review completed. Closing shortly",
 			failed: "An error occurred",
@@ -199,7 +199,7 @@ export const commonEn = {
 
 	auth: {
 		progress: {
-			title: "Running Google Sign-in",
+			title: "Running Google sign-in",
 			subtitle: "Complete the browser sign-in flow to continue.",
 			statusLabel: "Current status",
 			instructionTitle: "What to do",
@@ -260,9 +260,9 @@ export const commonEn = {
 
 	setup: {
 		command: {
-			open: "Open Setup Wizard",
+			open: "Open setup wizard",
 		},
-		title: "Setup Checklist",
+		title: "Setup checklist",
 		refresh: "Refresh",
 		refreshDesc: "Reload the current setup status.",
 		requiredSection: "Required",
