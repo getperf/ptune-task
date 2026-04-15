@@ -1,5 +1,5 @@
 import { MarkdownFile, Section } from "md-ast-core";
-import type { Root } from "mdast";
+import type { Heading, Root, RootContent } from "mdast";
 import { FrontmatterMergePolicy } from "../policy/FrontmatterMergePolicy";
 import { TaskKeys } from "../../../domain/task/TaskKeys";
 import { HeadingService } from "../../../domain/heading/HeadingService";
@@ -8,6 +8,12 @@ import { SyncPhase } from "../../../domain/task/SyncPhase";
 import { HeadingMatcher } from "../matcher/HeadingMatcher";
 
 export class DailyNoteDocumentAdapter {
+  private static readonly CORRUPTED_PHASE_HEADING_PATTERN =
+    /^(planning|working)$/;
+  private static readonly CORRUPTED_TASK_KEY_HEADING_PATTERN =
+    /^[A-Za-z0-9\-_]{10,}$/;
+  private static readonly CORRUPTED_LABELED_TASK_KEY_HEADING_PATTERN =
+    /^.+:\s*[A-Za-z0-9\-_]{10,}$/;
 
   private readonly md: MarkdownFile;
 
@@ -35,6 +41,36 @@ export class DailyNoteDocumentAdapter {
       headingIndex,
       range.contentEnd - headingIndex,
     );
+
+    return true;
+  }
+
+  repairDanglingTaskKeyHeadingBeforePlannedSection(): boolean {
+    const plannedSection = this.findSection("daily.section.planned.title");
+
+    if (!plannedSection) {
+      return false;
+    }
+
+    const tree = getRootTree(this.md);
+    const plannedIndex = plannedSection.getIndex();
+    const previousHeadingIndex = this.findPreviousHeadingIndex(tree, plannedIndex);
+
+    if (previousHeadingIndex < 0) {
+      return false;
+    }
+
+    const previousHeading = tree.children[previousHeadingIndex];
+
+    if (!this.isRemovableCorruptedHeading(previousHeading, plannedSection)) {
+      return false;
+    }
+
+    if (previousHeadingIndex + 1 !== plannedIndex) {
+      return false;
+    }
+
+    tree.children.splice(previousHeadingIndex, plannedIndex - previousHeadingIndex);
 
     return true;
   }
@@ -239,6 +275,48 @@ export class DailyNoteDocumentAdapter {
       "\n" +
       incoming.trimStart()
     );
+  }
+
+  private findPreviousHeadingIndex(
+    tree: Root,
+    fromIndex: number,
+  ): number {
+    for (let index = fromIndex - 1; index >= 0; index -= 1) {
+      if (tree.children[index]?.type === "heading") {
+        return index;
+      }
+    }
+
+    return -1;
+  }
+
+  private isRemovableCorruptedHeading(
+    node: RootContent | undefined,
+    plannedSection: Section,
+  ): node is Heading {
+    if (node?.type !== "heading") {
+      return false;
+    }
+
+    if (node.depth !== plannedSection.getHeadingDepth()) {
+      return false;
+    }
+
+    const title = this.extractHeadingText(node);
+
+    return this.isCorruptedHeadingTitle(title);
+  }
+
+  private extractHeadingText(node: Heading): string {
+    return node.children
+      .map((child) => ("value" in child ? child.value : ""))
+      .join("");
+  }
+
+  private isCorruptedHeadingTitle(title: string): boolean {
+    return DailyNoteDocumentAdapter.CORRUPTED_PHASE_HEADING_PATTERN.test(title)
+      || DailyNoteDocumentAdapter.CORRUPTED_TASK_KEY_HEADING_PATTERN.test(title)
+      || DailyNoteDocumentAdapter.CORRUPTED_LABELED_TASK_KEY_HEADING_PATTERN.test(title);
   }
 }
 

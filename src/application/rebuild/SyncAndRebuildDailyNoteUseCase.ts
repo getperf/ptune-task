@@ -43,6 +43,10 @@ export class SyncAndRebuildDailyNoteUseCase {
 
     const adapter = new DailyNoteDocumentAdapter(note.content);
 
+    if (adapter.repairDanglingTaskKeyHeadingBeforePlannedSection()) {
+      logger.warn("[UseCase] SyncAndRebuildDailyNoteUseCase repaired dangling heading before planned section");
+    }
+
     const phase = adapter.getSyncPhase() ?? SyncPhase.Planning;
 
     logger.debug(`[UseCase] SyncAndRebuildDailyNoteUseCase phase=${phase}`);

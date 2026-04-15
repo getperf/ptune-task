@@ -42,6 +42,11 @@ export class EnsureTodayDailyNoteSectionsUseCase {
     const adapter = new DailyNoteDocumentAdapter(note.content);
     let updated = false;
 
+    if (adapter.repairDanglingTaskKeyHeadingBeforePlannedSection()) {
+      logger.warn("[UseCase] EnsureTodayDailyNoteSectionsUseCase repaired dangling heading before planned section");
+      updated = true;
+    }
+
     if (!adapter.hasSection("daily.section.planned.title")) {
       const habits = this.runtime.getHabitTasks();
       logger.debug(

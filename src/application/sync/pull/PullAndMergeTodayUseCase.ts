@@ -52,6 +52,10 @@ export class PullAndMergeTodayUseCase {
 
     const adapter = new DailyNoteDocumentAdapter(note.content);
 
+    if (adapter.repairDanglingTaskKeyHeadingBeforePlannedSection()) {
+      logger.warn("[UseCase] PullAndMergeTodayUseCase repaired dangling heading before planned section");
+    }
+
     const phase = adapter.getSyncPhase() ?? SyncPhase.Planning;
     logger.debug(`[UseCase] PullAndMergeTodayUseCase phase=${phase} created=${created}`);
 
