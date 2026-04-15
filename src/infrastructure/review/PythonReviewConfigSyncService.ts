@@ -47,7 +47,7 @@ export class PythonReviewConfigSyncService {
           summary_prompt: {
             strategy: "inline",
             language: "ja",
-            max_sentences: 5,
+            // max_sentences: 5,
             system: buildNoteSummarySystemPrompt(),
           },
           tagging_prompt: {
