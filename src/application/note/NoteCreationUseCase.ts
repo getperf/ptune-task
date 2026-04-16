@@ -20,13 +20,13 @@ export class NoteCreationUseCase {
 		private readonly runtime: PtuneRuntime,
 	) {}
 
-	async getProjectFolderPrefix(parentPath: string): Promise<string> {
+	getProjectFolderPrefix(parentPath: string): string {
 		this.assertProjectRootPath(parentPath);
 
 		return this.getFolderPrefix(parentPath);
 	}
 
-	async getProjectNotePrefix(projectFolderPath: string): Promise<string> {
+	getProjectNotePrefix(projectFolderPath: string): string {
 		this.assertProjectFolderPath(projectFolderPath);
 
 		return this.getNotePrefix(projectFolderPath);
@@ -42,7 +42,7 @@ export class NoteCreationUseCase {
 		this.assertProjectRootPath(request.parentPath);
 		this.assertValidTitle(request.title);
 
-		const prefix = await this.getFolderPrefix(request.parentPath);
+		const prefix = this.getFolderPrefix(request.parentPath);
 		const folder = new ProjectFolder(
 			joinPath(request.parentPath, `${prefix}_${request.title.trim()}`),
 			normalizeOptionalText(request.taskKey),
@@ -75,7 +75,7 @@ export class NoteCreationUseCase {
 		this.assertProjectFolderPath(request.parentPath);
 		this.assertValidTitle(request.title);
 
-		const prefix = await this.getNotePrefix(request.parentPath);
+		const prefix = this.getNotePrefix(request.parentPath);
 		const note = new NoteSummary({
 			notePath: joinPath(
 				request.parentPath,
@@ -106,7 +106,7 @@ export class NoteCreationUseCase {
 		return note;
 	}
 
-	private async getFolderPrefix(parentPath: string): Promise<string> {
+	private getFolderPrefix(parentPath: string): string {
 		const names = this.repository.listChildFolderNames(parentPath);
 
 		return this.prefixService.getNextPrefix(
@@ -116,7 +116,7 @@ export class NoteCreationUseCase {
 		);
 	}
 
-	private async getNotePrefix(projectFolderPath: string): Promise<string> {
+	private getNotePrefix(projectFolderPath: string): string {
 		const names = this.repository.listChildNoteNames(projectFolderPath);
 
 		return this.prefixService.getNextPrefix(

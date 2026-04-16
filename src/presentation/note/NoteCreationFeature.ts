@@ -58,11 +58,11 @@ export class NoteCreationFeature {
     }
   }
 
-  private async openProjectFolderModal(folder: TFolder): Promise<void> {
+  private openProjectFolderModal(folder: TFolder): void {
     logger.debug(`[Command] NoteCreationFeature.openProjectFolderModal start path=${folder.path}`);
 
     try {
-      const prefix = await this.useCase.getProjectFolderPrefix(folder.path);
+			const prefix = this.useCase.getProjectFolderPrefix(folder.path);
       const taskKeyOptions = this.taskKeyReader.readToday();
       logger.debug(`[Command] NoteCreationFeature.openProjectFolderModal prefix=${prefix} path=${folder.path}`);
       logger.debug(`[Command] NoteCreationFeature.openProjectFolderModal taskOptions=${taskKeyOptions.length} path=${folder.path}`);
@@ -103,11 +103,11 @@ export class NoteCreationFeature {
     }
   }
 
-  private async openProjectNoteModal(folder: TFolder): Promise<void> {
+  private openProjectNoteModal(folder: TFolder): void {
     logger.debug(`[Command] NoteCreationFeature.openProjectNoteModal start path=${folder.path}`);
 
     try {
-      const prefix = await this.useCase.getProjectNotePrefix(folder.path);
+			const prefix = this.useCase.getProjectNotePrefix(folder.path);
       const taskKeyOptions = this.taskKeyReader.readToday();
       logger.debug(`[Command] NoteCreationFeature.openProjectNoteModal prefix=${prefix} path=${folder.path}`);
       logger.debug(`[Command] NoteCreationFeature.openProjectNoteModal taskOptions=${taskKeyOptions.length} path=${folder.path}`);
