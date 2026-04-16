@@ -24,7 +24,7 @@ export class ProjectRepository {
 		);
 	}
 
-	async read(file: TFile): Promise<string> {
+	read(file: TFile): Promise<string> {
 		return this.app.vault.read(file);
 	}
 
