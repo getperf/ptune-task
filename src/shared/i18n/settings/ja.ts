@@ -25,7 +25,7 @@ export const settingsJa = {
 			heading: "ptune-log イベントフック",
 			enabled: {
 				name: "イベントフックを有効化",
-				desc: "note-create / note-work-finished / note-hook のイベントを codex-md-export ブリッジへ送信します",
+				desc: "note-create / note-work-finished / note-attached / note-review-requested のイベントを codex-md-export ブリッジへ送信します",
 			},
 			interopRoot: {
 				name: "Interop ルート",
@@ -147,6 +147,12 @@ export const settingsJa = {
 			name: "レビュー傾向の日数",
 			desc: "日次傾向テーブルに含める過去日数です（1〜30）。既定は7日です",
 			placeholder: "7",
+		},
+
+		maxSentences: {
+			name: "要約の最大文数",
+			desc: "LLM ノート要約の最大文数を指定します。0 で無効（詳細な要約）。既定は0です",
+			placeholder: "0",
 		},
 
 		xmindTemplatePath: {

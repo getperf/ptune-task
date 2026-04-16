@@ -5,86 +5,105 @@ import { buildNoteSummarySystemPrompt } from "../../application/note_review/prom
 import { config } from "../../config/config";
 
 export interface SyncedPythonReviewConfig {
-  profileId: string;
-  profilesFile: string;
-  credentialsFile: string;
+	profileId: string;
+	profilesFile: string;
+	credentialsFile: string;
 }
 
 const DEFAULT_PROFILE_ID = "default-note-review";
 const DEFAULT_CREDENTIAL_ID = "ptune-task-default";
 
 export class PythonReviewConfigSyncService {
-  async syncIfEnabled(): Promise<SyncedPythonReviewConfig | null> {
-    if (!config.settings.eventHook.enabled) {
-      return null;
-    }
-    return this.sync();
-  }
+	async syncIfEnabled(): Promise<SyncedPythonReviewConfig | null> {
+		if (!config.settings.eventHook.enabled) {
+			return null;
+		}
+		return this.sync();
+	}
 
-  async sync(): Promise<SyncedPythonReviewConfig> {
-    const provider = config.settings.llm.provider;
-    if (provider !== "openai" && provider !== "custom") {
-      throw new Error(`Python review event hook supports only openai/custom providers: ${provider}`);
-    }
+	async sync(): Promise<SyncedPythonReviewConfig> {
+		const provider = config.settings.llm.provider;
+		if (provider !== "openai" && provider !== "custom") {
+			throw new Error(
+				`Python review event hook supports only openai/custom providers: ${provider}`,
+			);
+		}
 
-    const root = join(homedir(), ".ptune", "llm");
-    const profilesFile = join(root, "profiles.json");
-    const credentialsFile = join(root, "credentials.json");
-    await mkdir(root, { recursive: true });
+		const root = join(homedir(), ".ptune", "llm");
+		const profilesFile = join(root, "profiles.json");
+		const credentialsFile = join(root, "credentials.json");
+		await mkdir(root, { recursive: true });
 
-    const profilesPayload = {
-      schema_version: 1,
-      profiles: [
-        {
-          profile_id: DEFAULT_PROFILE_ID,
-          provider,
-          model: config.settings.llm.model,
-          base_url: config.settings.llm.baseUrl,
-          api_key_credential_id: DEFAULT_CREDENTIAL_ID,
-          temperature: config.settings.llm.temperature,
-          max_input_chars: 16000,
-          max_output_tokens: config.settings.llm.maxTokens,
-          summary_prompt: {
-            strategy: "inline",
-            language: "ja",
-            max_sentences: 5,
-            system: buildNoteSummarySystemPrompt(),
-          },
-          tagging_prompt: {
-            strategy: "inline",
-            language: "ja",
-            system: "You propose topic and state tags for Obsidian notes.",
-            max_tags: 6,
-          },
-        },
-      ],
-    };
+		const language = config.settings.language;
+		const maxSentences =
+			config.settings.review.maxSentences > 0
+				? config.settings.review.maxSentences
+				: undefined;
 
-    const credentialsPayload = {
-      schema_version: 1,
-      credentials: [
-        {
-          credential_id: DEFAULT_CREDENTIAL_ID,
-          kind: "plaintext",
-          api_key_plaintext: config.settings.llm.apiKey,
-          headers: {},
-        },
-      ],
-    };
+		const summaryPrompt: Record<string, unknown> = {
+			strategy: "inline",
+			language,
+			system: buildNoteSummarySystemPrompt(),
+		};
+		if (maxSentences) {
+			summaryPrompt.max_sentences = maxSentences;
+		}
 
-    await this.writeJsonAtomic(profilesFile, profilesPayload);
-    await this.writeJsonAtomic(credentialsFile, credentialsPayload);
+		const profilesPayload = {
+			schema_version: 1,
+			profiles: [
+				{
+					profile_id: DEFAULT_PROFILE_ID,
+					provider,
+					model: config.settings.llm.model,
+					base_url: config.settings.llm.baseUrl,
+					api_key_credential_id: DEFAULT_CREDENTIAL_ID,
+					temperature: config.settings.llm.temperature,
+					max_input_chars: 16000,
+					max_output_tokens: config.settings.llm.maxTokens,
+					summary_prompt: summaryPrompt,
+					tagging_prompt: {
+						strategy: "inline",
+						language,
+						system: "You propose topic and state tags for Obsidian notes.",
+						max_tags: 6,
+					},
+				},
+			],
+		};
 
-    return {
-      profileId: DEFAULT_PROFILE_ID,
-      profilesFile,
-      credentialsFile,
-    };
-  }
+		const credentialsPayload = {
+			schema_version: 1,
+			credentials: [
+				{
+					credential_id: DEFAULT_CREDENTIAL_ID,
+					kind: "plaintext",
+					api_key_plaintext: config.settings.llm.apiKey,
+					headers: {},
+				},
+			],
+		};
 
-  private async writeJsonAtomic(path: string, payload: unknown): Promise<void> {
-    const tmpPath = `${path}.tmp`;
-    await writeFile(tmpPath, `${JSON.stringify(payload, null, 2)}\n`, "utf-8");
-    await rename(tmpPath, path);
-  }
+		await this.writeJsonAtomic(profilesFile, profilesPayload);
+		await this.writeJsonAtomic(credentialsFile, credentialsPayload);
+
+		return {
+			profileId: DEFAULT_PROFILE_ID,
+			profilesFile,
+			credentialsFile,
+		};
+	}
+
+	private async writeJsonAtomic(
+		path: string,
+		payload: unknown,
+	): Promise<void> {
+		const tmpPath = `${path}.tmp`;
+		await writeFile(
+			tmpPath,
+			`${JSON.stringify(payload, null, 2)}\n`,
+			"utf-8",
+		);
+		await rename(tmpPath, path);
+	}
 }

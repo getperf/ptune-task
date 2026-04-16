@@ -25,7 +25,7 @@ export const settingsEn = {
 			heading: "ptune-log Event Hook",
 			enabled: {
 				name: "Enable event hook",
-				desc: "Emit note-create, note-work-finished, and note-hook events to the codex-md-export bridge",
+				desc: "Emit note-create, note-work-finished, note-attached, and note-review-requested events to the codex-md-export bridge",
 			},
 			interopRoot: {
 				name: "Interop root",
@@ -149,6 +149,12 @@ export const settingsEn = {
 			placeholder: "7",
 		},
 
+		maxSentences: {
+			name: "Summary max sentences",
+			desc: "Maximum number of sentences for LLM note summaries. Use 0 to disable (detailed summary). Default is 0.",
+			placeholder: "0",
+		},
+
 		xmindTemplatePath: {
 			name: "XMind template path",
 			desc: "Vault-relative path to the XMind template used for reflection points",
@@ -203,19 +209,22 @@ export const settingsEn = {
 		tagSuggestions: {
 			name: "Tag suggestions",
 			desc: "Code completion candidates for task tags (one per line)",
-			placeholder: "Design\nResearch\nPrototype\nImplementation\nVerification",
+			placeholder:
+				"Design\nResearch\nPrototype\nImplementation\nVerification",
 		},
 
 		goalSuggestions: {
 			name: "Goal suggestions",
 			desc: "Code completion candidates for task goals (one per line)",
-			placeholder: "Requirements finalized\nDesign complete\nImplementation complete\nTest coverage added\nRefactoring complete\nBug fix complete",
+			placeholder:
+				"Requirements finalized\nDesign complete\nImplementation complete\nTest coverage added\nRefactoring complete\nBug fix complete",
 		},
 
 		subTaskTemplates: {
 			name: "Sub-task templates",
 			desc: "Code completion candidates for sub-tasks (one per line)",
-			placeholder: "Requirements review #Design 🍅x1\nUse cases #Design 🍅x1\nChange analysis #Research 🍅x1\nPrototype #Implementation 🍅x1\nBug fix #Implementation 🍅x1\nReview #Verification 🍅x1\nRegression test #Verification 🍅x1",
+			placeholder:
+				"Requirements review #Design 🍅x1\nUse cases #Design 🍅x1\nChange analysis #Research 🍅x1\nPrototype #Implementation 🍅x1\nBug fix #Implementation 🍅x1\nReview #Verification 🍅x1\nRegression test #Verification 🍅x1",
 		},
 	},
 

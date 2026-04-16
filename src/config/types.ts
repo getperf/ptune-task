@@ -38,6 +38,7 @@ export interface ReviewSettings {
 	notesReviewEnabledDefault: boolean;
 	taskReviewOutputFormat: ReviewOutputFormat;
 	xmindTemplatePath: string;
+	maxSentences: number;
 }
 
 export type Lang = "ja" | "en";

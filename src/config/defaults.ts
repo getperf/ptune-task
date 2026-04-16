@@ -40,6 +40,7 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 		notesReviewEnabledDefault: true,
 		taskReviewOutputFormat: "outline",
 		xmindTemplatePath: "_template/xmind/template_analysis.xmind",
+		maxSentences: 0,
 	},
 
 	habitTasks: {
@@ -56,4 +57,4 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 		interopRoot: "",
 		statusWaitMs: 2500,
 	},
-}
+};
