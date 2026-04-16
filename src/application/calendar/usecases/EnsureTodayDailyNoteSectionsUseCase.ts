@@ -16,8 +16,8 @@ export class EnsureTodayDailyNoteSectionsUseCase {
     private readonly runtime: PtuneRuntime,
   ) {}
 
-  async execute(file: TFile | null): Promise<boolean> {
-    logger.debug(`[UseCase:start] EnsureTodayDailyNoteSectionsUseCase path=${file?.path ?? "null"}`);
+	async execute(file: TFile | null): Promise<boolean> {
+		logger.debug(`[UseCase:start] EnsureTodayDailyNoteSectionsUseCase path=${file?.path ?? "null"}`);
 
     if (!file) {
       logger.debug("[UseCase:end] EnsureTodayDailyNoteSectionsUseCase skipped=no-file");
@@ -34,22 +34,27 @@ export class EnsureTodayDailyNoteSectionsUseCase {
 
     const note = await this.repository.findByDate(today);
 
-    if (!note) {
-      logger.debug(`[UseCase:end] EnsureTodayDailyNoteSectionsUseCase skipped=note-missing date=${today}`);
-      return false;
-    }
+		if (!note) {
+			logger.debug(`[UseCase:end] EnsureTodayDailyNoteSectionsUseCase skipped=note-missing date=${today}`);
+			return false;
+		}
 
-    const adapter = new DailyNoteDocumentAdapter(note.content);
-    let updated = false;
+		logger.debug(`[UseCase] EnsureTodayDailyNoteSectionsUseCase stage=adapter-create bytes=${note.content.length}`);
+		const adapter = new DailyNoteDocumentAdapter(note.content);
+		logger.debug("[UseCase] EnsureTodayDailyNoteSectionsUseCase stage=adapter-create completed");
+		let updated = false;
 
-    if (adapter.repairDanglingTaskKeyHeadingBeforePlannedSection()) {
-      logger.warn("[UseCase] EnsureTodayDailyNoteSectionsUseCase repaired dangling heading before planned section");
-      updated = true;
-    }
+		logger.debug("[UseCase] EnsureTodayDailyNoteSectionsUseCase stage=repair-dangling-heading start");
+		if (adapter.repairDanglingTaskKeyHeadingBeforePlannedSection()) {
+			logger.warn("[UseCase] EnsureTodayDailyNoteSectionsUseCase repaired dangling heading before planned section");
+			updated = true;
+		}
+		logger.debug("[UseCase] EnsureTodayDailyNoteSectionsUseCase stage=repair-dangling-heading end");
 
-    if (!adapter.hasSection("daily.section.planned.title")) {
-      const habits = this.runtime.getHabitTasks();
-      logger.debug(
+		logger.debug("[UseCase] EnsureTodayDailyNoteSectionsUseCase stage=planned-section-check start");
+		if (!adapter.hasSection("daily.section.planned.title")) {
+			const habits = this.runtime.getHabitTasks();
+			logger.debug(
         `[UseCase] EnsureTodayDailyNoteSectionsUseCase addPlannedSection morning=${habits.morning.length} evening=${habits.evening.length}`,
       );
       const sectionMarkdown = `${PlannedTaskSectionBuilder.buildForToday({
@@ -93,11 +98,12 @@ export class EnsureTodayDailyNoteSectionsUseCase {
           );
           updated = true;
         }
-      }
-    }
+			}
+		}
+		logger.debug("[UseCase] EnsureTodayDailyNoteSectionsUseCase stage=planned-section-check end");
 
-    if (!adapter.hasSection("daily.section.timelog.title")) {
-      updated = adapter.upsertSection(
+		if (!adapter.hasSection("daily.section.timelog.title")) {
+			updated = adapter.upsertSection(
         "daily.section.timelog.title",
         EnsureTodayDailyNoteSectionsUseCase.SECTION_SEPARATOR,
       ) || updated;
@@ -107,13 +113,14 @@ export class EnsureTodayDailyNoteSectionsUseCase {
       updated = adapter.upsertSection(
         "daily.section.memo.title",
         EnsureTodayDailyNoteSectionsUseCase.SECTION_SEPARATOR,
-      ) || updated;
-    }
+			) || updated;
+		}
 
-    if (!updated) {
-      logger.debug(`[UseCase:end] EnsureTodayDailyNoteSectionsUseCase date=${today} updated=false`);
-      return false;
-    }
+		logger.debug(`[UseCase] EnsureTodayDailyNoteSectionsUseCase stage=save-check updated=${updated}`);
+		if (!updated) {
+			logger.debug(`[UseCase:end] EnsureTodayDailyNoteSectionsUseCase date=${today} updated=false`);
+			return false;
+		}
 
     await this.repository.save(note.withContent(adapter.toString()));
 
