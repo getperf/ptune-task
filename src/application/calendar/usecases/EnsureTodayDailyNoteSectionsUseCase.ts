@@ -39,9 +39,12 @@ export class EnsureTodayDailyNoteSectionsUseCase {
       return false;
     }
 
+    logger.debug(`[UseCase] EnsureTodayDailyNoteSectionsUseCase stage=adapter-create bytes=${note.content.length}`);
     const adapter = new DailyNoteDocumentAdapter(note.content);
+    logger.debug("[UseCase] EnsureTodayDailyNoteSectionsUseCase stage=adapter-create completed");
     let updated = false;
 
+    logger.debug("[UseCase] EnsureTodayDailyNoteSectionsUseCase stage=planned-section-check start");
     if (!adapter.hasSection("daily.section.planned.title")) {
       const habits = this.runtime.getHabitTasks();
       logger.debug(
@@ -90,6 +93,7 @@ export class EnsureTodayDailyNoteSectionsUseCase {
         }
       }
     }
+    logger.debug("[UseCase] EnsureTodayDailyNoteSectionsUseCase stage=planned-section-check end");
 
     if (!adapter.hasSection("daily.section.timelog.title")) {
       updated = adapter.upsertSection(
@@ -105,6 +109,7 @@ export class EnsureTodayDailyNoteSectionsUseCase {
       ) || updated;
     }
 
+    logger.debug(`[UseCase] EnsureTodayDailyNoteSectionsUseCase stage=save-check updated=${updated}`);
     if (!updated) {
       logger.debug(`[UseCase:end] EnsureTodayDailyNoteSectionsUseCase date=${today} updated=false`);
       return false;
