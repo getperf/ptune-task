@@ -243,5 +243,14 @@ export class DailyNoteDocumentAdapter {
 }
 
 function getRootTree(md: MarkdownFile): Root {
-  return (md.root() as unknown as { getTree(): Root }).getTree();
+  const root = md.root() as unknown as { tree?: Root };
+
+  if (!root.tree) {
+    const shape = Object.keys(root as object).join(",");
+    throw new Error(
+      `DailyNoteDocumentAdapter.getRootTree: RootSection.tree is unavailable shape=${shape || "none"}`,
+    );
+  }
+
+  return root.tree;
 }

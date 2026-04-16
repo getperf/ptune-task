@@ -64,7 +64,7 @@ export class Logger {
 		if (!this.shouldLog(level)) return;
 
 		const msg = args
-			.map((v) => (typeof v === "string" ? v : JSON.stringify(v)))
+			.map((v) => this.formatValue(v))
 			.join(" ");
 
 		const line = `[ptune][${level}] ${msg}`;
@@ -101,6 +101,28 @@ export class Logger {
 
 	error(...args: unknown[]) {
 		this.log("error", ...args);
+	}
+
+	private formatValue(value: unknown): string {
+		if (typeof value === "string") {
+			return value;
+		}
+
+		if (value instanceof Error) {
+			const details = {
+				name: value.name,
+				message: value.message,
+				stack: value.stack,
+			};
+
+			return JSON.stringify(details);
+		}
+
+		try {
+			return JSON.stringify(value);
+		} catch {
+			return String(value);
+		}
 	}
 }
 
