@@ -13,9 +13,11 @@
 		"predev": "npm run codegen:xmind-template",
 		"prebuild": "npm run codegen:xmind-template",
 		"prelint": "npm run codegen:xmind-template",
+		"prelint:reviewbot": "npm run codegen:xmind-template",
 		"pretest": "npm run codegen:xmind-template",
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
 		"lint": "eslint .",
+		"lint:reviewbot": "eslint \"src/**/*.ts\" --ignore-pattern \"src/**/*.test.ts\" --ignore-pattern \"src/**/__tests__/**\" --rule \"require-await:off\" --rule \"@typescript-eslint/require-await:error\"",
 		"test": "jest"
 	},
 	"keywords": [],
