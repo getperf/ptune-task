@@ -22,7 +22,7 @@ export const settingsEn = {
 		},
 
 		eventHook: {
-			heading: "ptune-log Event Hook",
+			heading: "Event hook for ptune-log",
 			enabled: {
 				name: "Enable event hook",
 				desc: "Emit note-create, note-work-finished, note-attached, and note-review-requested events to the codex-md-export bridge",
@@ -41,11 +41,11 @@ export const settingsEn = {
 	},
 
 	llm: {
-		sectionTitle: "LLM settings",
+		sectionTitle: "Language model settings",
 
 		provider: {
 			name: "Provider",
-			desc: "LLM provider used for summarization",
+			desc: "Language model provider used for summarization",
 			options: {
 				openai: "OpenAI",
 				claude: "Claude",
@@ -56,8 +56,8 @@ export const settingsEn = {
 
 		apiKey: {
 			name: "API key",
-			desc: "LLM API key",
-			placeholder: "sk-...",
+			desc: "Language model API key",
+			placeholder: "Enter API key",
 		},
 
 		baseUrl: {
@@ -69,7 +69,7 @@ export const settingsEn = {
 		model: {
 			name: "Model",
 			desc: "Model name for summarization",
-			placeholder: "gpt-5-mini",
+			placeholder: "Enter model name",
 		},
 
 		temperature: {
@@ -121,8 +121,8 @@ export const settingsEn = {
 		sectionTitle: "Project index settings",
 
 		enableBasesSection: {
-			name: "Enable Bases section",
-			desc: "When the Bases plugin is enabled, add or maintain a Bases view section in project index.md notes",
+			name: "Enable bases section",
+			desc: "When the bases plugin is enabled, add or maintain a bases view section in project index.md notes",
 		},
 	},
 
@@ -138,8 +138,8 @@ export const settingsEn = {
 			name: "Reflection point format",
 			desc: "Default output format for reflection points inside daily notes review",
 			options: {
-				outline: "outline",
-				xmind: "xmind",
+				outline: "Text outline",
+				xmind: "Mind map",
 			},
 		},
 
@@ -151,7 +151,7 @@ export const settingsEn = {
 
 		maxSentences: {
 			name: "Summary max sentences",
-			desc: "Maximum number of sentences for LLM note summaries. Use 0 to disable (detailed summary). Default is 0.",
+			desc: "Maximum number of sentences for language model note summaries. Use 0 to disable (detailed summary). Default is 0.",
 			placeholder: "0",
 		},
 
@@ -174,7 +174,7 @@ export const settingsEn = {
 			},
 			modal: {
 				title: "Daily task templates",
-				desc: "This will overwrite the current Daily Note task settings. Select a template before applying it.",
+				desc: "This will overwrite the current daily note task settings. Select a template before applying it.",
 				includeHabit: {
 					name: "Update habit tasks too",
 					desc: "When enabled, morning and evening habit tasks are updated to the default wake-up and sleep entries.",
@@ -196,35 +196,32 @@ export const settingsEn = {
 			morning: {
 				name: "Morning list",
 				desc: "Enter the tasks you perform each morning, one per line",
-				placeholder: "e.g. Exercise\nMeditate",
+				placeholder: "Examples:\nexercise\nmeditate",
 			},
 
 			evening: {
 				name: "Evening list",
 				desc: "Enter the tasks you perform each evening, one per line",
-				placeholder: "e.g. Write journal\nStretch",
+				placeholder: "Examples:\nwrite journal\nstretch",
 			},
 		},
 
 		tagSuggestions: {
 			name: "Tag suggestions",
 			desc: "Code completion candidates for task tags (one per line)",
-			placeholder:
-				"Design\nResearch\nPrototype\nImplementation\nVerification",
+			placeholder: "Examples:\ndesign\nresearch\nprototype\nimplementation\nverification",
 		},
 
 		goalSuggestions: {
 			name: "Goal suggestions",
 			desc: "Code completion candidates for task goals (one per line)",
-			placeholder:
-				"Requirements finalized\nDesign complete\nImplementation complete\nTest coverage added\nRefactoring complete\nBug fix complete",
+			placeholder: "Examples:\nrequirements finalized\ndesign complete\nimplementation complete\ntest coverage added\nrefactoring complete\nbug fix complete",
 		},
 
 		subTaskTemplates: {
 			name: "Sub-task templates",
 			desc: "Code completion candidates for sub-tasks (one per line)",
-			placeholder:
-				"Requirements review #Design 🍅x1\nUse cases #Design 🍅x1\nChange analysis #Research 🍅x1\nPrototype #Implementation 🍅x1\nBug fix #Implementation 🍅x1\nReview #Verification 🍅x1\nRegression test #Verification 🍅x1",
+			placeholder: "Examples:\nrequirements review #design 🍅x1\nuse cases #design 🍅x1\nchange analysis #research 🍅x1\nprototype #implementation 🍅x1\nbug fix #implementation 🍅x1\nreview #verification 🍅x1\nregression test #verification 🍅x1",
 		},
 	},
 

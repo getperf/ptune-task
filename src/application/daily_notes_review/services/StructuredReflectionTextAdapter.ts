@@ -1,6 +1,11 @@
 import { DailyNotesReflectionDocument, ReflectionProject } from "../models/DailyNotesReflectionDocument";
 import { logger } from "../../../shared/logger/loggerInstance";
 
+const FOLDER_PREFIX = "[folder] ";
+const NOTE_PREFIX = "[note] ";
+const LEGACY_FOLDER_PREFIX = "[FOLDER] ";
+const LEGACY_NOTE_PREFIX = "[NOTE] ";
+
 export type StructuredReflectionNote = {
   noteTitle: string;
   sentences: string[];
@@ -31,7 +36,7 @@ export class StructuredReflectionTextAdapter {
         return lines.join("\n");
       }
 
-      lines.push(`[FOLDER] ${folder.projectTitle}`);
+      lines.push(`${FOLDER_PREFIX}${folder.projectTitle}`);
       for (let noteIndex = 0; noteIndex < folder.notes.length; noteIndex += 1) {
         const note = folder.notes[noteIndex];
         if (!note) {
@@ -41,7 +46,7 @@ export class StructuredReflectionTextAdapter {
           return lines.join("\n");
         }
 
-        lines.push(`[NOTE] ${note.noteTitle}`);
+        lines.push(`${NOTE_PREFIX}${note.noteTitle}`);
         for (const sentence of note.sentences) {
           lines.push(`- ${sentence.text}`);
         }
@@ -114,9 +119,10 @@ export class StructuredReflectionTextAdapter {
         continue;
       }
 
-      if (text.startsWith("[FOLDER] ")) {
+      const folderPrefix = this.matchPrefix(text, [FOLDER_PREFIX, LEGACY_FOLDER_PREFIX]);
+      if (folderPrefix) {
         currentFolder = {
-          folderTitle: text.slice("[FOLDER] ".length).trim(),
+          folderTitle: text.slice(folderPrefix.length).trim(),
           notes: [],
         };
         currentNote = null;
@@ -124,7 +130,8 @@ export class StructuredReflectionTextAdapter {
         continue;
       }
 
-      if (text.startsWith("[NOTE] ")) {
+      const notePrefix = this.matchPrefix(text, [NOTE_PREFIX, LEGACY_NOTE_PREFIX]);
+      if (notePrefix) {
         if (!currentFolder) {
           logger.debug(
             `[Service] StructuredReflectionTextAdapter.parse noteWithoutFolder line=${this.previewText(rawLine)}`,
@@ -133,7 +140,7 @@ export class StructuredReflectionTextAdapter {
         }
 
         currentNote = {
-          noteTitle: text.slice("[NOTE] ".length).trim(),
+          noteTitle: text.slice(notePrefix.length).trim(),
           sentences: [],
         };
         currentFolder.notes.push(currentNote);
@@ -155,5 +162,15 @@ export class StructuredReflectionTextAdapter {
 
   private previewText(value: string, maxLength = 120): string {
     return value.replace(/\s+/g, " ").trim().slice(0, maxLength);
+  }
+
+  private matchPrefix(text: string, prefixes: readonly string[]): string | null {
+    for (const prefix of prefixes) {
+      if (text.startsWith(prefix)) {
+        return prefix;
+      }
+    }
+
+    return null;
   }
 }
