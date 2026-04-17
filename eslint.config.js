@@ -28,6 +28,12 @@ export default tseslint.config(
   },
   ...obsidianmd.configs.recommended,
   {
+    files: ["src/shared/i18n/**/en.ts"],
+    rules: {
+      "obsidianmd/ui/sentence-case-locale-module": "error",
+    },
+  },
+  {
     files: ["**/*.test.ts", "**/__tests__/**/*.ts"],
     languageOptions: {
       globals: {

@@ -254,8 +254,8 @@ describe("GenerateDailyNotesReviewUseCase", () => {
       };
       const textGenerator = {
         generate: jest.fn().mockResolvedValue([
-          "[FOLDER] ptune-taskBases追加ユースケース",
-          "[NOTE] デイリーノートゴミ見出し出現問題調査",
+          "[folder] ptune-taskBases追加ユースケース",
+          "[note] デイリーノートゴミ見出し出現問題調査",
           "- 先頭のゴミ見出しを生成する箇所を特定した。",
           "- 3月21日以降の複数ノートで再現している。",
         ].join("\n")),
