@@ -6,79 +6,83 @@ import { PushPresenter } from "../../presentation/push/PushPresenter";
 import { DetailsNoticeModal } from "./DetailsNoticeModal";
 
 export class ObsidianPresenter
-  implements PullTodayPresenter, PushPresenter, ReviewPresenter {
-  private static readonly DETAIL_MODAL_THRESHOLD = 160;
+	implements PullTodayPresenter, PushPresenter, ReviewPresenter
+{
+	private static readonly DETAIL_MODAL_THRESHOLD = 160;
 
-  constructor(readonly app: App) { }
+	constructor(readonly app: App) {}
 
-  showInfo(message: string): void {
-    new Notice(message);
-  }
+	showInfo(message: string): void {
+		new Notice(message);
+	}
 
-  showError(message: string): void {
-    const normalized = this.normalizeErrorMessage(message);
+	showError(message: string): void {
+		const normalized = this.normalizeErrorMessage(message);
 
-    if (this.shouldOpenDetailsModal(normalized)) {
-      new DetailsNoticeModal(this.app, "Error", normalized).open();
-      return;
-    }
+		if (this.shouldOpenDetailsModal(normalized)) {
+			new DetailsNoticeModal(this.app, "Error", normalized).open();
+			return;
+		}
 
-    new Notice(`Error: ${normalized}`);
-  }
+		new Notice(`Error: ${normalized}`);
+	}
 
-  showWarningWithDetails(message: string, details: string): void {
-    new DetailsNoticeModal(this.app, message, details).open();
-  }
+	showWarningWithDetails(message: string, details: string): void {
+		new DetailsNoticeModal(this.app, message, details).open();
+	}
 
-  async saveActiveEditor(): Promise<void> {
-    // Obsidian は自動保存のため no-op
-  }
+	saveActiveEditor(): Promise<void> {
+		return Promise.resolve();
+	}
 
-  async openNote(note: DailyNote): Promise<void> {
-    const file = this.app.vault.getAbstractFileByPath(note.filePath);
-    if (!(file instanceof TFile)) return;
+	async openNote(note: DailyNote): Promise<void> {
+		const file = this.app.vault.getAbstractFileByPath(note.filePath);
+		if (!(file instanceof TFile)) return;
 
-    const leaf = this.app.workspace.getLeaf(false);
-    await leaf.openFile(file);
+		const leaf = this.app.workspace.getLeaf(false);
+		await leaf.openFile(file);
 
-    this.scrollPastFrontmatter();
-  }
+		this.scrollPastFrontmatter();
+	}
 
-  async refreshCalendar(): Promise<void> {
-    // calendar 廃止のため no-op
-  }
+	refreshCalendar(): Promise<void> {
+		return Promise.resolve();
+	}
 
-  private scrollPastFrontmatter(): void {
-    const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-    if (!view) return;
+	private scrollPastFrontmatter(): void {
+		const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+		if (!view) return;
 
-    const content = view.editor.getValue();
-    const lines = content.split("\n");
+		const content = view.editor.getValue();
+		const lines = content.split("\n");
 
-    let endLine = 0;
-    if (lines[0] === "---") {
-      for (let i = 1; i < lines.length; i++) {
-        if (lines[i]?.trim() === "---") {
-          endLine = i + 1;
-          break;
-        }
-      }
-    }
+		let endLine = 0;
+		if (lines[0] === "---") {
+			for (let i = 1; i < lines.length; i++) {
+				if (lines[i]?.trim() === "---") {
+					endLine = i + 1;
+					break;
+				}
+			}
+		}
 
-    view.editor.setCursor({ line: endLine, ch: 0 });
-  }
+		view.editor.setCursor({ line: endLine, ch: 0 });
+	}
 
-  private normalizeErrorMessage(message: string): string {
-    const trimmed = message.trim();
+	private normalizeErrorMessage(message: string): string {
+		const trimmed = message.trim();
 
-    if (trimmed.startsWith("Error: ")) {
-      return trimmed.slice("Error: ".length);
-    }
+		if (trimmed.startsWith("Error: ")) {
+			return trimmed.slice("Error: ".length);
+		}
 
-    return trimmed;
-  }
+		return trimmed;
+	}
 
-  private shouldOpenDetailsModal(message: string): boolean {
-    return message.includes("\n") || message.length > ObsidianPresenter.DETAIL_MODAL_THRESHOLD;
-  }
+	private shouldOpenDetailsModal(message: string): boolean {
+		return (
+			message.includes("\n") ||
+			message.length > ObsidianPresenter.DETAIL_MODAL_THRESHOLD
+		);
+	}
 }

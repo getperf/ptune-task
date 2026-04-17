@@ -8,249 +8,194 @@ import { SyncPhase } from "../../../domain/task/SyncPhase";
 import { HeadingMatcher } from "../matcher/HeadingMatcher";
 
 export class DailyNoteDocumentAdapter {
+	private readonly md: MarkdownFile;
 
-  private readonly md: MarkdownFile;
+	constructor(markdown: string) {
+		this.md = MarkdownFile.parse(markdown);
+	}
 
-  constructor(markdown: string) {
-    this.md = MarkdownFile.parse(markdown);
-  }
+	findSectionByMatcher(matcher: RegExp): Section | null {
+		return this.md.findSection(matcher);
+	}
 
-  findSectionByMatcher(matcher: RegExp): Section | null {
-    return this.md.findSection(matcher);
-  }
+	removeSectionByMatcher(matcher: RegExp): boolean {
+		const section = this.md.findSection(matcher);
 
-  removeSectionByMatcher(matcher: RegExp): boolean {
-    const section = this.md.findSection(matcher);
+		if (!section) {
+			return false;
+		}
 
-    if (!section) {
-      return false;
-    }
+		const range = section.getRange();
+		const headingIndex = section.getIndex();
 
-    const range = section.getRange();
-    const headingIndex = section.getIndex();
+		const tree = getRootTree(this.md);
 
-    const tree = getRootTree(this.md);
+		tree.children.splice(headingIndex, range.contentEnd - headingIndex);
 
-    tree.children.splice(
-      headingIndex,
-      range.contentEnd - headingIndex,
-    );
+		return true;
+	}
 
-    return true;
-  }
+	// =========================================================
+	// Section: READ
+	// =========================================================
 
-  // =========================================================
-  // Section: READ
-  // =========================================================
+	getSectionMarkdown(key: DailyHeadingKey): string {
+		const section = this.findSection(key);
 
-  getSectionMarkdown(key: DailyHeadingKey): string {
+		if (!section) {
+			return "";
+		}
 
-    const section = this.findSection(key);
+		return section.getContent({ format: "markdown" }) ?? "";
+	}
 
-    if (!section) {
-      return "";
-    }
+	hasSection(key: DailyHeadingKey): boolean {
+		return this.findSection(key) !== null;
+	}
 
-    return section.getContent({ format: "markdown" }) ?? "";
-  }
+	// =========================================================
+	// Section: MERGE
+	// =========================================================
 
-  hasSection(key: DailyHeadingKey): boolean {
-    return this.findSection(key) !== null;
-  }
+	mergeIntoSection(key: DailyHeadingKey, markdownBody: string): void {
+		const section = this.findOrCreateSection(key);
 
-  // =========================================================
-  // Section: MERGE
-  // =========================================================
+		const existing = section.getContent({ format: "markdown" });
 
-  mergeIntoSection(
-    key: DailyHeadingKey,
-    markdownBody: string
-  ): void {
+		const merged = this.mergeMarkdown(existing, markdownBody);
 
-    const section = this.findOrCreateSection(key);
+		section.resetContent(merged);
+	}
 
-    const existing =
-      section.getContent({ format: "markdown" });
+	// =========================================================
+	// Section: REPLACE
+	// =========================================================
 
-    const merged =
-      this.mergeMarkdown(existing, markdownBody);
+	replaceSection(key: DailyHeadingKey, markdownBody: string): void {
+		const section = this.findOrCreateSection(key);
 
-    section.resetContent(merged);
-  }
+		section.resetContent(markdownBody);
+	}
 
-  // =========================================================
-  // Section: REPLACE
-  // =========================================================
+	upsertSection(key: DailyHeadingKey, markdownBody: string): boolean {
+		const normalized = markdownBody.trim();
 
-  replaceSection(
-    key: DailyHeadingKey,
-    markdownBody: string
-  ): void {
+		const current = this.getSectionMarkdown(key).trim();
 
-    const section = this.findOrCreateSection(key);
+		if (current === normalized) {
+			return false;
+		}
 
-    section.resetContent(markdownBody);
-  }
+		this.replaceSection(key, markdownBody);
 
-  upsertSection(
-    key: DailyHeadingKey,
-    markdownBody: string
-  ): boolean {
+		return true;
+	}
 
-    const normalized =
-      markdownBody.trim();
+	// =========================================================
+	// Frontmatter: READ
+	// =========================================================
 
-    const current =
-      this.getSectionMarkdown(key).trim();
+	getTaskKeys(): TaskKeys {
+		const fm = this.md.getFrontmatter();
 
-    if (current === normalized) {
-      return false;
-    }
+		const keys = fm.get<TaskKeys>("taskKeys");
 
-    this.replaceSection(key, markdownBody);
+		return keys ?? {};
+	}
 
-    return true;
-  }
+	getTaskKeysCount(): number {
+		const keys = this.getTaskKeys();
 
-  // =========================================================
-  // Frontmatter: READ
-  // =========================================================
+		return Object.keys(keys ?? {}).length;
+	}
 
-  getTaskKeys(): TaskKeys {
+	getSyncPhase(): SyncPhase | null {
+		const fm = this.md.getFrontmatter();
 
-    const fm = this.md.getFrontmatter();
+		return fm.get<SyncPhase>("syncPhase") ?? null;
+	}
 
-    const keys = fm.get<TaskKeys>("taskKeys");
+	// =========================================================
+	// Frontmatter: WRITE
+	// =========================================================
 
-    return keys ?? {};
-  }
+	setSyncPhase(phase: SyncPhase): void {
+		const fm = this.md.getFrontmatter();
 
-  getTaskKeysCount(): number {
+		fm.set("syncPhase", phase);
+	}
 
-    const keys = this.getTaskKeys();
+	// =========================================================
+	// Frontmatter: MERGE
+	// =========================================================
 
-    return Object.keys(keys ?? {}).length;
-  }
+	mergeTaskKeys(taskKeys: TaskKeys): void {
+		const fm = this.md.getFrontmatter();
 
-  getSyncPhase(): SyncPhase | null {
+		const existing = fm.get<Record<string, string>>("taskKeys");
 
-    const fm = this.md.getFrontmatter();
+		const merged = FrontmatterMergePolicy.union(existing, taskKeys);
 
-    return fm.get<SyncPhase>("syncPhase") ?? null;
-  }
+		fm.set("taskKeys", merged);
+	}
 
-  // =========================================================
-  // Frontmatter: WRITE
-  // =========================================================
+	// =========================================================
+	// Frontmatter: REPLACE
+	// =========================================================
 
-  setSyncPhase(phase: SyncPhase): void {
+	replaceTaskKeys(taskKeys: TaskKeys): void {
+		const fm = this.md.getFrontmatter();
 
-    const fm = this.md.getFrontmatter();
+		fm.set("taskKeys", taskKeys);
+	}
 
-    fm.set("syncPhase", phase);
-  }
+	// =========================================================
+	// Output
+	// =========================================================
 
-  // =========================================================
-  // Frontmatter: MERGE
-  // =========================================================
+	toString(): string {
+		return this.md.toString();
+	}
 
-  mergeTaskKeys(taskKeys: TaskKeys): void {
+	// =========================================================
+	// private helpers
+	// =========================================================
 
-    const fm = this.md.getFrontmatter();
+	private findSection(key: DailyHeadingKey): Section | null {
+		const heading = HeadingService.resolve(key);
 
-    const existing =
-      fm.get<Record<string, string>>("taskKeys");
+		return this.md.findSection(HeadingMatcher.heading(heading.baseTitle));
+	}
 
-    const merged =
-      FrontmatterMergePolicy.union(
-        existing,
-        taskKeys
-      );
+	findOrCreateSection(key: DailyHeadingKey): Section {
+		const heading = HeadingService.resolve(key);
 
-    fm.set("taskKeys", merged);
-  }
+		return this.md.root().ensureChild({
+			matcher: HeadingMatcher.heading(heading.baseTitle),
+			title: heading.renderedTitle,
+			depth: heading.depth,
+			content: () => "",
+		});
+	}
 
-  // =========================================================
-  // Frontmatter: REPLACE
-  // =========================================================
+	private mergeMarkdown(existing: string, incoming: string): string {
+		if (!existing?.trim()) {
+			return incoming.trim();
+		}
 
-  replaceTaskKeys(taskKeys: TaskKeys): void {
-
-    const fm = this.md.getFrontmatter();
-
-    fm.set("taskKeys", taskKeys);
-  }
-
-  // =========================================================
-  // Output
-  // =========================================================
-
-  toString(): string {
-    return this.md.toString();
-  }
-
-  // =========================================================
-  // private helpers
-  // =========================================================
-
-  private findSection(
-    key: DailyHeadingKey
-  ): Section | null {
-
-    const heading =
-      HeadingService.resolve(key);
-
-    return this.md.findSection(
-      HeadingMatcher.heading(
-        heading.baseTitle
-      )
-    );
-  }
-
-  findOrCreateSection(
-    key: DailyHeadingKey
-  ): Section {
-
-    const heading =
-      HeadingService.resolve(key);
-
-    return this.md.root().ensureChild({
-      matcher:
-        HeadingMatcher.heading(
-          heading.baseTitle
-        ),
-      title: heading.renderedTitle,
-      depth: heading.depth,
-      content: () => "",
-    });
-  }
-
-  private mergeMarkdown(
-    existing: string,
-    incoming: string
-  ): string {
-
-    if (!existing?.trim()) {
-      return incoming.trim();
-    }
-
-    return (
-      existing.trimEnd() +
-      "\n" +
-      incoming.trimStart()
-    );
-  }
+		return existing.trimEnd() + "\n" + incoming.trimStart();
+	}
 }
 
 function getRootTree(md: MarkdownFile): Root {
-  const root = md.root() as unknown as { tree?: Root };
+	const root = md.root() as unknown as { tree?: Root };
 
-  if (!root.tree) {
-    const shape = Object.keys(root as object).join(",");
-    throw new Error(
-      `DailyNoteDocumentAdapter.getRootTree: RootSection.tree is unavailable shape=${shape || "none"}`,
-    );
-  }
+	if (!root.tree) {
+		const shape = Object.keys(root as object).join(",");
+		throw new Error(
+			`DailyNoteDocumentAdapter.getRootTree: RootSection.tree is unavailable shape=${shape || "none"}`,
+		);
+	}
 
-  return root.tree;
+	return root.tree;
 }
