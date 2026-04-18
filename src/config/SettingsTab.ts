@@ -10,7 +10,7 @@ import { renderNoteSettings } from "./SettingsTabNote";
 import { renderProjectIndexSettings } from "./SettingsTabProjectIndex";
 import { renderReviewSettings } from "./SettingsTabReview";
 import { renderDailyNoteTaskSettings } from "./SettingsTabDailyNote";
-import { renderSnippetSettings } from "./SettingsTabSnippet";
+import { renderEventHookSettings } from "./SettingsTabEventHook";
 
 function isLang(v: string): v is Lang {
 	return ["ja", "en"].includes(v);
@@ -61,7 +61,6 @@ export class PtuneSettingTab extends PluginSettingTab {
 		renderReviewSettings(containerEl);
 
 		renderDailyNoteTaskSettings(containerEl, this.app, () => this.display());
-
-		renderSnippetSettings(containerEl);
+		renderEventHookSettings(containerEl);
 	}
 }

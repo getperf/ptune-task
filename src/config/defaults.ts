@@ -56,5 +56,9 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 		enabled: false,
 		interopRoot: "",
 		statusWaitMs: 2500,
+		ensureOnEvent: true,
+		pythonExePath: "",
+		daemonArgs: "-m codex_md_export.main daemon --debug",
+		lockFreshSeconds: 20,
 	},
 };

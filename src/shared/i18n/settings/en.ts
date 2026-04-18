@@ -20,23 +20,44 @@ export const settingsEn = {
 			name: "Enable log file",
 			desc: "Save logs to a file",
 		},
+	},
 
-		eventHook: {
-			heading: "Event hook for ptune-log",
-			enabled: {
-				name: "Enable event hook",
-				desc: "Emit note-create, note-work-finished, note-attached, and note-review-requested events to the codex-md-export bridge",
-			},
-			interopRoot: {
-				name: "Interop root",
-				desc: "Root directory for event/status file bridge (empty = default)",
-				placeholder: "C:/Users/<user>/.codex-md-export",
-			},
-			statusWaitMs: {
-				name: "Status wait (ms)",
-				desc: "How long to wait for status response before notice timeout",
-				placeholder: "2500",
-			},
+	eventHook: {
+		heading: "Event hook for ptune-log",
+		enabled: {
+			name: "Enable event hook",
+			desc: "Emit note-create, note-work-finished, note-attached, and note-review-requested events to the codex-md-export bridge",
+		},
+		interopRoot: {
+			name: "Interop root",
+			desc: "Root directory for event/status/lock file bridge (empty = default)",
+			placeholder: "C:/Users/<user>/.codex-md-export",
+			openButton: "Open folder",
+			openFailed: "Could not open interop root folder",
+		},
+		pythonExePath: {
+			name: "Python executable",
+			desc: "Absolute path to python.exe for daemon ensure startup (empty = default)",
+			placeholder: "C:/home/.../codex-md-export/.venv/Scripts/python.exe",
+		},
+		daemonArgs: {
+			name: "Daemon arguments",
+			desc: "Arguments passed to python process. Default: -m codex_md_export.main daemon --debug",
+			placeholder: "-m codex_md_export.main daemon --debug",
+		},
+		ensureOnEvent: {
+			name: "Ensure on event emit",
+			desc: "Verify daemon startup before writing event files",
+		},
+		lockFreshSeconds: {
+			name: "Daemon liveness window seconds",
+			desc: "Treat daemon as running when lock file was updated within this many seconds",
+			placeholder: "20",
+		},
+		statusWaitMs: {
+			name: "Status wait (ms)",
+			desc: "How long to wait for status response before notice timeout",
+			placeholder: "2500",
 		},
 	},
 
@@ -225,13 +246,4 @@ export const settingsEn = {
 		},
 	},
 
-	snippet: {
-		sectionTitle: "Snippet settings",
-
-		snippetFile: {
-			name: "Snippet file",
-			desc: "Path to the snippet definition file",
-			placeholder: "_snippets/snippets.md",
-		},
-	},
 } as const;

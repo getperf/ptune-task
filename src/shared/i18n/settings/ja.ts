@@ -20,23 +20,44 @@ export const settingsJa = {
 			name: "ログファイル出力",
 			desc: "ログをファイルに保存します",
 		},
+	},
 
-		eventHook: {
-			heading: "ptune-log イベントフック",
-			enabled: {
-				name: "イベントフックを有効化",
-				desc: "note-create / note-work-finished / note-attached / note-review-requested のイベントを codex-md-export ブリッジへ送信します",
-			},
-			interopRoot: {
-				name: "Interop ルート",
-				desc: "event/status ファイル連携のルートパス（空欄で既定値）",
-				placeholder: "C:/Users/<user>/.codex-md-export",
-			},
-			statusWaitMs: {
-				name: "ステータス待機時間 (ms)",
-				desc: "status 応答待機のタイムアウト時間",
-				placeholder: "2500",
-			},
+	eventHook: {
+		heading: "ptune-log イベントフック",
+		enabled: {
+			name: "イベントフックを有効化",
+			desc: "note-create / note-work-finished / note-attached / note-review-requested のイベントを codex-md-export ブリッジへ送信します",
+		},
+		interopRoot: {
+			name: "Interop ルート",
+			desc: "event/status/lock ファイル連携のルートパス（空欄で既定値）",
+			placeholder: "C:/Users/<user>/.codex-md-export",
+			openButton: "フォルダを開く",
+			openFailed: "Interop ルートを開けませんでした",
+		},
+		pythonExePath: {
+			name: "Python 実行ファイル",
+			desc: "daemon ensure 起動に使う python.exe の絶対パス（空欄で既定）",
+			placeholder: "C:/home/.../codex-md-export/.venv/Scripts/python.exe",
+		},
+		daemonArgs: {
+			name: "Daemon 起動引数",
+			desc: "python 実行時に渡す引数。既定: -m codex_md_export.main daemon --debug",
+			placeholder: "-m codex_md_export.main daemon --debug",
+		},
+		ensureOnEvent: {
+			name: "イベント送信時 ensure",
+			desc: "イベント送信前に daemon 起動確認を行います",
+		},
+		lockFreshSeconds: {
+			name: "Daemon 稼働監視有効秒数",
+			desc: "lock 更新から何秒以内を稼働中とみなすか",
+			placeholder: "20",
+		},
+		statusWaitMs: {
+			name: "ステータス待機時間 (ms)",
+			desc: "status 応答待機のタイムアウト時間",
+			placeholder: "2500",
 		},
 	},
 
@@ -225,13 +246,4 @@ export const settingsJa = {
 		},
 	},
 
-	snippet: {
-		sectionTitle: "スニペット設定",
-
-		snippetFile: {
-			name: "スニペットファイル",
-			desc: "登録済みスニペット定義ファイルのパス",
-			placeholder: "_snippets/snippets.md",
-		},
-	},
 } as const;

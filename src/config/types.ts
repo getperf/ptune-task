@@ -59,6 +59,10 @@ export interface EventHookSettings {
 	enabled: boolean;
 	interopRoot: string;
 	statusWaitMs: number;
+	ensureOnEvent: boolean;
+	pythonExePath: string;
+	daemonArgs: string;
+	lockFreshSeconds: number;
 }
 
 export interface PluginSettings {
