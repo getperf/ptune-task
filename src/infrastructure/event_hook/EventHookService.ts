@@ -42,6 +42,24 @@ interface DaemonLockEnvelope {
 	updated_at_epoch?: number;
 }
 
+type DaemonControlCommand = "status" | "start" | "stop" | "restart";
+
+export type DaemonState = "running" | "stopped" | "unknown";
+
+export interface DaemonStatusResult {
+	state: DaemonState;
+	pid: number | null;
+	reason: string;
+	ageSeconds: number | null;
+}
+
+export interface DaemonControlResult {
+	ok: boolean;
+	code: number | null;
+	stdout: string;
+	stderr: string;
+}
+
 export interface EventHookEmitResult {
 	requestId: string;
 	status: HookStatus;
@@ -60,6 +78,66 @@ export class EventHookService {
 			return true;
 		}
 		return this.ensureDaemonRunning("startup");
+	}
+
+	async getDaemonStatus(): Promise<DaemonStatusResult> {
+		const freshSeconds = this.resolveLockFreshSeconds();
+		const result = await this.runDaemonControlCommand("status", [
+			"--json",
+			"--stale-after-seconds",
+			String(freshSeconds),
+		]);
+		if (!result.ok) {
+			return {
+				state: "unknown",
+				pid: null,
+				reason: this.coalesceErrorMessage(result),
+				ageSeconds: null,
+			};
+		}
+
+		try {
+			const parsed = JSON.parse(result.stdout) as Record<string, unknown>;
+			const running = parsed.running === true;
+			const pid = this.toIntOrNull(parsed.pid);
+			const reason = this.toStringOrEmpty(parsed.reason) || (running ? "running" : "stopped");
+			const ageSeconds = this.toIntOrNull(parsed.age_seconds);
+			return {
+				state: running ? "running" : "stopped",
+				pid,
+				reason,
+				ageSeconds,
+			};
+		} catch {
+			return {
+				state: "unknown",
+				pid: null,
+				reason: "invalid_status_output",
+				ageSeconds: null,
+			};
+		}
+	}
+
+	async startDaemon(): Promise<DaemonControlResult> {
+		return this.runDaemonControlCommand("start");
+	}
+
+	async stopDaemon(): Promise<DaemonControlResult> {
+		return this.runDaemonControlCommand("stop", [
+			"--timeout-seconds",
+			"15",
+			"--stale-after-seconds",
+			String(this.resolveLockFreshSeconds()),
+		]);
+	}
+
+	async restartDaemon(): Promise<DaemonControlResult> {
+		return this.runDaemonControlCommand("restart", [
+			"--timeout-seconds",
+			"15",
+			"--stale-after-seconds",
+			String(this.resolveLockFreshSeconds()),
+		]);
 	}
 
 	async emitNoteCreate(
@@ -335,6 +413,87 @@ export class EventHookService {
 			await this.delay(250);
 		}
 		return false;
+	}
+
+	private async runDaemonControlCommand(
+		command: DaemonControlCommand,
+		extraArgs: string[] = [],
+	): Promise<DaemonControlResult> {
+		const pythonPath = await this.resolvePythonCommandForDaemon();
+		const interopRoot = this.resolveInteropRoot();
+		const args = [
+			"-m",
+			"codex_md_export.main",
+			"daemon",
+			command,
+			"--interop-root",
+			interopRoot,
+			...extraArgs,
+		];
+		logger.info(
+			`[EventHook] daemon control command=${command} python=${pythonPath} args=${JSON.stringify(args)}`,
+		);
+
+		return new Promise<DaemonControlResult>((resolve) => {
+			const child = spawn(pythonPath, args, {
+				windowsHide: true,
+				cwd: interopRoot,
+			});
+			let stdout = "";
+			let stderr = "";
+
+			child.stdout?.on("data", (chunk: Buffer | string) => {
+				stdout += chunk.toString();
+			});
+			child.stderr?.on("data", (chunk: Buffer | string) => {
+				stderr += chunk.toString();
+			});
+			child.on("error", (error) => {
+				resolve({
+					ok: false,
+					code: null,
+					stdout: stdout.trim(),
+					stderr: `${stderr}\n${String(error)}`.trim(),
+				});
+			});
+			child.on("close", (code) => {
+				resolve({
+					ok: code === 0,
+					code,
+					stdout: stdout.trim(),
+					stderr: stderr.trim(),
+				});
+			});
+		});
+	}
+
+	private coalesceErrorMessage(result: DaemonControlResult): string {
+		const stderr = result.stderr.trim();
+		if (stderr) {
+			return stderr.split("\n")[0] ?? "daemon_status_failed";
+		}
+		const stdout = result.stdout.trim();
+		if (stdout) {
+			return stdout.split("\n")[0] ?? "daemon_status_failed";
+		}
+		return "daemon_status_failed";
+	}
+
+	private toIntOrNull(value: unknown): number | null {
+		if (typeof value === "number" && Number.isFinite(value)) {
+			return Math.trunc(value);
+		}
+		if (typeof value === "string" && value.trim().length > 0) {
+			const parsed = Number.parseInt(value, 10);
+			if (!Number.isNaN(parsed)) {
+				return parsed;
+			}
+		}
+		return null;
+	}
+
+	private toStringOrEmpty(value: unknown): string {
+		return typeof value === "string" ? value : "";
 	}
 
 	private async isDaemonLockFresh(lockPath: string, freshSeconds: number): Promise<boolean> {

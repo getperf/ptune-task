@@ -59,6 +59,26 @@ export const settingsEn = {
 			desc: "How long to wait for status response before notice timeout",
 			placeholder: "2500",
 		},
+		daemonControl: {
+			name: "Daemon control",
+			desc: "Check daemon state and run start/stop/restart",
+			start: "Start",
+			stop: "Stop",
+			restart: "Restart",
+			status: {
+				running: "Running",
+				stopped: "Stopped",
+				unknown: "Unknown",
+			},
+			notice: {
+				started: "Daemon started",
+				stopped: "Daemon stopped",
+				restarted: "Daemon restarted",
+				alreadyStopped: "Daemon is already stopped",
+				disabled: "Daemon control is unavailable while event hook is disabled",
+				failed: "Failed to control daemon",
+			},
+		},
 	},
 
 	llm: {

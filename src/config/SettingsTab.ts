@@ -61,6 +61,6 @@ export class PtuneSettingTab extends PluginSettingTab {
 		renderReviewSettings(containerEl);
 
 		renderDailyNoteTaskSettings(containerEl, this.app, () => this.display());
-		renderEventHookSettings(containerEl);
+		renderEventHookSettings(containerEl, this.app);
 	}
 }

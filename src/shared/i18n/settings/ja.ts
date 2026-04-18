@@ -59,6 +59,26 @@ export const settingsJa = {
 			desc: "status 応答待機のタイムアウト時間",
 			placeholder: "2500",
 		},
+		daemonControl: {
+			name: "Daemon 制御",
+			desc: "状態確認と起動・停止・再起動を実行します",
+			start: "起動",
+			stop: "停止",
+			restart: "再起動",
+			status: {
+				running: "Running",
+				stopped: "Stopped",
+				unknown: "Unknown",
+			},
+			notice: {
+				started: "Daemon を起動しました",
+				stopped: "Daemon を停止しました",
+				restarted: "Daemon を再起動しました",
+				alreadyStopped: "Daemon は停止済みです",
+				disabled: "イベントフックが無効なため Daemon 操作は利用できません",
+				failed: "Daemon 操作に失敗しました",
+			},
+		},
 	},
 
 	llm: {
