@@ -33,6 +33,7 @@ import { NoteSetupHelper } from "../infrastructure/setup/NoteSetupHelper";
 import { SetupWizardDialog } from "../presentation/setup/SetupWizardDialog";
 import { AuthLoginProgressService } from "../presentation/auth/AuthLoginProgressService";
 import { PythonReviewConfigSyncService } from "../infrastructure/review/PythonReviewConfigSyncService";
+import { EventHookService } from "../infrastructure/event_hook/EventHookService";
 
 export class Container {
   private readonly runtime: PtuneRuntime;
@@ -106,6 +107,10 @@ export class Container {
 
   createPythonReviewConfigSyncService(): PythonReviewConfigSyncService {
     return new PythonReviewConfigSyncService();
+  }
+
+  createEventHookService(): EventHookService {
+    return new EventHookService(this.app);
   }
 
   createGenerateDailyReviewUseCase(): GenerateDailyReviewUseCase {

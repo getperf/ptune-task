@@ -1,4 +1,4 @@
-import { Plugin } from "obsidian";
+import { Notice, Plugin } from "obsidian";
 
 import { config } from "./config/config";
 import { logger } from "./shared/logger/loggerInstance";
@@ -24,6 +24,12 @@ export default class PtunePlugin extends Plugin {
 
 		const container = new Container(this.app);
 		await container.createPythonReviewConfigSyncService().syncIfEnabled();
+		if (config.settings.eventHook.enabled) {
+			const ensured = await container.createEventHookService().ensureDaemonOnStartup();
+			if (!ensured) {
+				new Notice(i18n.common.eventHook.notice.timeout);
+			}
+		}
 		registerAllCommands(this, container);
 		registerEditorFeatures(this);
 		registerWorkspaceFeatures(this, container);
