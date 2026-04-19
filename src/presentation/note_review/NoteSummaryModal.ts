@@ -1,5 +1,6 @@
 import { App, Modal, Setting } from "obsidian";
 import { i18n } from "../../shared/i18n/I18n";
+import type { EditableNoteSummary } from "../../application/note_review/models/EditableNoteSummary";
 
 type NoteSummaryModalOptions = {
   description?: string;
@@ -7,15 +8,16 @@ type NoteSummaryModalOptions = {
 };
 
 export class NoteSummaryModal extends Modal {
-  private value: string;
-  private textAreaEl: HTMLTextAreaElement | null = null;
+  private value: EditableNoteSummary;
+  private summaryTextAreaEl: HTMLTextAreaElement | null = null;
+  private summarySegmentsTextAreaEl: HTMLTextAreaElement | null = null;
   private readonly options: NoteSummaryModalOptions;
 
   constructor(
     app: App,
-    initialValue: string,
-    private readonly onSave: (value: string) => Promise<void>,
-    private readonly onRegenerate: () => Promise<string>,
+    initialValue: EditableNoteSummary,
+    private readonly onSave: (value: EditableNoteSummary) => Promise<void>,
+    private readonly onRegenerate: () => Promise<EditableNoteSummary>,
     options?: NoteSummaryModalOptions,
   ) {
     super(app);
@@ -43,12 +45,24 @@ export class NoteSummaryModal extends Modal {
       cls: "ptune-note-summary-label",
     });
 
-    this.textAreaEl = fieldEl.createEl("textarea", {
+    this.summaryTextAreaEl = fieldEl.createEl("textarea", {
       cls: "ptune-note-summary-textarea",
     });
-    this.textAreaEl.value = this.value;
-    this.textAreaEl.addEventListener("input", () => {
-      this.value = this.textAreaEl?.value ?? "";
+    this.summaryTextAreaEl.value = this.value.summary;
+    this.summaryTextAreaEl.addEventListener("input", () => {
+      this.value.summary = this.summaryTextAreaEl?.value ?? "";
+    });
+
+    fieldEl.createEl("label", {
+      text: t.modal.summarySegmentsLabel,
+      cls: "ptune-note-summary-label",
+    });
+    this.summarySegmentsTextAreaEl = fieldEl.createEl("textarea", {
+      cls: "ptune-note-summary-textarea",
+    });
+    this.summarySegmentsTextAreaEl.value = this.value.summarySegmentsMarkdown;
+    this.summarySegmentsTextAreaEl.addEventListener("input", () => {
+      this.value.summarySegmentsMarkdown = this.summarySegmentsTextAreaEl?.value ?? "";
     });
 
     const actionSetting = new Setting(contentEl)
@@ -76,14 +90,18 @@ export class NoteSummaryModal extends Modal {
 
   onClose(): void {
     this.modalEl.removeClass("ptune-note-summary-modal");
-    this.textAreaEl = null;
+    this.summaryTextAreaEl = null;
+    this.summarySegmentsTextAreaEl = null;
     this.contentEl.empty();
   }
 
   private async regenerate(): Promise<void> {
     this.value = await this.onRegenerate();
-    if (this.textAreaEl) {
-      this.textAreaEl.value = this.value;
+    if (this.summaryTextAreaEl) {
+      this.summaryTextAreaEl.value = this.value.summary;
+    }
+    if (this.summarySegmentsTextAreaEl) {
+      this.summarySegmentsTextAreaEl.value = this.value.summarySegmentsMarkdown;
     }
   }
 

@@ -72,10 +72,12 @@ export const commonJa = {
 			title: "ノート要約",
 			manualDescription: "LLM が未設定のため自動生成は行いません。ノート本文を確認しながら、振り返りに使いやすい粒度で要点を手動で記述してください。",
 			summaryLabel: "要約",
+			summarySegmentsLabel: "要約セグメント（Raw Markdown）",
 			save: "保存",
 			regenerate: "再生成",
 		},
 		notice: {
+			generating: "ノート要約を開始しました。しばらくお待ちください。",
 			saved: "ノート要約を保存しました",
 			failed: "ノート要約の生成に失敗しました",
 			noActiveNote: "アクティブなノートがありません",

@@ -3,6 +3,7 @@ import { MarkdownFile } from "md-ast-core";
 import { NoteSummary } from "../../domain/note/NoteSummary";
 import { normalizeNoteSummarySentences } from "../../domain/note/normalizeNoteSummarySentences";
 import { parseLegacySummaryText } from "../../domain/note/parseLegacySummaryText";
+import type { EditableNoteSummary } from "../../application/note_review/models/EditableNoteSummary";
 
 export class ProjectNoteFrontmatterRepository {
   constructor(private readonly app: App) {}
@@ -20,6 +21,7 @@ export class ProjectNoteFrontmatterRepository {
         ?? asString(fm.get("created"))
         ?? new Date(file.stat.ctime).toISOString(),
       summarySentences: readSummarySentences(fm.get("summary")),
+      summarySegmentsMarkdown: asString(fm.get("summary_segments")) ?? "",
       dailynote: asString(fm.get("dailynote")) ?? undefined,
       taskKey: asString(fm.get("taskKey")) ?? undefined,
       goal: asString(fm.get("goal")) ?? undefined,
@@ -32,12 +34,27 @@ export class ProjectNoteFrontmatterRepository {
     return MarkdownFile.parse(text).getBody().trim();
   }
 
-  async saveSummary(file: TFile, summary: string | readonly string[]): Promise<void> {
+  async saveSummary(file: TFile, summary: string | readonly string[] | EditableNoteSummary): Promise<void> {
     const text = await this.app.vault.read(file);
     const md = MarkdownFile.parse(text);
-    md.getFrontmatter().set("summary", normalizeNoteSummarySentences(summary));
+    const frontmatter = md.getFrontmatter();
+    if (isEditableNoteSummary(summary)) {
+      frontmatter.set("summary", normalizeNoteSummarySentences(summary.summary));
+      frontmatter.set("summary_segments", summary.summarySegmentsMarkdown.trim());
+    } else {
+      frontmatter.set("summary", normalizeNoteSummarySentences(summary));
+    }
     await this.app.vault.modify(file, md.toString());
   }
+}
+
+function isEditableNoteSummary(value: unknown): value is EditableNoteSummary {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return false;
+  }
+  const asRecord = value as Record<string, unknown>;
+  return typeof asRecord.summary === "string"
+    && typeof asRecord.summarySegmentsMarkdown === "string";
 }
 
 function readSummarySentences(value: unknown): string[] {

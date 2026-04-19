@@ -35,19 +35,12 @@ export class PythonReviewConfigSyncService {
 		await mkdir(root, { recursive: true });
 
 		const language = config.settings.language;
-		const maxSentences =
-			config.settings.review.maxSentences > 0
-				? config.settings.review.maxSentences
-				: undefined;
 
 		const summaryPrompt: Record<string, unknown> = {
 			strategy: "inline",
 			language,
 			system: buildNoteSummarySystemPrompt(),
 		};
-		if (maxSentences) {
-			summaryPrompt.max_sentences = maxSentences;
-		}
 
 		const profilesPayload = {
 			schema_version: 1,

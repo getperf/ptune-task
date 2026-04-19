@@ -5,10 +5,18 @@ import { buildNoteSummarySystemPrompt } from "../prompts/buildNoteSummaryPrompt"
 import { logger } from "../../../shared/logger/loggerInstance";
 import { NoteSummaryFormatter } from "./NoteSummaryFormatter";
 
+export type GeneratedNoteSummary = {
+	summarySentences: string[];
+	summarySegmentsMarkdown: string;
+};
+
 export class NoteSummaryGenerator {
 	private static readonly MAX_INPUT_CHARS = 200000;
 	private static readonly CHUNK_SIZE = 10000;
-	private static readonly EMPTY_BODY_SUMMARY = ["本文の記述なし。"];
+	private static readonly EMPTY_BODY_SUMMARY: GeneratedNoteSummary = {
+		summarySentences: ["本文の記述なし。"],
+		summarySegmentsMarkdown: "## 本文\n- 本文の記述なし。",
+	};
 	private readonly formatter = new NoteSummaryFormatter();
 
 	constructor(
@@ -16,7 +24,7 @@ export class NoteSummaryGenerator {
 		private readonly repository: ProjectNoteFrontmatterRepository,
 	) {}
 
-	async generate(file: TFile): Promise<string[]> {
+	async generate(file: TFile): Promise<GeneratedNoteSummary> {
 		logger.debug(
 			`[Service] NoteSummaryGenerator.generate start path=${file.path}`,
 		);
@@ -45,7 +53,9 @@ export class NoteSummaryGenerator {
 				),
 			);
 			const combinedSummaries = chunkSummaries
-				.map((output) => this.formatter.format(output?.trim() ?? ""))
+				.map((output) =>
+					this.formatter.formatWithSegments(output?.trim() ?? "").summarySentences,
+				)
 				.flat()
 				.join("\n");
 
@@ -54,9 +64,9 @@ export class NoteSummaryGenerator {
 				buildNoteSummarySystemPrompt(),
 				combinedSummaries,
 			);
-			const formatted = this.formatter.format(finalOutput?.trim() ?? "");
+			const formatted = this.formatter.formatWithSegments(finalOutput?.trim() ?? "");
 
-			if (formatted.length === 0) {
+			if (formatted.summarySentences.length === 0) {
 				throw new Error(`Empty summary generated for ${file.path}`);
 			}
 
@@ -70,9 +80,9 @@ export class NoteSummaryGenerator {
 				buildNoteSummarySystemPrompt(),
 				normalizedBody,
 			);
-			const formatted = this.formatter.format(output?.trim() ?? "");
+			const formatted = this.formatter.formatWithSegments(output?.trim() ?? "");
 
-			if (formatted.length === 0) {
+			if (formatted.summarySentences.length === 0) {
 				throw new Error(`Empty summary generated for ${file.path}`);
 			}
 

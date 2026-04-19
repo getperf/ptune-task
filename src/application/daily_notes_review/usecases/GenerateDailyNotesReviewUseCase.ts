@@ -85,8 +85,11 @@ export class GenerateDailyNotesReviewUseCase {
             continue;
           }
 
-          const summary = await this.noteSummaryGenerator.generate(file);
-          await this.noteRepo.saveSummary(file, summary);
+          const generated = await this.noteSummaryGenerator.generate(file);
+          await this.noteRepo.saveSummary(file, {
+            summary: generated.summarySentences.join("\n"),
+            summarySegmentsMarkdown: generated.summarySegmentsMarkdown,
+          });
           generatedCount += 1;
           options?.onProgress?.({
             type: "summary_generated",

@@ -5,6 +5,7 @@ export interface NoteSummaryParams {
   createdAt: string;
   noteFolder: string;
   summary?: string | null;
+  summarySegmentsMarkdown?: string | null;
   summarySentences?: string[];
   tags?: string[];
   dailynote?: string;
@@ -17,6 +18,7 @@ export class NoteSummary {
   readonly createdAt: string;
   readonly noteFolder: string;
   readonly summarySentences: string[];
+  readonly summarySegmentsMarkdown: string;
   readonly tags: string[];
   readonly dailynote?: string;
   readonly taskKey?: string;
@@ -31,6 +33,10 @@ export class NoteSummary {
       : typeof params.summary === "string"
         ? parseLegacySummaryText(params.summary)
         : [];
+    this.summarySegmentsMarkdown =
+      typeof params.summarySegmentsMarkdown === "string"
+        ? params.summarySegmentsMarkdown.trim()
+        : "";
     this.tags = [...(params.tags ?? [])];
     this.dailynote = params.dailynote;
     this.taskKey = params.taskKey;

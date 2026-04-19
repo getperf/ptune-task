@@ -72,10 +72,12 @@ export const commonEn = {
 			title: "Note summary",
 			manualDescription: "Automatic generation is unavailable because no language model is configured. Review the note body and enter the key points manually at a level that will be useful for later reflection.",
 			summaryLabel: "Summary",
+			summarySegmentsLabel: "Summary segments (raw markdown)",
 			save: "Save",
 			regenerate: "Regenerate",
 		},
 		notice: {
+			generating: "Note summary generation started. Please wait.",
 			saved: "Note summary saved",
 			failed: "Failed to generate note summary",
 			noActiveNote: "No active note",

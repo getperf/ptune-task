@@ -10,6 +10,7 @@ import { PythonReviewConfigSyncService } from "../../infrastructure/review/Pytho
 import { i18n } from "../../shared/i18n/I18n";
 import { logger } from "../../shared/logger/loggerInstance";
 import { NoteSummaryModal } from "./NoteSummaryModal";
+import type { EditableNoteSummary } from "../../application/note_review/models/EditableNoteSummary";
 
 export class NoteReviewFeature {
 	constructor(
@@ -80,18 +81,21 @@ export class NoteReviewFeature {
 			}
 
 			const llmAvailable = this.textGenerator.hasValidApiKey();
-			const preview = llmAvailable
+			if (llmAvailable) {
+				new Notice(i18n.common.noteReview.notice.generating);
+			}
+			const preview: EditableNoteSummary = llmAvailable
 				? await this.previewUseCase.execute(file)
 				: await this.loadUseCase.execute(file);
 			new NoteSummaryModal(
 				this.app,
 				preview,
-				async (value) => {
+				async (value: EditableNoteSummary) => {
 					await this.saveUseCase.execute(file, value);
 					new Notice(i18n.common.noteReview.notice.saved);
 					void this.emitNoteWorkFinishedEvent(file.path);
 				},
-				async () => await this.previewUseCase.execute(file),
+				async (): Promise<EditableNoteSummary> => await this.previewUseCase.execute(file),
 				llmAvailable
 					? undefined
 					: {
