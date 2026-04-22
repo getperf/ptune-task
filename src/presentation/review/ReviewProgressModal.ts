@@ -102,6 +102,10 @@ export class ReviewProgressModal extends Modal {
     this.appendLine(`${t.failed}: ${message}`);
   }
 
+  appendStatusLine(line: string): void {
+    this.appendLine(line);
+  }
+
   private appendLine(line: string): void {
     this.lines.push(line);
     if (this.logEl) {

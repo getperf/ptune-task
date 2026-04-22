@@ -10,6 +10,7 @@ type TerminalState =
 
 export class ReviewProgressController {
   private readonly events: DailyReviewFlowProgressEvent[] = [];
+  private readonly statusLines: string[] = [];
   private currentModal: ReviewProgressModal | null = null;
   private isRunning = true;
   private terminalState: TerminalState = null;
@@ -40,6 +41,11 @@ export class ReviewProgressController {
     this.currentModal?.markFailed(message);
   }
 
+  appendStatusLine(line: string): void {
+    this.statusLines.push(line);
+    this.currentModal?.appendStatusLine(line);
+  }
+
   private openModal(): ReviewProgressModal {
     const modal = new ReviewProgressModal(this.app);
     modal.setCloseCallback(() => {
@@ -61,6 +67,9 @@ export class ReviewProgressController {
 
     for (const event of this.events) {
       modal.handleEvent(event);
+    }
+    for (const line of this.statusLines) {
+      modal.appendStatusLine(line);
     }
 
     if (this.terminalState?.type === "completed") {

@@ -10,7 +10,8 @@ type EventType =
 	| "note-create"
 	| "note-work-finished"
 	| "note-attached"
-	| "note-review-requested";
+	| "note-review-requested"
+	| "daily-review-requested";
 type HookStatus = "success" | "skipped" | "error" | "timeout";
 type PythonStatus = "success" | "skipped" | "error";
 
@@ -27,7 +28,7 @@ interface EventEnvelope {
 	note_path: string;
 	vault_path: string;
 	created_at: string;
-	payload?: ReviewRequestPayload;
+	payload?: Record<string, unknown>;
 }
 
 interface StatusEnvelope {
@@ -40,6 +41,31 @@ interface StatusEnvelope {
 
 interface DaemonLockEnvelope {
 	updated_at_epoch?: number;
+}
+
+interface NotificationEnvelope {
+	schema_version?: number;
+	event_type?: string;
+	request_id?: string;
+	created_at?: string;
+	payload?: Record<string, unknown>;
+}
+
+export interface DailyReviewRequestPayload extends ReviewRequestPayload {
+	dailynote_key: string;
+	updated_within_days?: number;
+	batch_id?: string;
+}
+
+export interface DailyReviewAppliedResult {
+	requestId: string;
+	batchId: string;
+	dailynoteKey: string;
+	closeReason: string;
+	appliedCount: number;
+	failedCount: number;
+	appliedNotes: string[];
+	failedNotes: string[];
 }
 
 type DaemonControlCommand = "status" | "start" | "stop" | "restart";
@@ -167,6 +193,60 @@ export class EventHookService {
 		options?: EventHookEmitOptions,
 	): Promise<EventHookEmitResult> {
 		return this.emit("note-review-requested", notePath, options, payload);
+	}
+
+	async emitDailyReviewRequested(
+		dailynoteKey: string,
+		payload: DailyReviewRequestPayload,
+		options?: EventHookEmitOptions,
+	): Promise<EventHookEmitResult> {
+		return this.emit("daily-review-requested", dailynoteKey, options, payload);
+	}
+
+	async waitForDailyReviewApplied(
+		batchId: string,
+		timeoutMs: number,
+	): Promise<DailyReviewAppliedResult | null> {
+		const resolvedBatchId = batchId.trim();
+		if (!resolvedBatchId) {
+			return null;
+		}
+		const interopRoot = this.resolveInteropRoot();
+		const outboxPath = join(
+			interopRoot,
+			"interop",
+			"notifications",
+			"outbox",
+			`${resolvedBatchId}.json`,
+		);
+		const processedPath = join(
+			interopRoot,
+			"interop",
+			"notifications",
+			"processed",
+			`${resolvedBatchId}.json`,
+		);
+		const deadline = Date.now() + Math.max(300, Math.floor(timeoutMs));
+		while (Date.now() < deadline) {
+			try {
+				const raw = await readFile(outboxPath, "utf-8");
+				const parsed = JSON.parse(raw) as NotificationEnvelope;
+				const applied = this.parseDailyReviewAppliedNotification(parsed, resolvedBatchId);
+				if (!applied) {
+					logger.warn(
+						`[EventHook] ignored notification file batchId=${resolvedBatchId} reason=invalid_notification_shape`,
+					);
+					await this.archiveNotificationFile(outboxPath, processedPath);
+					return null;
+				}
+				await this.archiveNotificationFile(outboxPath, processedPath);
+				return applied;
+			} catch {
+				// continue polling
+			}
+			await this.delay(250);
+		}
+		return null;
 	}
 
 	private async emit(
@@ -494,6 +574,60 @@ export class EventHookService {
 
 	private toStringOrEmpty(value: unknown): string {
 		return typeof value === "string" ? value : "";
+	}
+
+	private toStringArray(value: unknown): string[] {
+		if (!Array.isArray(value)) {
+			return [];
+		}
+		return value
+			.map((entry) => (typeof entry === "string" ? entry : ""))
+			.filter((entry) => entry.length > 0);
+	}
+
+	private parseDailyReviewAppliedNotification(
+		notification: NotificationEnvelope,
+		expectedBatchId: string,
+	): DailyReviewAppliedResult | null {
+		if (notification.event_type !== "review.applied") {
+			return null;
+		}
+		const payload = notification.payload;
+		if (!payload) {
+			return null;
+		}
+		const batchId = this.toStringOrEmpty(payload.batch_id ?? notification.request_id);
+		if (!batchId || batchId !== expectedBatchId) {
+			return null;
+		}
+		const dailynoteKey = this.toStringOrEmpty(payload.dailynote_key);
+		if (!dailynoteKey) {
+			return null;
+		}
+		return {
+			requestId: this.toStringOrEmpty(notification.request_id) || batchId,
+			batchId,
+			dailynoteKey,
+			closeReason: this.toStringOrEmpty(payload.close_reason) || "unknown",
+			appliedCount: this.toIntOrNull(payload.applied_count) ?? 0,
+			failedCount: this.toIntOrNull(payload.failed_count) ?? 0,
+			appliedNotes: this.toStringArray(payload.applied_notes),
+			failedNotes: this.toStringArray(payload.failed_notes),
+		};
+	}
+
+	private async archiveNotificationFile(
+		sourcePath: string,
+		targetPath: string,
+	): Promise<void> {
+		await mkdir(dirname(targetPath), { recursive: true });
+		try {
+			await rename(sourcePath, targetPath);
+			return;
+		} catch {
+			const fallbackPath = targetPath.replace(/\.json$/i, `-${Date.now()}.json`);
+			await rename(sourcePath, fallbackPath);
+		}
 	}
 
 	private async isDaemonLockFresh(lockPath: string, freshSeconds: number): Promise<boolean> {
