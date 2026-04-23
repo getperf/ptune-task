@@ -35,6 +35,7 @@ import { AuthLoginProgressService } from "../presentation/auth/AuthLoginProgress
 import { PythonReviewConfigSyncService } from "../infrastructure/review/PythonReviewConfigSyncService";
 import { EventHookService } from "../infrastructure/event_hook/EventHookService";
 import { DailyReviewEventHookService } from "../infrastructure/event_hook/DailyReviewEventHookService";
+import { DailyReviewCompletionEventHookService } from "../infrastructure/event_hook/DailyReviewCompletionEventHookService";
 
 export class Container {
   private readonly runtime: PtuneRuntime;
@@ -156,6 +157,7 @@ export class Container {
         new EventHookService(this.app),
         new PythonReviewConfigSyncService(),
       ),
+      new DailyReviewCompletionEventHookService(),
     );
   }
 
