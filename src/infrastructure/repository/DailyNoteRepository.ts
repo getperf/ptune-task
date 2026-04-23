@@ -34,7 +34,7 @@ export class DailyNoteRepository {
     return new DailyNote(date, file.path, content);
   }
 
-  async listExistingDates(): Promise<string[]> {
+  listExistingDates(): Promise<string[]> {
     const dir = this.runtime.resolveJournalDir();
     logger.debug(`listExistingDates: dir=${dir}`);
 
@@ -45,7 +45,7 @@ export class DailyNoteRepository {
 
     logger.debug(`listExistingDates: found ${dates.length} notes`);
 
-    return dates;
+    return Promise.resolve(dates);
   }
 
   async findByDate(date: string): Promise<DailyNote | null> {

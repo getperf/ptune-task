@@ -84,6 +84,8 @@ export class Container {
       new ReviewFlowOptionsResolver(),
       this.createGenerateDailyReviewFlowUseCase(),
       this.presentationFactory.createObsidianPresenter(),
+      this.createEventHookService(),
+      this.createPythonReviewConfigSyncService(),
     );
   }
 

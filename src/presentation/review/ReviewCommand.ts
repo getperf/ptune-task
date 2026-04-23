@@ -6,6 +6,9 @@ import { ReviewFlowDialogOptions } from "../../application/review_flow/types/Rev
 import { ReviewFlowRunOptions } from "../../application/review_flow/types/ReviewFlowRunOptions";
 import { GenerateDailyReviewFlowUseCase } from "../../application/review_flow/usecases/GenerateDailyReviewFlowUseCase";
 import { ReviewFlowOptionsResolver } from "../../application/review_flow/services/ReviewFlowOptionsResolver";
+import { config } from "../../config/config";
+import { EventHookService } from "../../infrastructure/event_hook/EventHookService";
+import { PythonReviewConfigSyncService } from "../../infrastructure/review/PythonReviewConfigSyncService";
 import { i18n } from "../../shared/i18n/I18n";
 import { logger } from "../../shared/logger/loggerInstance";
 import { DailyNote } from "../../domain/daily/DailyNote";
@@ -22,11 +25,15 @@ export interface ReviewPresenter {
 }
 
 export class ReviewCommand {
+  private static readonly DAILY_REVIEW_APPLY_WAIT_MS = 60 * 60 * 1000;
+
   constructor(
     private readonly todayResolver: TodayResolver,
     private readonly optionsResolver: ReviewFlowOptionsResolver,
     private readonly useCase: GenerateDailyReviewFlowUseCase,
     private readonly presenter: ReviewPresenter,
+    private readonly eventHookService: EventHookService,
+    private readonly reviewConfigSyncService: PythonReviewConfigSyncService,
   ) {}
 
   execute(): void {
@@ -56,13 +63,14 @@ export class ReviewCommand {
 
     try {
       await this.presenter.saveActiveEditor();
-
-      const result = await this.useCase.execute(
-        options,
-        (event: DailyReviewFlowProgressEvent) => {
-          progress.handleEvent(event);
-        },
-      );
+      const result = this.shouldRunDailyReviewViaHook(options)
+        ? await this.runWithHookAndTaskFirst(options, progress)
+        : await this.useCase.execute(
+            options,
+            (event: DailyReviewFlowProgressEvent) => {
+              progress.handleEvent(event);
+            },
+          );
 
       await this.presenter.openNote(result.note);
       await this.presenter.refreshCalendar();
@@ -76,6 +84,91 @@ export class ReviewCommand {
       progress.markFailed(message);
       logger.error(`[Command] ReviewCommand failed date=${options.date}`, err);
     }
+  }
+
+  private shouldRunDailyReviewViaHook(options: ReviewFlowRunOptions): boolean {
+    return config.settings.eventHook.enabled && options.dailyNotesReviewEnabled;
+  }
+
+  private async runWithHookAndTaskFirst(
+    options: ReviewFlowRunOptions,
+    progress: ReviewProgressController,
+  ): Promise<DailyReviewFlowResult> {
+    const events = i18n.common.reviewFlow.progress.events;
+    const externalReviewPromise = this.runDailyReviewViaHook(options, progress);
+
+    let taskResult: DailyReviewFlowResult | null = null;
+    if (options.taskReviewEnabled) {
+      progress.appendStatusLine(events.taskReviewParallelStart);
+      taskResult = await this.useCase.execute(
+        {
+          ...options,
+          dailyNotesReviewEnabled: false,
+        },
+        (event: DailyReviewFlowProgressEvent) => {
+          progress.handleEvent(event);
+        },
+      );
+    }
+
+    await externalReviewPromise;
+    progress.appendStatusLine(events.dailyNotesReviewAfterExternal);
+    const noteResult = await this.useCase.execute(
+      {
+        ...options,
+        taskReviewEnabled: false,
+        dailyNotesReviewEnabled: true,
+      },
+      (event: DailyReviewFlowProgressEvent) => {
+        progress.handleEvent(event);
+      },
+    );
+
+    if (!taskResult) {
+      return noteResult;
+    }
+
+    return {
+      note: noteResult.note ?? taskResult.note,
+      taskReview: taskResult.taskReview,
+      dailyNotesReview: noteResult.dailyNotesReview,
+    };
+  }
+
+  private async runDailyReviewViaHook(
+    options: ReviewFlowRunOptions,
+    progress: ReviewProgressController,
+  ): Promise<void> {
+    const t = i18n.common.reviewFlow.progress.events;
+    progress.appendStatusLine(`${t.externalReviewRequested}: ${options.date}`);
+    const synced = await this.reviewConfigSyncService.sync();
+    const emitResult = await this.eventHookService.emitDailyReviewRequested(
+      options.date,
+      {
+        profiles_file: synced.profilesFile,
+        credentials_file: synced.credentialsFile,
+        profile_id: synced.profileId,
+        dailynote_key: options.date,
+      },
+    );
+    if (emitResult.status === "error" || emitResult.status === "skipped") {
+      throw new Error(emitResult.message || "daily-review-requested failed");
+    }
+    progress.appendStatusLine(`${t.externalReviewAccepted}: ${emitResult.requestId}`);
+    if (emitResult.status === "timeout") {
+      progress.appendStatusLine(t.externalReviewStatusTimeout);
+    }
+    progress.appendStatusLine(t.externalReviewWaiting);
+    const notification = await this.eventHookService.waitForDailyReviewApplied(
+      emitResult.requestId,
+      ReviewCommand.DAILY_REVIEW_APPLY_WAIT_MS,
+    );
+    if (!notification) {
+      throw new Error(t.externalReviewApplyTimeout);
+    }
+    progress.appendStatusLine(
+      `${t.externalReviewApplied}: applied=${notification.appliedCount} failed=${notification.failedCount}`,
+    );
   }
 
   private buildMessage(result: DailyReviewFlowResult): string {
