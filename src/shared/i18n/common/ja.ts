@@ -91,7 +91,7 @@ export const commonJa = {
 		notice: {
 			success: "イベントを送信しました",
 			skipped: "イベントをスキップしました",
-			timeout: "codex-md-export のデーモンが起動していないか、応答がありません",
+			timeout: "ptune-log のデーモンが起動していないか、応答がありません",
 			errorPrefix: "イベントフックに失敗しました",
 		},
 	},
@@ -208,6 +208,7 @@ export const commonJa = {
 		notice: {
 			generated: "レビューを生成しました（タスク {taskCount} 件、ノート {noteCount}/{generatedCount} 件）",
 			generatedWithoutNotesReview: "レビューを生成しました（タスク {taskCount} 件、ノートレビューはスキップ: {reason}）",
+			dailyNotesReviewRequested: "レビューを生成しました（タスク {taskCount} 件）。当日作成ノートレビューを ptune-log に依頼しました。",
 		},
 	},
 

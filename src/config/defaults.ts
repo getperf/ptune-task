@@ -58,7 +58,7 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 		statusWaitMs: 2500,
 		ensureOnEvent: true,
 		pythonExePath: "",
-		daemonArgs: "-m codex_md_export.main daemon --debug",
+		daemonArgs: "-m ptune_log.main daemon --debug",
 		lockFreshSeconds: 20,
 	},
 };

@@ -12,6 +12,17 @@ import { DailyReviewFlowProgressEvent } from "../types/DailyReviewFlowProgressEv
 import { DailyReviewFlowResult } from "../types/DailyReviewFlowResult";
 import { ReviewFlowRunOptions } from "../types/ReviewFlowRunOptions";
 
+export interface DailyReviewRequestPort {
+  requestDailyReview(options: {
+    date: string;
+    reviewPointOutputFormat: ReviewFlowRunOptions["reviewPointOutputFormat"];
+  }): Promise<{
+    requestId: string;
+    status: string;
+    message: string;
+  } | null>;
+}
+
 export class GenerateDailyReviewFlowUseCase {
   constructor(
     private readonly pullAndMergeTodayUseCase: PullAndMergeTodayUseCase,
@@ -19,6 +30,7 @@ export class GenerateDailyReviewFlowUseCase {
     private readonly dailyNotesReviewUseCase: GenerateDailyNotesReviewUseCase,
     private readonly createDailyNoteUseCase: CreateDailyNoteUseCase,
     private readonly textGenerator: TextGenerationPort,
+    private readonly dailyReviewRequestPort?: DailyReviewRequestPort,
   ) {}
 
   async execute(
@@ -72,6 +84,51 @@ export class GenerateDailyReviewFlowUseCase {
             skippedReason: "disabled",
           },
         };
+      }
+
+      if (this.dailyReviewRequestPort && this.textGenerator.hasValidApiKey()) {
+        const requested = await this.dailyReviewRequestPort.requestDailyReview({
+          date: options.date,
+          reviewPointOutputFormat: options.reviewPointOutputFormat,
+        });
+        if (requested) {
+          if (requested.status === "error") {
+            throw new Error(requested.message || "daily-review-requested failed");
+          }
+          onProgress?.({
+            type: "daily_notes_review_started",
+            date: options.date,
+            targetCount: 0,
+          });
+          onProgress?.({
+            type: "daily_notes_review_completed",
+            noteCount: 0,
+            generatedCount: 0,
+          });
+          onProgress?.({ type: "completed" });
+          logger.debug(
+            `[UseCase:end] GenerateDailyReviewFlowUseCase date=${options.date} dailyReview=requested status=${requested.status} requestId=${requested.requestId}`,
+          );
+
+          return {
+            note: taskReviewResult?.note ?? (await this.resolveDailyNote(options.date)),
+            taskReview: taskReviewResult
+              ? {
+                  executed: true,
+                  taskCount: taskReviewResult.taskCount,
+                }
+              : {
+                  executed: false,
+                  taskCount: 0,
+                },
+            dailyNotesReview: {
+              executed: true,
+              noteCount: 0,
+              generatedCount: 0,
+              requestedExternally: true,
+            },
+          };
+        }
       }
 
       let targetCount = 0;

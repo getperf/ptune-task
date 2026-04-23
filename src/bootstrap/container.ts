@@ -34,6 +34,7 @@ import { SetupWizardDialog } from "../presentation/setup/SetupWizardDialog";
 import { AuthLoginProgressService } from "../presentation/auth/AuthLoginProgressService";
 import { PythonReviewConfigSyncService } from "../infrastructure/review/PythonReviewConfigSyncService";
 import { EventHookService } from "../infrastructure/event_hook/EventHookService";
+import { DailyReviewEventHookService } from "../infrastructure/event_hook/DailyReviewEventHookService";
 
 export class Container {
   private readonly runtime: PtuneRuntime;
@@ -151,6 +152,10 @@ export class Container {
       this.createGenerateDailyNotesReviewUseCase(llm),
       this.calendarFactory.createCreateDailyNoteUseCase(),
       llm,
+      new DailyReviewEventHookService(
+        new EventHookService(this.app),
+        new PythonReviewConfigSyncService(),
+      ),
     );
   }
 

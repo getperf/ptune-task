@@ -26,12 +26,12 @@ export const settingsEn = {
 		heading: "Event hook for ptune-log",
 		enabled: {
 			name: "Enable event hook",
-			desc: "Emit note-create, note-work-finished, note-attached, and note-review-requested events to the codex-md-export bridge",
+			desc: "Emit note-create, note-work-finished, note-attached, and note-review-requested events to the ptune-log bridge",
 		},
 		interopRoot: {
 			name: "Interop root",
 			desc: "Root directory for event/status/lock file bridge (empty = default)",
-			placeholder: "C:/Users/<user>/.codex-md-export",
+			placeholder: "C:/Users/<user>/.ptune-log",
 			openButton: "Open folder",
 			openFailed: "Could not open interop root folder",
 		},
@@ -42,8 +42,8 @@ export const settingsEn = {
 		},
 		daemonArgs: {
 			name: "Daemon arguments",
-			desc: "Arguments passed to python process. Default: -m codex_md_export.main daemon --debug",
-			placeholder: "-m codex_md_export.main daemon --debug",
+			desc: "Arguments passed to python process. Default: -m ptune_log.main daemon --debug",
+			placeholder: "-m ptune_log.main daemon --debug",
 		},
 		ensureOnEvent: {
 			name: "Ensure on event emit",

@@ -10,7 +10,8 @@ type EventType =
 	| "note-create"
 	| "note-work-finished"
 	| "note-attached"
-	| "note-review-requested";
+	| "note-review-requested"
+	| "daily-review-requested";
 type HookStatus = "success" | "skipped" | "error" | "timeout";
 type PythonStatus = "success" | "skipped" | "error";
 
@@ -18,6 +19,12 @@ interface ReviewRequestPayload {
 	profiles_file: string;
 	credentials_file: string;
 	profile_id: string;
+}
+
+interface DailyReviewRequestPayload extends ReviewRequestPayload {
+	dailynote_key: string;
+	updated_within_days?: number;
+	batch_id?: string;
 }
 
 interface EventEnvelope {
@@ -169,6 +176,14 @@ export class EventHookService {
 		return this.emit("note-review-requested", notePath, options, payload);
 	}
 
+	async emitDailyReviewRequested(
+		dailynoteKey: string,
+		payload: DailyReviewRequestPayload,
+		options?: EventHookEmitOptions,
+	): Promise<EventHookEmitResult> {
+		return this.emit("daily-review-requested", dailynoteKey, options, payload);
+	}
+
 	private async emit(
 		eventType: EventType,
 		notePath: string,
@@ -241,7 +256,7 @@ export class EventHookService {
 				requestId,
 				status: "timeout",
 				message:
-					"codex-md-export daemon is not running or not responding",
+					"ptune-log daemon is not running or not responding",
 			};
 		}
 
@@ -274,7 +289,7 @@ export class EventHookService {
 		const configured = config.settings.eventHook.daemonArgs.trim();
 		const base = configured
 			? this.splitArgs(configured)
-			: ["-m", "codex_md_export.main", "daemon", "--debug"];
+			: ["-m", "ptune_log.main", "daemon", "--debug"];
 		if (!base.includes("--interop-root")) {
 			base.push("--interop-root", interopRoot);
 		}
@@ -308,7 +323,7 @@ export class EventHookService {
 		if (configured) {
 			return configured;
 		}
-		return join(homedir(), ".codex-md-export");
+		return join(homedir(), ".ptune-log");
 	}
 
 	private resolveLockFilePath(): string {
@@ -423,7 +438,7 @@ export class EventHookService {
 		const interopRoot = this.resolveInteropRoot();
 		const args = [
 			"-m",
-			"codex_md_export.main",
+			"ptune_log.main",
 			"daemon",
 			command,
 			"--interop-root",

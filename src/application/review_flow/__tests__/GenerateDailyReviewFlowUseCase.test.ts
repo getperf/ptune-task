@@ -5,7 +5,10 @@ import { TextGenerationPort } from "../../llm/ports/TextGenerationPort";
 import { GenerateDailyReviewUseCase } from "../../review/usecases/GenerateDailyReviewUseCase";
 import { PullAndMergeTodayUseCase } from "../../sync/pull/PullAndMergeTodayUseCase";
 import { getDefaultTaskListId } from "../../sync/shared/DefaultTaskListId";
-import { GenerateDailyReviewFlowUseCase } from "../usecases/GenerateDailyReviewFlowUseCase";
+import {
+  DailyReviewRequestPort,
+  GenerateDailyReviewFlowUseCase,
+} from "../usecases/GenerateDailyReviewFlowUseCase";
 
 describe("GenerateDailyReviewFlowUseCase", () => {
   test("can skip both reviews independently", async () => {
@@ -179,6 +182,67 @@ describe("GenerateDailyReviewFlowUseCase", () => {
         executed: true,
         noteCount: 4,
         generatedCount: 3,
+      },
+    });
+  });
+
+  test("requests ptune-log daily notes review when request port is available", async () => {
+    const taskNote = new DailyNote("2026-03-16", "daily/2026-03-16.md", "task");
+    const pullAndMergeTodayUseCase = {
+      execute: jest.fn().mockResolvedValue({ note: taskNote, created: false }),
+    } as unknown as PullAndMergeTodayUseCase;
+    const taskReviewUseCase = {
+      execute: jest.fn().mockResolvedValue({ note: taskNote, taskCount: 5 }),
+    } as unknown as GenerateDailyReviewUseCase;
+    const dailyNotesReviewUseCase = {
+      execute: jest.fn(),
+    } as unknown as GenerateDailyNotesReviewUseCase;
+    const createDailyNoteUseCase = {
+      execute: jest.fn(),
+    } as unknown as CreateDailyNoteUseCase;
+    const textGenerator = {
+      hasValidApiKey: jest.fn().mockReturnValue(true),
+    } as unknown as TextGenerationPort;
+    const dailyReviewRequestPort = {
+      requestDailyReview: jest.fn().mockResolvedValue({
+        requestId: "request-1",
+        status: "success",
+        message: "accepted",
+      }),
+    } as unknown as DailyReviewRequestPort;
+
+    const useCase = new GenerateDailyReviewFlowUseCase(
+      pullAndMergeTodayUseCase,
+      taskReviewUseCase,
+      dailyNotesReviewUseCase,
+      createDailyNoteUseCase,
+      textGenerator,
+      dailyReviewRequestPort,
+    );
+
+    const result = await useCase.execute({
+      date: "2026-03-16",
+      taskReviewEnabled: true,
+      dailyNotesReviewEnabled: true,
+      reviewPointOutputFormat: "xmind",
+    });
+
+    expect(dailyReviewRequestPort.requestDailyReview).toHaveBeenCalledWith({
+      date: "2026-03-16",
+      reviewPointOutputFormat: "xmind",
+    });
+    expect(dailyNotesReviewUseCase.execute).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      note: taskNote,
+      taskReview: {
+        executed: true,
+        taskCount: 5,
+      },
+      dailyNotesReview: {
+        executed: true,
+        noteCount: 0,
+        generatedCount: 0,
+        requestedExternally: true,
       },
     });
   });

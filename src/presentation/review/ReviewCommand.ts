@@ -86,6 +86,11 @@ export class ReviewCommand {
         .replace("{reason}", result.dailyNotesReview.skippedReason);
     }
 
+    if (result.dailyNotesReview.requestedExternally === true) {
+      return t.dailyNotesReviewRequested
+        .replace("{taskCount}", String(result.taskReview.taskCount));
+    }
+
     return t.generated
       .replace("{taskCount}", String(result.taskReview.taskCount))
       .replace("{noteCount}", String(result.dailyNotesReview.noteCount))

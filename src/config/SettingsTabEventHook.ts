@@ -58,7 +58,7 @@ export function renderEventHookSettings(containerEl: HTMLElement, app: App) {
 				.onClick(async () => {
 					const interopRoot =
 						config.settings.eventHook.interopRoot.trim() ||
-						join(homedir(), ".codex-md-export");
+						join(homedir(), ".ptune-log");
 					const opened = await openFolderInExplorer(interopRoot);
 					if (!opened) {
 						new Notice(t.interopRoot.openFailed);

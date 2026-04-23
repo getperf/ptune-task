@@ -26,12 +26,12 @@ export const settingsJa = {
 		heading: "ptune-log イベントフック",
 		enabled: {
 			name: "イベントフックを有効化",
-			desc: "note-create / note-work-finished / note-attached / note-review-requested のイベントを codex-md-export ブリッジへ送信します",
+			desc: "note-create / note-work-finished / note-attached / note-review-requested のイベントを ptune-log ブリッジへ送信します",
 		},
 		interopRoot: {
 			name: "Interop ルート",
 			desc: "event/status/lock ファイル連携のルートパス（空欄で既定値）",
-			placeholder: "C:/Users/<user>/.codex-md-export",
+			placeholder: "C:/Users/<user>/.ptune-log",
 			openButton: "フォルダを開く",
 			openFailed: "Interop ルートを開けませんでした",
 		},
@@ -42,8 +42,8 @@ export const settingsJa = {
 		},
 		daemonArgs: {
 			name: "Daemon 起動引数",
-			desc: "python 実行時に渡す引数。既定: -m codex_md_export.main daemon --debug",
-			placeholder: "-m codex_md_export.main daemon --debug",
+			desc: "python 実行時に渡す引数。既定: -m ptune_log.main daemon --debug",
+			placeholder: "-m ptune_log.main daemon --debug",
 		},
 		ensureOnEvent: {
 			name: "イベント送信時 ensure",

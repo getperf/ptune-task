@@ -18,6 +18,7 @@ export type DailyReviewFlowResult = {
         executed: true;
         noteCount: number;
         generatedCount: number;
+        requestedExternally?: boolean;
       }
     | {
         executed: false;

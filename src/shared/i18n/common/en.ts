@@ -91,7 +91,7 @@ export const commonEn = {
 		notice: {
 			success: "Event sent",
 			skipped: "Event skipped",
-			timeout: "The codex-md-export daemon is not running or not responding",
+			timeout: "The ptune-log daemon is not running or not responding",
 			errorPrefix: "Event hook failed",
 		},
 	},
@@ -210,6 +210,7 @@ export const commonEn = {
 		notice: {
 			generated: "Review generated ({taskCount} tasks, notes {noteCount}/{generatedCount})",
 			generatedWithoutNotesReview: "Review generated ({taskCount} tasks, notes review skipped: {reason})",
+			dailyNotesReviewRequested: "Review generated ({taskCount} tasks). Requested daily notes review from ptune-log.",
 		},
 	},
 
