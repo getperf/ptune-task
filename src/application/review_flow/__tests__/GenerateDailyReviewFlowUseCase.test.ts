@@ -248,6 +248,73 @@ describe("GenerateDailyReviewFlowUseCase", () => {
     });
   });
 
+  test("skips external review request when explicitly suppressed", async () => {
+    const taskNote = new DailyNote("2026-03-16", "daily/2026-03-16.md", "task");
+    const pullAndMergeTodayUseCase = {
+      execute: jest.fn().mockResolvedValue({ note: taskNote, created: false }),
+    } as unknown as PullAndMergeTodayUseCase;
+    const taskReviewUseCase = {
+      execute: jest.fn().mockResolvedValue({ note: taskNote, taskCount: 5 }),
+    } as unknown as GenerateDailyReviewUseCase;
+    const dailyNotesReviewUseCase = {
+      execute: jest.fn().mockResolvedValue({
+        note: taskNote,
+        noteCount: 4,
+        generatedCount: 0,
+      }),
+    } as unknown as GenerateDailyNotesReviewUseCase;
+    const createDailyNoteUseCase = {
+      execute: jest.fn(),
+    } as unknown as CreateDailyNoteUseCase;
+    const textGenerator = {
+      hasValidApiKey: jest.fn().mockReturnValue(true),
+    } as unknown as TextGenerationPort;
+    const dailyReviewRequestPort = {
+      requestDailyReview: jest.fn().mockResolvedValue({
+        requestId: "request-ignored",
+        status: "success",
+        message: "accepted",
+      }),
+    } as unknown as DailyReviewRequestPort;
+
+    const useCase = new GenerateDailyReviewFlowUseCase(
+      pullAndMergeTodayUseCase,
+      taskReviewUseCase,
+      dailyNotesReviewUseCase,
+      createDailyNoteUseCase,
+      textGenerator,
+      dailyReviewRequestPort,
+    );
+
+    const result = await useCase.execute({
+      date: "2026-03-16",
+      taskReviewEnabled: true,
+      dailyNotesReviewEnabled: true,
+      reviewPointOutputFormat: "xmind",
+      skipExternalDailyReviewRequest: true,
+    });
+
+    expect(dailyReviewRequestPort.requestDailyReview).not.toHaveBeenCalled();
+    expect(dailyNotesReviewUseCase.execute).toHaveBeenCalledWith(
+      "2026-03-16",
+      expect.objectContaining({
+        reviewPointOutputFormat: "xmind",
+      }),
+    );
+    expect(result).toEqual({
+      note: taskNote,
+      taskReview: {
+        executed: true,
+        taskCount: 5,
+      },
+      dailyNotesReview: {
+        executed: true,
+        noteCount: 4,
+        generatedCount: 0,
+      },
+    });
+  });
+
   test("finalizes reflection locally after ptune-log review completion notification", async () => {
     const taskNote = new DailyNote("2026-03-16", "daily/2026-03-16.md", "task");
     const finalNote = new DailyNote("2026-03-16", "daily/2026-03-16.md", "final");

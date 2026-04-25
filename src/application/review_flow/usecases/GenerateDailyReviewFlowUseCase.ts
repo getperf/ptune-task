@@ -42,7 +42,7 @@ export class GenerateDailyReviewFlowUseCase {
     private readonly textGenerator: TextGenerationPort,
     private readonly dailyReviewRequestPort?: DailyReviewRequestPort,
     private readonly dailyReviewCompletionPort?: DailyReviewCompletionPort,
-  ) {}
+  ) { }
 
   async execute(
     options: ReviewFlowRunOptions,
@@ -56,12 +56,13 @@ export class GenerateDailyReviewFlowUseCase {
 
       const externalDailyReviewRequestPromise =
         options.dailyNotesReviewEnabled &&
-        this.dailyReviewRequestPort &&
-        this.textGenerator.hasValidApiKey()
+          !options.skipExternalDailyReviewRequest &&
+          this.dailyReviewRequestPort &&
+          this.textGenerator.hasValidApiKey()
           ? this.dailyReviewRequestPort.requestDailyReview({
-              date: options.date,
-              reviewPointOutputFormat: options.reviewPointOutputFormat,
-            })
+            date: options.date,
+            reviewPointOutputFormat: options.reviewPointOutputFormat,
+          })
           : null;
 
       let taskReviewResult: Awaited<ReturnType<GenerateDailyReviewUseCase["execute"]>> | null = null;
@@ -91,13 +92,13 @@ export class GenerateDailyReviewFlowUseCase {
           note: taskReviewResult?.note ?? (await this.resolveDailyNote(options.date)),
           taskReview: taskReviewResult
             ? {
-                executed: true,
-                taskCount: taskReviewResult.taskCount,
-              }
+              executed: true,
+              taskCount: taskReviewResult.taskCount,
+            }
             : {
-                executed: false,
-                taskCount: 0,
-              },
+              executed: false,
+              taskCount: 0,
+            },
           dailyNotesReview: {
             executed: false,
             noteCount: 0,
@@ -138,13 +139,13 @@ export class GenerateDailyReviewFlowUseCase {
                 note: dailyNotesReviewResult.note ?? taskReviewResult?.note ?? (await this.resolveDailyNote(options.date)),
                 taskReview: taskReviewResult
                   ? {
-                      executed: true,
-                      taskCount: taskReviewResult.taskCount,
-                    }
+                    executed: true,
+                    taskCount: taskReviewResult.taskCount,
+                  }
                   : {
-                      executed: false,
-                      taskCount: 0,
-                    },
+                    executed: false,
+                    taskCount: 0,
+                  },
                 dailyNotesReview: {
                   executed: true,
                   noteCount: dailyNotesReviewResult.noteCount,
@@ -168,13 +169,13 @@ export class GenerateDailyReviewFlowUseCase {
             note: taskReviewResult?.note ?? (await this.resolveDailyNote(options.date)),
             taskReview: taskReviewResult
               ? {
-                  executed: true,
-                  taskCount: taskReviewResult.taskCount,
-                }
+                executed: true,
+                taskCount: taskReviewResult.taskCount,
+              }
               : {
-                  executed: false,
-                  taskCount: 0,
-                },
+                executed: false,
+                taskCount: 0,
+              },
             dailyNotesReview: {
               executed: true,
               noteCount: 0,
@@ -200,13 +201,13 @@ export class GenerateDailyReviewFlowUseCase {
         note: dailyNotesReviewResult.note ?? taskReviewResult?.note ?? (await this.resolveDailyNote(options.date)),
         taskReview: taskReviewResult
           ? {
-              executed: true,
-              taskCount: taskReviewResult.taskCount,
-            }
+            executed: true,
+            taskCount: taskReviewResult.taskCount,
+          }
           : {
-              executed: false,
-              taskCount: 0,
-            },
+            executed: false,
+            taskCount: 0,
+          },
         dailyNotesReview: {
           executed: true,
           noteCount: dailyNotesReviewResult.noteCount,

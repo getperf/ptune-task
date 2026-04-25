@@ -5,4 +5,5 @@ export type ReviewFlowRunOptions = {
   taskReviewEnabled: boolean;
   dailyNotesReviewEnabled: boolean;
   reviewPointOutputFormat: ReviewOutputFormat;
+  skipExternalDailyReviewRequest?: boolean;
 };

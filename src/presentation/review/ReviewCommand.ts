@@ -34,7 +34,7 @@ export class ReviewCommand {
     private readonly presenter: ReviewPresenter,
     private readonly eventHookService: EventHookService,
     private readonly reviewConfigSyncService: PythonReviewConfigSyncService,
-  ) {}
+  ) { }
 
   execute(): void {
     const today = this.todayResolver.resolve();
@@ -66,11 +66,11 @@ export class ReviewCommand {
       const result = this.shouldRunDailyReviewViaHook(options)
         ? await this.runWithHookAndTaskFirst(options, progress)
         : await this.useCase.execute(
-            options,
-            (event: DailyReviewFlowProgressEvent) => {
-              progress.handleEvent(event);
-            },
-          );
+          options,
+          (event: DailyReviewFlowProgressEvent) => {
+            progress.handleEvent(event);
+          },
+        );
 
       await this.presenter.openNote(result.note);
       await this.presenter.refreshCalendar();
@@ -118,6 +118,7 @@ export class ReviewCommand {
         ...options,
         taskReviewEnabled: false,
         dailyNotesReviewEnabled: true,
+        skipExternalDailyReviewRequest: true,
       },
       (event: DailyReviewFlowProgressEvent) => {
         progress.handleEvent(event);
