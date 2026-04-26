@@ -181,6 +181,7 @@ export const settingsEn = {
 			options: {
 				outline: "Text outline",
 				xmind: "Mind map",
+				logseq: "Logseq",
 			},
 		},
 
@@ -200,6 +201,18 @@ export const settingsEn = {
 			name: "XMind template path",
 			desc: "Vault-relative path to the XMind template used for reflection points",
 			placeholder: "_template/xmind/template_analysis.xmind",
+		},
+
+		logseqRootPath: {
+			name: "Logseq root path",
+			desc: "Vault-relative root directory used for generated Logseq review content",
+			placeholder: "_review_logseq",
+		},
+
+		logseqJournalTemplatePath: {
+			name: "Logseq journal template path",
+			desc: "Vault-relative path to the Logseq journal template used for generated review journals",
+			placeholder: "_templates/review-logseq-journal-template.md",
 		},
 	},
 

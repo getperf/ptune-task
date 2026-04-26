@@ -154,8 +154,15 @@ export const commonJa = {
 					"4. 気づき・問題・未解決事項・次回対応に整理した結果を「アウトプット（XMind 編集結果）」へ貼り戻してください。",
 				],
 			},
+			logseq: [
+				"Logseq 振り返り手順:",
+				"1. 下の Logseq 日誌を開いてください。",
+				"2. Logseq で内容を確認・追記してください。",
+				"3. 完了後にこのノートへ戻ってください。",
+			],
 			xmindFileLinkLabel: "編集用 XMind ファイルを開く",
 			xmindInputFileLinkLabel: "XMind インプットテキストを開く",
+			logseqJournalLinkLabel: "生成した Logseq 日誌を開く",
 			xmindOutputHeading: "アウトプット（XMind 編集結果）",
 		},
 	},
@@ -184,6 +191,7 @@ export const commonJa = {
 			options: {
 				outline: "outline",
 				xmind: "xmind",
+				logseq: "logseq",
 			},
 		},
 		progress: {

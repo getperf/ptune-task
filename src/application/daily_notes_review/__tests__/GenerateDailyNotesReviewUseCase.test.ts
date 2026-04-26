@@ -212,6 +212,94 @@ describe("GenerateDailyNotesReviewUseCase", () => {
     }
   });
 
+  test("creates logseq journal when review point format is logseq", async () => {
+    const originalFormat = config.settings.review.reviewPointOutputFormat;
+    const originalSentenceMode = config.settings.review.sentenceMode;
+    config.settings.review.reviewPointOutputFormat = "logseq";
+    config.settings.review.sentenceMode = "none";
+
+    try {
+      const summaries = new NoteSummaries();
+      summaries.add({
+        noteFolder: "_project/331_push時の差分ロジック見直し",
+        notePath: "_project/331_push時の差分ロジック見直し/01_新規作成で親見出し追加.md",
+        noteTitle: "新規作成で親見出し追加",
+        summary: "親見出しの追加手順を確認した",
+      });
+
+      const note = new DailyNote("2026-04-25", "_journal/2026/03/2026-04-25.md", "before");
+      const updated = note.withContent("after");
+
+      const createDailyNoteUseCase = {
+        execute: jest.fn().mockResolvedValue({ note, created: false }),
+      };
+      const dailyNoteRepository = {
+        save: jest.fn().mockResolvedValue(undefined),
+      };
+      const collectUseCase = {
+        execute: jest.fn().mockResolvedValue(summaries),
+      };
+      const createdRepo = {
+        findByDate: jest.fn().mockReturnValue([{ path: summaries.getAll()[0].notePath }]),
+        hasSummary: jest.fn(),
+      };
+      const noteRepo = {
+        saveSummary: jest.fn(),
+      };
+      const noteSummaryGenerator = {
+        generate: jest.fn(),
+      };
+      const textGenerator = {
+        generate: jest.fn(),
+        hasValidApiKey: jest.fn().mockReturnValue(false),
+      };
+      const writer = {
+        write: jest.fn().mockReturnValue(updated),
+      };
+      const reportBuilder = {
+        build: jest.fn().mockReturnValue("- push時の差分ロジック見直し"),
+      };
+      const reviewPointLogseqJournalTemplateService = {
+        ensureForDailyNote: jest.fn().mockResolvedValue({
+          vaultPath: "_review_logseq/journals/2026_04_25.md",
+          markdownLinkPath: "_review_logseq/journals/2026_04_25.md",
+          created: true,
+        }),
+      };
+
+      const useCase = new GenerateDailyNotesReviewUseCase(
+        createDailyNoteUseCase as never,
+        dailyNoteRepository as never,
+        collectUseCase as never,
+        createdRepo as never,
+        noteRepo as never,
+        noteSummaryGenerator as never,
+        textGenerator as never,
+        writer as never,
+        reportBuilder as never,
+        undefined,
+        undefined,
+        reviewPointLogseqJournalTemplateService as never,
+      );
+
+      await useCase.execute("2026-04-25", {
+        reviewPointOutputFormat: "logseq",
+        enableSummaries: false,
+        enableReflection: true,
+      });
+
+      expect(reviewPointLogseqJournalTemplateService.ensureForDailyNote).toHaveBeenCalledWith(note, expect.anything());
+      expect(writer.write).toHaveBeenCalledWith(
+        note,
+        "- push時の差分ロジック見直し",
+        expect.stringContaining("[生成した Logseq 日誌を開く](_review_logseq/journals/2026_04_25.md)"),
+      );
+    } finally {
+      config.settings.review.reviewPointOutputFormat = originalFormat;
+      config.settings.review.sentenceMode = originalSentenceMode;
+    }
+  });
+
   test("writes xmind input text from sentence summaries after llm reflection processing", async () => {
     const originalFormat = config.settings.review.reviewPointOutputFormat;
     const originalSentenceMode = config.settings.review.sentenceMode;

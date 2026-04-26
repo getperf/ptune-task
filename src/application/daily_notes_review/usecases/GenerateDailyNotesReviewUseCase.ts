@@ -22,7 +22,9 @@ import { logger } from "../../../shared/logger/loggerInstance";
 import { ReviewOutputFormat } from "../../../config/types";
 import { ReviewPointXMindTemplateService } from "../../../infrastructure/review/ReviewPointXMindTemplateService";
 import { ReviewPointXMindInputFileService } from "../../../infrastructure/review/ReviewPointXMindInputFileService";
+import { ReviewPointLogseqJournalTemplateService } from "../../../infrastructure/review/ReviewPointLogseqJournalTemplateService";
 import { ReviewPointArtifactProvider } from "../services/ReviewPointArtifactProvider";
+import { LogseqReviewPointArtifactProvider } from "../services/LogseqReviewPointArtifactProvider";
 import { XMindReviewPointArtifactProvider } from "../services/XMindReviewPointArtifactProvider";
 
 export type GenerateDailyNotesReviewResult = {
@@ -60,6 +62,7 @@ export class GenerateDailyNotesReviewUseCase {
     private readonly reportBuilder: DailyNotesReportBuilder,
     private readonly reviewPointXMindTemplateService?: ReviewPointXMindTemplateService,
     private readonly reviewPointXMindInputFileService?: ReviewPointXMindInputFileService,
+    private readonly reviewPointLogseqJournalTemplateService?: ReviewPointLogseqJournalTemplateService,
     private readonly reflectionDocumentBuilder = new DailyNotesReflectionDocumentBuilder(),
     private readonly reflectionBuilder = new DailyNotesReflectionBuilder(),
   ) {
@@ -67,6 +70,12 @@ export class GenerateDailyNotesReviewUseCase {
       this.reviewPointArtifactProviders.xmind = new XMindReviewPointArtifactProvider(
         this.reviewPointXMindTemplateService,
         this.reviewPointXMindInputFileService,
+      );
+    }
+
+    if (this.reviewPointLogseqJournalTemplateService) {
+      this.reviewPointArtifactProviders.logseq = new LogseqReviewPointArtifactProvider(
+        this.reviewPointLogseqJournalTemplateService,
       );
     }
   }
@@ -163,7 +172,7 @@ export class GenerateDailyNotesReviewUseCase {
     outputFormat: ReviewOutputFormat,
   ): Promise<string> {
     const doc = this.reflectionDocumentBuilder.build(summaries);
-    const artifactLinks = await this.prepareReviewPointArtifactLinks(note, outputFormat);
+    const artifactLinks = await this.prepareReviewPointArtifactLinks(note, outputFormat, doc);
 
     if (!this.textGenerator.hasValidApiKey()) {
       return await this.finalizeManualReflectionOutput(doc, note, outputFormat, artifactLinks);
@@ -216,13 +225,14 @@ export class GenerateDailyNotesReviewUseCase {
   private async prepareReviewPointArtifactLinks(
     note: DailyNote,
     outputFormat: ReviewOutputFormat,
+    doc?: DailyNotesReflectionDocument,
   ): Promise<Record<string, string>> {
     const provider = this.reviewPointArtifactProviders[outputFormat];
     if (!provider) {
       return {};
     }
 
-    return provider.prepareArtifactLinks(note);
+    return provider.prepareArtifactLinks(note, doc);
   }
 
   private async finalizeReflectionOutput(

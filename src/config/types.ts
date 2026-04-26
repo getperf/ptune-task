@@ -1,6 +1,6 @@
 export type LogLevel = "debug" | "info" | "warn" | "error" | "none";
 export type LlmProvider = "openai" | "claude" | "gemini" | "custom";
-export type ReviewOutputFormat = "outline" | "xmind";
+export type ReviewOutputFormat = "outline" | "xmind" | "logseq";
 
 export interface LlmSettings {
 	provider: LlmProvider;
@@ -38,6 +38,8 @@ export interface ReviewSettings {
 	notesReviewEnabledDefault: boolean;
 	taskReviewOutputFormat: ReviewOutputFormat;
 	xmindTemplatePath: string;
+	logseqRootPath: string;
+	logseqJournalTemplatePath: string;
 	maxSentences: number;
 }
 

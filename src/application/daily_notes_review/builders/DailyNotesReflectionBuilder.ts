@@ -4,12 +4,14 @@ import { StructuredReflectionText } from "../services/StructuredReflectionTextAd
 import { ReflectionFormatter, ReflectionBuildOptions } from "../formatters/ReflectionFormatter";
 import { OutlineReflectionFormatter } from "../formatters/OutlineReflectionFormatter";
 import { XMindReflectionFormatter } from "../formatters/XMindReflectionFormatter";
+import { LogseqReflectionFormatter } from "../formatters/LogseqReflectionFormatter";
 
 export type DailyNotesReflectionBuildOptions = ReflectionBuildOptions;
 
 const reflectionFormatters: Record<ReviewOutputFormat, ReflectionFormatter> = {
   outline: new OutlineReflectionFormatter(),
   xmind: new XMindReflectionFormatter(),
+  logseq: new LogseqReflectionFormatter(),
 };
 
 export class DailyNotesReflectionBuilder {

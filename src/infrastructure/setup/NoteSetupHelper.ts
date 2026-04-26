@@ -1,6 +1,7 @@
 import { App, normalizePath } from "obsidian";
 import { config } from "../../config/config";
 import { TEMPLATE_ANALYSIS_XMIND_BASE64 } from "../../generated/templateAnalysisXmind";
+import { LogseqJournalTemplateSetupService } from "./LogseqJournalTemplateSetupService";
 
 export type NoteSetupResult = {
   createdPaths: string[];
@@ -16,7 +17,15 @@ export class NoteSetupHelper {
   private static readonly PLUGIN_ID = "ptune-task";
   private static readonly SOURCE_TEMPLATE_PATH = "assets/template_analysis.xmind";
 
-  constructor(private readonly app: App) {}
+  private readonly logseqTemplateSetupService: LogseqJournalTemplateSetupService;
+
+  constructor(
+    private readonly app: App,
+    logseqTemplateSetupService: LogseqJournalTemplateSetupService =
+      new LogseqJournalTemplateSetupService(app),
+  ) {
+    this.logseqTemplateSetupService = logseqTemplateSetupService;
+  }
 
   async ensureResources(): Promise<NoteSetupResult> {
     const createdPaths: string[] = [];
@@ -29,15 +38,22 @@ export class NoteSetupHelper {
       }
     }
 
-    const templatePath = normalizePath(
+    const xmindTemplatePath = normalizePath(
       config.settings.review.xmindTemplatePath || NoteSetupHelper.DEFAULT_XMIND_TEMPLATE_PATH,
     );
-    await this.ensureParentFolders(templatePath, createdPaths);
+    await this.ensureParentFolders(xmindTemplatePath, createdPaths);
 
-    if (!(await this.app.vault.adapter.exists(templatePath))) {
+    if (!(await this.app.vault.adapter.exists(xmindTemplatePath))) {
       const data = await this.readTemplateBinary();
-      await this.app.vault.adapter.writeBinary(templatePath, data);
-      updatedTemplates.push(templatePath);
+      await this.app.vault.adapter.writeBinary(xmindTemplatePath, data);
+      updatedTemplates.push(xmindTemplatePath);
+    }
+
+    const logseqTemplatePath = await this.logseqTemplateSetupService.ensureTemplateExists(
+      createdPaths,
+    );
+    if (logseqTemplatePath) {
+      updatedTemplates.push(logseqTemplatePath);
     }
 
     return { createdPaths, updatedTemplates };

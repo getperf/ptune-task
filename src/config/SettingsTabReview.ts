@@ -27,10 +27,11 @@ export function renderReviewSettings(containerEl: HTMLElement) {
 				.addOptions({
 					outline: t.reviewPointOutputFormat.options.outline,
 					xmind: t.reviewPointOutputFormat.options.xmind,
+					logseq: t.reviewPointOutputFormat.options.logseq,
 				})
 				.setValue(config.settings.review.reviewPointOutputFormat)
 				.onChange(async (value) => {
-					if (value !== "outline" && value !== "xmind") {
+					if (value !== "outline" && value !== "xmind" && value !== "logseq") {
 						return;
 					}
 
@@ -85,6 +86,33 @@ export function renderReviewSettings(containerEl: HTMLElement) {
 				.onChange(async (value) => {
 					config.settings.review.xmindTemplatePath =
 						value.trim() || t.xmindTemplatePath.placeholder;
+					await config.save();
+				}),
+		);
+
+	new Setting(containerEl)
+		.setName(t.logseqRootPath.name)
+		.setDesc(t.logseqRootPath.desc)
+		.addText((text) =>
+			text
+				.setPlaceholder(t.logseqRootPath.placeholder)
+				.setValue(config.settings.review.logseqRootPath)
+				.onChange(async (value) => {
+					config.settings.review.logseqRootPath = value.trim();
+					await config.save();
+				}),
+		);
+
+	new Setting(containerEl)
+		.setName(t.logseqJournalTemplatePath.name)
+		.setDesc(t.logseqJournalTemplatePath.desc)
+		.addText((text) =>
+			text
+				.setPlaceholder(t.logseqJournalTemplatePath.placeholder)
+				.setValue(config.settings.review.logseqJournalTemplatePath)
+				.onChange(async (value) => {
+					config.settings.review.logseqJournalTemplatePath =
+						value.trim() || t.logseqJournalTemplatePath.placeholder;
 					await config.save();
 				}),
 		);

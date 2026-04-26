@@ -181,6 +181,7 @@ export const settingsJa = {
 			options: {
 				outline: "outline",
 				xmind: "xmind",
+				logseq: "logseq",
 			},
 		},
 
@@ -200,6 +201,18 @@ export const settingsJa = {
 			name: "XMind テンプレートパス",
 			desc: "振り返りポイントの XMind テンプレートとして使う vault 相対パス",
 			placeholder: "_template/xmind/template_analysis.xmind",
+		},
+
+		logseqRootPath: {
+			name: "Logseq ルートディレクトリ",
+			desc: "生成した Logseq レビューコンテンツを配置するルートディレクトリの Vault 相対パス",
+			placeholder: "_review_logseq",
+		},
+
+		logseqJournalTemplatePath: {
+			name: "Logseq 日誌テンプレートパス",
+			desc: "生成した Logseq 日誌のテンプレートとして使う Vault 相対パス",
+			placeholder: "_templates/review-logseq-journal-template.md",
 		},
 	},
 

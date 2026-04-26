@@ -155,9 +155,16 @@ export const commonEn = {
 					"3. Use the mind map file and input text below to merge duplicates and reorganize the material.",
 					"4. Paste the organized result into the output section with insights, problems, unresolved items, and next actions.",
 				],
+				logseq: [
+					"Logseq reflection workflow:",
+					"1. Open the generated Logseq journal below.",
+					"2. Review and enrich the journal content in Logseq.",
+					"3. Return to this note when done.",
+				],
 			},
 			xmindFileLinkLabel: "Open the editing mind map file",
 			xmindInputFileLinkLabel: "Open the mind map input text",
+			logseqJournalLinkLabel: "Open the generated Logseq journal",
 			xmindOutputHeading: "Output (mind map editing result)",
 		},
 	},
@@ -186,6 +193,7 @@ export const commonEn = {
 			options: {
 				outline: "Text outline",
 				xmind: "Mind map",
+				logseq: "Logseq",
 			},
 		},
 		progress: {

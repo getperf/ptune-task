@@ -81,10 +81,11 @@ export class ReviewSetupModal extends Modal {
           .addOptions({
             outline: t.options.outline,
             xmind: t.options.xmind,
+            logseq: t.options.logseq,
           })
           .setValue(this.state.reviewPointOutputFormat)
           .onChange((value) => {
-            if (value === "outline" || value === "xmind") {
+            if (value === "outline" || value === "xmind" || value === "logseq") {
               this.state.reviewPointOutputFormat = value;
             }
           }),

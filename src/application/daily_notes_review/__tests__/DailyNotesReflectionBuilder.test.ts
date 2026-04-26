@@ -102,11 +102,11 @@ function buildSummaries(
     noteTitle: string;
     summary: string;
   } = {
-    noteFolder: "_project/331_push時の差分ロジック見直し",
-    notePath: "_project/331_push時の差分ロジック見直し/01_新規作成で親見出し追加.md",
-    noteTitle: "新規作成で親見出し追加",
-    summary: "親見出しの追加手順を確認した",
-  },
+      noteFolder: "_project/331_push時の差分ロジック見直し",
+      notePath: "_project/331_push時の差分ロジック見直し/01_新規作成で親見出し追加.md",
+      noteTitle: "新規作成で親見出し追加",
+      summary: "親見出しの追加手順を確認した",
+    },
 ): NoteSummaries {
   const summaries = new NoteSummaries();
   summaries.add(note);
