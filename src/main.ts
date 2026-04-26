@@ -4,6 +4,7 @@ import { config } from "./config/config";
 import { logger } from "./shared/logger/loggerInstance";
 import { PtuneSettingTab } from "config/SettingsTab";
 import { i18n } from "./shared/i18n/I18n";
+import { formatSetupChecklistForLog } from "./application/setup/services/SetupChecklistService";
 import { Container } from "./bootstrap/container";
 import { registerAllCommands } from "./bootstrap/commandRegistrar";
 import { registerEditorFeatures } from "./bootstrap/registerEditorFeatures";
@@ -37,6 +38,13 @@ export default class PtunePlugin extends Plugin {
 		container.createDailyNoteOpenHook().start(this);
 		container.createProjectIndexOpenHook().start(this);
 
+		const startupChecklist = await container
+			.createSetupChecklistService()
+			.getChecklist();
+		logger.info(
+			"[Service] SetupChecklistService.startupCheck",
+			formatSetupChecklistForLog(startupChecklist),
+		);
 		logger.debug("ptune-task loaded");
 		this.addSettingTab(new PtuneSettingTab(this.app, this));
 	}

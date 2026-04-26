@@ -12,8 +12,10 @@ export class NoteSetupHelper {
   private static readonly TARGET_DIRS = [
     "_project",
     "_journal",
+    "_templates",
+    "_templates/note",
   ] as const;
-  private static readonly DEFAULT_XMIND_TEMPLATE_PATH = "_template/xmind/template_analysis.xmind";
+  private static readonly DEFAULT_XMIND_TEMPLATE_PATH = "_templates/xmind/template_analysis.xmind";
   private static readonly PLUGIN_ID = "ptune-task";
   private static readonly SOURCE_TEMPLATE_PATH = "assets/template_analysis.xmind";
 

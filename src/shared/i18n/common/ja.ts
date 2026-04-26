@@ -332,7 +332,7 @@ export const commonJa = {
 		noteResources: {
 			title: "ノート関連ディレクトリ",
 			statusTitle: "状態",
-			desc: "_project, _journal を作成します。",
+			desc: "_project、_journal、_templates、および _templates/note を作成します。",
 			run: "初期化を実行",
 			completed: "ノート関連ディレクトリを更新しました",
 		},

@@ -177,10 +177,14 @@ export class Container {
     return new AuthLoginProgressService(this.app);
   }
 
+  createSetupChecklistService(): SetupChecklistService {
+    return new SetupChecklistService(this.app, this.createAuthService());
+  }
+
   createSetupWizardDialog(): SetupWizardDialog {
     return new SetupWizardDialog(
       this.app,
-      new SetupChecklistService(this.app, this.createAuthService()),
+      this.createSetupChecklistService(),
       new NoteSetupHelper(this.app),
     );
   }

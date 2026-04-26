@@ -1,7 +1,9 @@
 import { App, Platform, normalizePath } from "obsidian";
 import { PtuneSyncUriAuthService } from "../../../infrastructure/sync/ptune-sync-uri/PtuneSyncUriAuthService";
+import { config } from "../../../config/config";
 import { SetupChecklist, SetupItem } from "../types/SetupChecklist";
 import { i18n } from "../../../shared/i18n/I18n";
+import { logger } from "../../../shared/logger/loggerInstance";
 
 type RecommendedPlugin = {
   id: string;
@@ -19,6 +21,17 @@ function createCommunityPluginUrl(pluginId: string): string {
   return new URL(`/plugins?id=${pluginId}`, `https://${"obsidian.md"}`).toString();
 }
 
+export function formatSetupChecklistForLog(checklist: SetupChecklist): string {
+  const formatItems = (items: SetupItem[]) =>
+    items
+      .map((item) => `${item.id}:${item.status === "ok" ? "OK" : "NG"}`)
+      .join(", ");
+
+  return `required={${formatItems(checklist.required)}} recommended={${formatItems(
+    checklist.recommended,
+  )}}`;
+}
+
 export class SetupChecklistService {
   private static readonly DAILY_NOTES_GUIDE_URL =
     "https://ptune.getperf.net/ptune-task/setup/notes-setup/";
@@ -29,6 +42,8 @@ export class SetupChecklistService {
   private static readonly NOTE_RESOURCE_PATHS = [
     "_project",
     "_journal",
+    "_templates",
+    "_templates/note",
   ] as const;
 
   private static readonly RECOMMENDED_PLUGINS: readonly RecommendedPlugin[] = [
@@ -61,6 +76,8 @@ export class SetupChecklistService {
   ) {}
 
   async getChecklist(): Promise<SetupChecklist> {
+    logger.debug("[Service] SetupChecklistService.getChecklist start");
+
     const required = await Promise.all([
       this.checkNoteResources(),
       this.checkDailyNotes(),
@@ -70,7 +87,13 @@ export class SetupChecklistService {
       this.checkRecommendedPlugin(plugin),
     );
 
-    return { required, recommended };
+    const checklist = { required, recommended };
+    logger.debug(
+      "[Service] SetupChecklistService.getChecklist result",
+      formatSetupChecklistForLog(checklist),
+    );
+
+    return checklist;
   }
 
   private async checkNoteResources(): Promise<SetupItem> {
@@ -80,6 +103,14 @@ export class SetupChecklistService {
       if (!(await this.app.vault.adapter.exists(path))) {
         missing.push(path);
       }
+    }
+
+    if (!config.settings.review.xmindTemplatePath?.trim()) {
+      missing.push("review.xmindTemplatePath");
+    }
+
+    if (!config.settings.review.logseqJournalTemplatePath?.trim()) {
+      missing.push("review.logseqJournalTemplatePath");
     }
 
     return missing.length === 0
