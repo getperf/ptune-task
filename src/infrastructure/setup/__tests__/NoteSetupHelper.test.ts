@@ -20,7 +20,7 @@ describe("NoteSetupHelper", () => {
 
   test("uses bundled template when packaged asset is unavailable", async () => {
     config.settings.review.xmindTemplatePath =
-      "_template/xmind/template_analysis.xmind";
+      "_templates/xmind/template_analysis.xmind";
     config.settings.review.logseqJournalTemplatePath =
       "_templates/review-logseq-journal-template.md";
 
@@ -59,21 +59,22 @@ describe("NoteSetupHelper", () => {
     const result = await helper.ensureResources();
 
     expect(result.updatedTemplates).toEqual([
-      "_template/xmind/template_analysis.xmind",
+      "_templates/xmind/template_analysis.xmind",
     ]);
     expect(writes).toHaveLength(1);
-    expect(writes[0]?.path).toBe("_template/xmind/template_analysis.xmind");
+    expect(writes[0]?.path).toBe("_templates/xmind/template_analysis.xmind");
     expect(
       Buffer.from(writes[0]?.data ?? new ArrayBuffer(0)).toString(
         "base64",
       ),
     ).toBe(TEMPLATE_ANALYSIS_XMIND_BASE64);
     expect(app.vault.adapter.readBinary).not.toHaveBeenCalled();
+    expect(folders).toContain("_templates/note");
   });
 
   test("prefers packaged asset when available", async () => {
     config.settings.review.xmindTemplatePath =
-      "_template/xmind/template_analysis.xmind";
+      "_templates/xmind/template_analysis.xmind";
     config.settings.review.logseqJournalTemplatePath =
       "_templates/review-logseq-journal-template.md";
 
@@ -127,7 +128,7 @@ describe("NoteSetupHelper", () => {
   });
 
   test("creates Logseq journal template when missing", async () => {
-    config.settings.review.xmindTemplatePath = "_template/xmind/template_analysis.xmind";
+    config.settings.review.xmindTemplatePath = "_templates/xmind/template_analysis.xmind";
     config.settings.review.logseqJournalTemplatePath = "_templates/review-logseq-journal-template.md";
 
     const folders = new Set<string>([

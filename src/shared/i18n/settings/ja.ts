@@ -200,7 +200,7 @@ export const settingsJa = {
 		xmindTemplatePath: {
 			name: "XMind テンプレートパス",
 			desc: "振り返りポイントの XMind テンプレートとして使う vault 相対パス",
-			placeholder: "_template/xmind/template_analysis.xmind",
+			placeholder: "_templates/xmind/template_analysis.xmind",
 		},
 
 		logseqRootPath: {

@@ -13,6 +13,12 @@ export class Modal {
   setCloseCallback(_callback: () => void): void { }
 }
 
+export const Platform = {
+  isMac: false,
+  isWin: true,
+  isLinux: false,
+};
+
 export function normalizePath(path: string): string {
   return path.replace(/\\/g, "/").replace(/\/+/g, "/");
 }

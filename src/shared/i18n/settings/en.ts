@@ -200,7 +200,7 @@ export const settingsEn = {
 		xmindTemplatePath: {
 			name: "XMind template path",
 			desc: "Vault-relative path to the XMind template used for reflection points",
-			placeholder: "_template/xmind/template_analysis.xmind",
+			placeholder: "_templates/xmind/template_analysis.xmind",
 		},
 
 		logseqRootPath: {
