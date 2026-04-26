@@ -61,12 +61,17 @@ describe("DailyNotesReflectionBuilder", () => {
   test("builds structured xmind input", () => {
     const builder = new DailyNotesReflectionBuilder();
 
-    expect(builder.buildStructuredXmindInput(buildStructured())).toBe([
+    expect(builder.buildStructuredInput(buildStructured(), "xmind")).toBe([
       "push時の差分ロジック見直し",
-      "\t新規作成で親見出し追加",
-      "\t\t親見出し追加方針を確認",
-      "\t\tXMind連携案を整理",
+      "	新規作成で親見出し追加",
+      "		親見出し追加方針を確認",
+      "		XMind連携案を整理",
     ].join("\n"));
+  });
+
+  test("builds xmind input via generic formatter API", () => {
+    const builder = new DailyNotesReflectionBuilder();
+    expect(builder.buildInput(buildDocument(), "xmind")).toContain("push時の差分ロジック見直し");
   });
 });
 

@@ -22,6 +22,8 @@ import { logger } from "../../../shared/logger/loggerInstance";
 import { ReviewOutputFormat } from "../../../config/types";
 import { ReviewPointXMindTemplateService } from "../../../infrastructure/review/ReviewPointXMindTemplateService";
 import { ReviewPointXMindInputFileService } from "../../../infrastructure/review/ReviewPointXMindInputFileService";
+import { ReviewPointArtifactProvider } from "../services/ReviewPointArtifactProvider";
+import { XMindReviewPointArtifactProvider } from "../services/XMindReviewPointArtifactProvider";
 
 export type GenerateDailyNotesReviewResult = {
   note?: DailyNote;
@@ -44,6 +46,8 @@ export type GenerateDailyNotesReviewOptions = {
 };
 
 export class GenerateDailyNotesReviewUseCase {
+  private readonly reviewPointArtifactProviders: Partial<Record<ReviewOutputFormat, ReviewPointArtifactProvider>> = {};
+
   constructor(
     private readonly createDailyNoteUseCase: CreateDailyNoteUseCase,
     private readonly dailyNoteRepository: DailyNoteRepository,
@@ -58,7 +62,14 @@ export class GenerateDailyNotesReviewUseCase {
     private readonly reviewPointXMindInputFileService?: ReviewPointXMindInputFileService,
     private readonly reflectionDocumentBuilder = new DailyNotesReflectionDocumentBuilder(),
     private readonly reflectionBuilder = new DailyNotesReflectionBuilder(),
-  ) {}
+  ) {
+    if (this.reviewPointXMindTemplateService && this.reviewPointXMindInputFileService) {
+      this.reviewPointArtifactProviders.xmind = new XMindReviewPointArtifactProvider(
+        this.reviewPointXMindTemplateService,
+        this.reviewPointXMindInputFileService,
+      );
+    }
+  }
 
   async execute(
     date: string,
@@ -122,10 +133,10 @@ export class GenerateDailyNotesReviewUseCase {
       const { note } = await this.createDailyNoteUseCase.execute(date);
       const reflection = (options?.enableReflection ?? true)
         ? await this.buildReflection(
-            summaries,
-            note,
-            options?.reviewPointOutputFormat ?? config.settings.review.reviewPointOutputFormat,
-          )
+          summaries,
+          note,
+          options?.reviewPointOutputFormat ?? config.settings.review.reviewPointOutputFormat,
+        )
         : "";
       const updated = this.writer.write(note, report, reflection);
       await this.dailyNoteRepository.save(updated);
@@ -152,16 +163,14 @@ export class GenerateDailyNotesReviewUseCase {
     outputFormat: ReviewOutputFormat,
   ): Promise<string> {
     const doc = this.reflectionDocumentBuilder.build(summaries);
-    const xmindLinks = outputFormat === "xmind"
-      ? await this.prepareXMindFiles(note)
-      : {};
+    const artifactLinks = await this.prepareReviewPointArtifactLinks(note, outputFormat);
 
     if (!this.textGenerator.hasValidApiKey()) {
-      return await this.finalizeManualReflectionOutput(doc, note, outputFormat, xmindLinks);
+      return await this.finalizeManualReflectionOutput(doc, note, outputFormat, artifactLinks);
     }
 
     if (config.settings.review.sentenceMode !== "llm") {
-      return await this.finalizeReflectionOutput(doc, note, outputFormat, xmindLinks);
+      return await this.finalizeReflectionOutput(doc, note, outputFormat, artifactLinks);
     }
 
     const adapter = new StructuredReflectionTextAdapter(doc);
@@ -173,7 +182,7 @@ export class GenerateDailyNotesReviewUseCase {
     );
 
     if (sentenceInputs === 0) {
-      return await this.finalizeReflectionOutput(doc, note, outputFormat, xmindLinks);
+      return await this.finalizeReflectionOutput(doc, note, outputFormat, artifactLinks);
     }
 
     const reflection = await this.textGenerator.generate(
@@ -194,46 +203,44 @@ export class GenerateDailyNotesReviewUseCase {
           structured,
           note,
           outputFormat,
-          xmindLinks,
+          artifactLinks,
         );
       }
     } else {
       logger.warn("[UseCase] GenerateDailyNotesReviewUseCase reflectionResponse empty");
     }
 
-    return await this.finalizeReflectionOutput(doc, note, outputFormat, xmindLinks);
+    return await this.finalizeReflectionOutput(doc, note, outputFormat, artifactLinks);
   }
 
-  private async prepareXMindFiles(note: DailyNote): Promise<{
-    xmindFileLink?: string;
-  }> {
-    if (!this.reviewPointXMindTemplateService) {
+  private async prepareReviewPointArtifactLinks(
+    note: DailyNote,
+    outputFormat: ReviewOutputFormat,
+  ): Promise<Record<string, string>> {
+    const provider = this.reviewPointArtifactProviders[outputFormat];
+    if (!provider) {
       return {};
     }
 
-    const xmindFile = await this.reviewPointXMindTemplateService.ensureForDailyNote(note);
-    return {
-      xmindFileLink: xmindFile.markdownLinkPath,
-    };
+    return provider.prepareArtifactLinks(note);
   }
 
   private async finalizeReflectionOutput(
     doc: DailyNotesReflectionDocument,
     note: DailyNote,
     outputFormat: ReviewOutputFormat,
-    links: { xmindFileLink?: string },
+    links: Record<string, string>,
   ): Promise<string> {
-    let xmindInputFileLink: string | undefined;
-
-    if (outputFormat === "xmind" && this.reviewPointXMindInputFileService) {
-      const inputText = this.reflectionBuilder.buildXmindInput(doc);
-      const inputFile = await this.reviewPointXMindInputFileService.writeForDailyNote(note, inputText);
-      xmindInputFileLink = inputFile.markdownLinkPath;
-    }
+    const provider = this.reviewPointArtifactProviders[outputFormat];
+    const inputContent = this.reflectionBuilder.buildInput(doc, outputFormat);
+    const inputFileLinks =
+      provider?.writeInputFile !== undefined && inputContent !== undefined
+        ? await provider.writeInputFile(note, inputContent)
+        : {};
 
     return this.reflectionBuilder.build(doc, outputFormat, {
-      xmindFileLink: links.xmindFileLink,
-      xmindInputFileLink,
+      ...links,
+      ...inputFileLinks,
     });
   }
 
@@ -241,19 +248,18 @@ export class GenerateDailyNotesReviewUseCase {
     structured: StructuredReflectionText,
     note: DailyNote,
     outputFormat: ReviewOutputFormat,
-    links: { xmindFileLink?: string },
+    links: Record<string, string>,
   ): Promise<string> {
-    let xmindInputFileLink: string | undefined;
-
-    if (outputFormat === "xmind" && this.reviewPointXMindInputFileService) {
-      const inputText = this.reflectionBuilder.buildStructuredXmindInput(structured);
-      const inputFile = await this.reviewPointXMindInputFileService.writeForDailyNote(note, inputText);
-      xmindInputFileLink = inputFile.markdownLinkPath;
-    }
+    const provider = this.reviewPointArtifactProviders[outputFormat];
+    const inputContent = this.reflectionBuilder.buildStructuredInput(structured, outputFormat);
+    const inputFileLinks =
+      provider?.writeInputFile !== undefined && inputContent !== undefined
+        ? await provider.writeInputFile(note, inputContent)
+        : {};
 
     return this.reflectionBuilder.buildStructured(structured, outputFormat, {
-      xmindFileLink: links.xmindFileLink,
-      xmindInputFileLink,
+      ...links,
+      ...inputFileLinks,
     });
   }
 
@@ -261,19 +267,18 @@ export class GenerateDailyNotesReviewUseCase {
     doc: DailyNotesReflectionDocument,
     note: DailyNote,
     outputFormat: ReviewOutputFormat,
-    links: { xmindFileLink?: string },
+    links: Record<string, string>,
   ): Promise<string> {
-    let xmindInputFileLink: string | undefined;
-
-    if (outputFormat === "xmind" && this.reviewPointXMindInputFileService) {
-      const inputText = this.reflectionBuilder.buildXmindInput(doc);
-      const inputFile = await this.reviewPointXMindInputFileService.writeForDailyNote(note, inputText);
-      xmindInputFileLink = inputFile.markdownLinkPath;
-    }
+    const provider = this.reviewPointArtifactProviders[outputFormat];
+    const inputContent = this.reflectionBuilder.buildInput(doc, outputFormat);
+    const inputFileLinks =
+      provider?.writeInputFile !== undefined && inputContent !== undefined
+        ? await provider.writeInputFile(note, inputContent)
+        : {};
 
     return this.reflectionBuilder.buildManual(outputFormat, {
-      xmindFileLink: links.xmindFileLink,
-      xmindInputFileLink,
+      ...links,
+      ...inputFileLinks,
     });
   }
 
