@@ -87,6 +87,22 @@ describe("ConfigService", () => {
 		expect(service.getSettings().review.reviewPointOutputFormat).toBe("xmind");
 	});
 
+	test("load(): migrates legacy xmindTemplatePath to _templates path", async () => {
+		const service = new ConfigService();
+
+		const plugin = createPluginMock({
+			review: {
+				xmindTemplatePath: "_template/xmind/template_analysis.xmind",
+			},
+		}) as unknown as Plugin;
+
+		await service.load(plugin);
+
+		expect(service.getSettings().review.xmindTemplatePath).toBe(
+			"_templates/xmind/template_analysis.xmind",
+		);
+	});
+
 	test("load(): dailyNoteTask.habit falls back to legacy habitTasks when not configured", async () => {
 		const service = new ConfigService();
 

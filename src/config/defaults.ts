@@ -31,6 +31,11 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 		filename: "snippet.md",
 	},
 
+	habitTasks: {
+		morning: [],
+		evening: [],
+	},
+
 	review: {
 		sentenceMode: "llm",
 		noteSummaryOutputFormat: "outline",
@@ -39,15 +44,10 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 		taskReviewEnabledDefault: true,
 		notesReviewEnabledDefault: true,
 		taskReviewOutputFormat: "outline",
-		xmindTemplatePath: "_template/xmind/template_analysis.xmind",
+		xmindTemplatePath: "_templates/xmind/template_analysis.xmind",
 		logseqRootPath: "_review_logseq",
 		logseqJournalTemplatePath: "_templates/review-logseq-journal-template.md",
 		maxSentences: 0,
-	},
-
-	habitTasks: {
-		morning: [],
-		evening: [],
 	},
 
 	dailyNoteTask: {

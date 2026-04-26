@@ -7,7 +7,7 @@ describe("ReviewPointLogseqJournalTemplateService", () => {
   test("creates the default template file and writes a Logseq journal when the template is missing", async () => {
     const adapter = {
       exists: jest.fn().mockResolvedValue(false),
-      readText: jest.fn(),
+      readText: jest.fn().mockResolvedValue("- Fact\n    {{NoteSummaryList}}\n- KPT\n    - Keep\n    - Problem\n    - Try"),
       write: jest.fn().mockResolvedValue(undefined),
     };
 

@@ -73,10 +73,10 @@ function mergeSettings(
 				data.dailyNoteTask?.subTaskTemplates ?? defaults.dailyNoteTask.subTaskTemplates,
 		}
 		: data.dailyNoteTask;
-	const mergedReview = {
+	const mergedReview = migrateLegacyReviewTemplatePaths({
 		...defaults.review,
 		...(data.review ?? {}),
-	};
+	});
 
 	if (
 		data.review?.reviewPointOutputFormat === undefined
@@ -111,5 +111,23 @@ function mergeSettings(
 		},
 		habitTasks: mergedLegacyHabitTasks,
 		dailyNoteTask: mergedDailyNoteTask,
+	};
+}
+
+function migrateLegacyReviewTemplatePaths(review: {
+	xmindTemplatePath: string;
+	logseqJournalTemplatePath: string;
+}): {
+	xmindTemplatePath: string;
+	logseqJournalTemplatePath: string;
+} {
+	const xmindTemplatePath =
+		review.xmindTemplatePath === "_template/xmind/template_analysis.xmind"
+			? "_templates/xmind/template_analysis.xmind"
+			: review.xmindTemplatePath;
+
+	return {
+		...review,
+		xmindTemplatePath,
 	};
 }
