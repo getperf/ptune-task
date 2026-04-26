@@ -100,30 +100,26 @@ export class ReviewCommand {
     let taskResult: DailyReviewFlowResult | null = null;
     if (options.taskReviewEnabled) {
       progress.appendStatusLine(events.taskReviewParallelStart);
-      taskResult = await this.useCase.execute(
-        {
-          ...options,
-          dailyNotesReviewEnabled: false,
-        },
-        (event: DailyReviewFlowProgressEvent) => {
-          progress.handleEvent(event);
-        },
-      );
+      const taskReviewOptions: ReviewFlowRunOptions = {
+        ...options,
+        dailyNotesReviewEnabled: false,
+      };
+      taskResult = await this.useCase.execute(taskReviewOptions, (event: DailyReviewFlowProgressEvent) => {
+        progress.handleEvent(event);
+      });
     }
 
     await externalReviewPromise;
     progress.appendStatusLine(events.dailyNotesReviewAfterExternal);
-    const noteResult = await this.useCase.execute(
-      {
-        ...options,
-        taskReviewEnabled: false,
-        dailyNotesReviewEnabled: true,
-        skipExternalDailyReviewRequest: true,
-      },
-      (event: DailyReviewFlowProgressEvent) => {
-        progress.handleEvent(event);
-      },
-    );
+    const noteReviewOptions: ReviewFlowRunOptions = {
+      ...options,
+      taskReviewEnabled: false,
+      dailyNotesReviewEnabled: true,
+      skipExternalDailyReviewRequest: true,
+    };
+    const noteResult = await this.useCase.execute(noteReviewOptions, (event: DailyReviewFlowProgressEvent) => {
+      progress.handleEvent(event);
+    });
 
     if (!taskResult) {
       return noteResult;

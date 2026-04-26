@@ -1,9 +1,16 @@
-export class Plugin {}
+export class Plugin { }
 
-export class Setting {}
+export class Setting { }
 
 export class Notice {
-  constructor(public readonly message: string) {}
+  constructor(public readonly message: string) { }
+}
+
+export class Modal {
+  constructor(public readonly app: unknown) { }
+  open(): void { }
+  close(): void { }
+  setCloseCallback(_callback: () => void): void { }
 }
 
 export function normalizePath(path: string): string {
