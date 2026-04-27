@@ -50,7 +50,8 @@ export const commonEn = {
 			titleLabel: "Title",
 			titlePlaceholder: "Enter title",
 			ptuneLogHookLabel: "Enable ptune-log hook",
-			ptuneLogHookDesc: "When off, no ptune-log integration event is sent after note creation.",
+			ptuneLogHookDesc:
+				"When off, no ptune-log integration event is sent after note creation.",
 		},
 
 		notice: {
@@ -70,7 +71,8 @@ export const commonEn = {
 		},
 		modal: {
 			title: "Note summary",
-			manualDescription: "Automatic generation is unavailable because no language model is configured. Review the note body and enter the key points manually at a level that will be useful for later reflection.",
+			manualDescription:
+				"Automatic generation is unavailable because no language model is configured. Review the note body and enter the key points manually at a level that will be useful for later reflection.",
 			summaryLabel: "Summary",
 			summarySegmentsLabel: "Summary segments (raw Markdown)",
 			save: "Save",
@@ -83,7 +85,8 @@ export const commonEn = {
 			noActiveNote: "No active note",
 			apiKeyNotSet: "No language model API key is configured",
 			reviewRequested: "Requested note summary review",
-			reviewRequestedTimeout: "Accepted the note summary review request. Check whether the review GUI opens.",
+			reviewRequestedTimeout:
+				"Accepted the note summary review request. Check whether the review GUI opens.",
 		},
 	},
 
@@ -137,7 +140,7 @@ export const commonEn = {
 				],
 				manualOutline: [
 					"This is a workspace for organizing reflection points manually.",
-					"Review the previous \"daily report\" section and use any note summaries that are already available.",
+					'Review the previous "daily report" section and use any note summaries that are already available.',
 					"If a note has no summary yet, open the note body as needed by using its title as the starting point.",
 					"Merge duplicates and organize your findings into insights, problems, unresolved items, and next actions.",
 				],
@@ -150,7 +153,7 @@ export const commonEn = {
 				],
 				manualXmind: [
 					"Manual reflection workflow:",
-					"1. Review the previous \"daily report\" section and use any note summaries that are already available.",
+					'1. Review the previous "daily report" section and use any note summaries that are already available.',
 					"2. If a note has no summary yet, open the note body as needed by using its title as the starting point.",
 					"3. Use the mind map file and input text below to merge duplicates and reorganize the material.",
 					"4. Paste the organized result into the output section with insights, problems, unresolved items, and next actions.",
@@ -212,21 +215,29 @@ export const commonEn = {
 				notesReviewCompleted: "Daily notes review completed",
 				externalReviewRequested: "Requested external review",
 				externalReviewAccepted: "Review UI accepted",
-				externalReviewStatusTimeout: "Launch acknowledgement timed out. Continue waiting for apply notification.",
-				externalReviewWaiting: "Waiting for review completion notification",
-				externalReviewApplyTimeout: "Timed out while waiting for review completion notification",
-				externalReviewApplied: "Received review completion notification",
+				externalReviewStatusTimeout:
+					"Launch acknowledgement timed out. Continue waiting for apply notification.",
+				externalReviewWaiting:
+					"Waiting for review completion notification",
+				externalReviewApplyTimeout:
+					"Timed out while waiting for review completion notification",
+				externalReviewApplied:
+					"Received review completion notification",
 				taskReviewParallelStart: "Starting task review in parallel",
-				dailyNotesReviewAfterExternal: "Starting daily notes aggregation after external review completion",
+				dailyNotesReviewAfterExternal:
+					"Starting daily notes aggregation after external review completion",
 			},
 		},
 	},
 
 	reviewCommand: {
 		notice: {
-			generated: "Review generated ({taskCount} tasks, notes {noteCount}/{generatedCount})",
-			generatedWithoutNotesReview: "Review generated ({taskCount} tasks, notes review skipped: {reason})",
-			dailyNotesReviewRequested: "Review generated ({taskCount} tasks). Requested daily notes review from ptune-log.",
+			generated:
+				"Review generated ({taskCount} tasks, notes {noteCount}/{generatedCount})",
+			generatedWithoutNotesReview:
+				"Review generated ({taskCount} tasks, notes review skipped: {reason})",
+			dailyNotesReviewRequested:
+				"Review generated ({taskCount} tasks). Requested daily notes review from ptune-log.",
 		},
 	},
 
@@ -239,17 +250,21 @@ export const commonEn = {
 			hintTitle: "If it looks stuck",
 			running: "Continuing authentication in your browser...",
 			browserInstruction: "Finish sign-in in your browser.",
-			backButtonHint: "If the browser looks stuck, going back once and continuing again may allow the sign-in to complete.",
-			autoClose: "This dialog closes automatically after authentication completes.",
+			backButtonHint:
+				"If the browser looks stuck, going back once and continuing again may allow the sign-in to complete.",
+			autoClose:
+				"This dialog closes automatically after authentication completes.",
 			completed: "Google sign-in completed. Closing shortly",
 			failed: "Google sign-in failed",
-			timedOut: "Google sign-in timed out. Check the browser state and try again if needed.",
+			timedOut:
+				"Google sign-in timed out. Check the browser state and try again if needed.",
 		},
 		notice: {
 			loginSucceeded: "Google login successful.",
 			loginFailed: "Login failed",
 			loginCancelled: "No longer waiting for sign-in.",
-			loginTimedOut: "Google sign-in timed out. Check the browser state and try again if needed.",
+			loginTimedOut:
+				"Google sign-in timed out. Check the browser state and try again if needed.",
 			authenticated: "Authenticated",
 			authenticatedWithEmail: "Authenticated",
 			notAuthenticated: "Not authenticated. Please login.",
@@ -300,9 +315,12 @@ export const commonEn = {
 		refreshDesc: "Reload the current setup status.",
 		requiredSection: "Required",
 		recommendedSection: "Recommended",
-		requiredSectionDesc: "If an item is not configured, open the manual link and complete the setup.",
-		recommendedSectionDesc: "See the following manual for recommended plugin setup.",
-		recommendedSectionGuideUrl: "https://ptune.getperf.net/ptune-task/setup/recommended-plugins/",
+		requiredSectionDesc:
+			"If an item is not configured, open the manual link and complete the setup.",
+		recommendedSectionDesc:
+			"See the following manual for recommended plugin setup.",
+		recommendedSectionGuideUrl:
+			"https://ptune.getperf.net/ptune-task/setup/recommended-plugins/",
 		manualLinkLabel: "Manual link",
 		openGuide: "Open guide",
 		status: {
@@ -323,7 +341,8 @@ export const commonEn = {
 			missingPrefix: "Missing",
 			noteResourcesReady: "Project folders are ready.",
 			dailyNotesPluginMissing: "Enable the daily notes core plugin.",
-			dailyNotesConfigMissing: "The file daily-notes.json was not found under the vault config directory.",
+			dailyNotesConfigMissing:
+				"The file daily-notes.json was not found under the vault config directory.",
 			dailyNotesReady: "Daily notes is enabled. Folder: {folder}",
 			dailyNotesFolderMissing: "The folder is not configured.",
 			ptunesyncSkipped: "PtuneSync is only required on Windows.",
@@ -331,6 +350,8 @@ export const commonEn = {
 			ptunesyncMissing: "PtuneSync auth-status did not succeed",
 			recommendedEnabled: "Enabled.",
 			recommendedMissing: "Recommended but not enabled.",
+			startupNoticeRequiredMissing:
+				"Required setup items are incomplete. Open setup check to review.",
 		},
 		noteResources: {
 			title: "Note folders",

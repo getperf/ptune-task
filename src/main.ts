@@ -26,7 +26,9 @@ export default class PtunePlugin extends Plugin {
 		const container = new Container(this.app);
 		await container.createPythonReviewConfigSyncService().syncIfEnabled();
 		if (config.settings.eventHook.enabled) {
-			const ensured = await container.createEventHookService().ensureDaemonOnStartup();
+			const ensured = await container
+				.createEventHookService()
+				.ensureDaemonOnStartup();
 			if (!ensured) {
 				new Notice(i18n.common.eventHook.notice.timeout);
 			}
@@ -45,6 +47,13 @@ export default class PtunePlugin extends Plugin {
 			"[Service] SetupChecklistService.startupCheck",
 			formatSetupChecklistForLog(startupChecklist),
 		);
+
+		const hasRequiredIssues = startupChecklist.required.some(
+			(item) => item.status !== "ok",
+		);
+		if (hasRequiredIssues) {
+			new Notice(i18n.common.setup.messages.startupNoticeRequiredMissing);
+		}
 		logger.debug("ptune-task loaded");
 		this.addSettingTab(new PtuneSettingTab(this.app, this));
 	}

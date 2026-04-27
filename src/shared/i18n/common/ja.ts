@@ -50,7 +50,8 @@ export const commonJa = {
 			titleLabel: "タイトル",
 			titlePlaceholder: "タイトルを入力",
 			ptuneLogHookLabel: "ptune-log フックを有効にする",
-			ptuneLogHookDesc: "OFF の場合、ノート作成時に ptune-log 連携イベントを送信しません。",
+			ptuneLogHookDesc:
+				"OFF の場合、ノート作成時に ptune-log 連携イベントを送信しません。",
 		},
 
 		notice: {
@@ -70,7 +71,8 @@ export const commonJa = {
 		},
 		modal: {
 			title: "ノート要約",
-			manualDescription: "LLM が未設定のため自動生成は行いません。ノート本文を確認しながら、振り返りに使いやすい粒度で要点を手動で記述してください。",
+			manualDescription:
+				"LLM が未設定のため自動生成は行いません。ノート本文を確認しながら、振り返りに使いやすい粒度で要点を手動で記述してください。",
 			summaryLabel: "要約",
 			summarySegmentsLabel: "要約セグメント（Raw Markdown）",
 			save: "保存",
@@ -83,7 +85,8 @@ export const commonJa = {
 			noActiveNote: "アクティブなノートがありません",
 			apiKeyNotSet: "LLM の API キーが未設定です",
 			reviewRequested: "ノート要約レビューを依頼しました",
-			reviewRequestedTimeout: "ノート要約レビュー依頼を受け付けました。GUI 起動を確認してください",
+			reviewRequestedTimeout:
+				"ノート要約レビュー依頼を受け付けました。GUI 起動を確認してください",
 		},
 	},
 
@@ -210,21 +213,27 @@ export const commonJa = {
 				notesReviewCompleted: "当日作成ノートレビューが完了しました",
 				externalReviewRequested: "Python 側レビューを依頼しました",
 				externalReviewAccepted: "レビュー UI 起動を確認しました",
-				externalReviewStatusTimeout: "起動応答がタイムアウトしました。完了通知の待機を継続します",
+				externalReviewStatusTimeout:
+					"起動応答がタイムアウトしました。完了通知の待機を継続します",
 				externalReviewWaiting: "レビュー UI の完了通知を待機しています",
-				externalReviewApplyTimeout: "レビュー完了通知の待機がタイムアウトしました",
+				externalReviewApplyTimeout:
+					"レビュー完了通知の待機がタイムアウトしました",
 				externalReviewApplied: "レビュー完了通知を受信しました",
 				taskReviewParallelStart: "タスクレビューを先行実行します",
-				dailyNotesReviewAfterExternal: "外部レビュー完了後にデイリーレポート集計を開始します",
+				dailyNotesReviewAfterExternal:
+					"外部レビュー完了後にデイリーレポート集計を開始します",
 			},
 		},
 	},
 
 	reviewCommand: {
 		notice: {
-			generated: "レビューを生成しました（タスク {taskCount} 件、ノート {noteCount}/{generatedCount} 件）",
-			generatedWithoutNotesReview: "レビューを生成しました（タスク {taskCount} 件、ノートレビューはスキップ: {reason}）",
-			dailyNotesReviewRequested: "レビューを生成しました（タスク {taskCount} 件）。当日作成ノートレビューを ptune-log に依頼しました。",
+			generated:
+				"レビューを生成しました（タスク {taskCount} 件、ノート {noteCount}/{generatedCount} 件）",
+			generatedWithoutNotesReview:
+				"レビューを生成しました（タスク {taskCount} 件、ノートレビューはスキップ: {reason}）",
+			dailyNotesReviewRequested:
+				"レビューを生成しました（タスク {taskCount} 件）。当日作成ノートレビューを ptune-log に依頼しました。",
 		},
 	},
 
@@ -237,17 +246,20 @@ export const commonJa = {
 			hintTitle: "うまく進まない場合",
 			running: "ブラウザで認証を進めています...",
 			browserInstruction: "ブラウザで Google 認証を完了してください。",
-			backButtonHint: "反応が止まったように見える場合は、ブラウザの戻るボタンで戻ってから続行すると完了できることがあります。",
+			backButtonHint:
+				"反応が止まったように見える場合は、ブラウザの戻るボタンで戻ってから続行すると完了できることがあります。",
 			autoClose: "認証が完了するとこの画面は自動で閉じます。",
 			completed: "Google 認証が完了しました。まもなく閉じます",
 			failed: "Google 認証に失敗しました",
-			timedOut: "Google 認証がタイムアウトしました。ブラウザの状態を確認して、必要なら再度お試しください。",
+			timedOut:
+				"Google 認証がタイムアウトしました。ブラウザの状態を確認して、必要なら再度お試しください。",
 		},
 		notice: {
 			loginSucceeded: "Google 認証が完了しました。",
 			loginFailed: "Google 認証に失敗しました",
 			loginCancelled: "Google 認証の待機を終了しました。",
-			loginTimedOut: "Google 認証がタイムアウトしました。ブラウザの状態を確認して、必要なら再度お試しください。",
+			loginTimedOut:
+				"Google 認証がタイムアウトしました。ブラウザの状態を確認して、必要なら再度お試しください。",
 			authenticated: "認証済みです",
 			authenticatedWithEmail: "認証済み",
 			notAuthenticated: "未認証です。ログインしてください。",
@@ -257,7 +269,8 @@ export const commonJa = {
 	push: {
 		notice: {
 			cancelled: "Push をキャンセルしました",
-			blockedByDiff: "差分チェックにより Push を中止しました（エラー {count} 件）",
+			blockedByDiff:
+				"差分チェックにより Push を中止しました（エラー {count} 件）",
 			completed: "Push と再構築が完了しました",
 			details: {
 				summaryTitle: "=== Summary ===",
@@ -297,9 +310,12 @@ export const commonJa = {
 		refreshDesc: "現在の設定状態を再確認します",
 		requiredSection: "必須項目",
 		recommendedSection: "推奨項目",
-		requiredSectionDesc: "未設定の項目は、各マニュアルリンクを開いて設定してください。",
-		recommendedSectionDesc: "推奨プラグインの導入手順は次のマニュアルを参照してください。",
-		recommendedSectionGuideUrl: "https://ptune.getperf.net/ptune-task/setup/recommended-plugins/",
+		requiredSectionDesc:
+			"未設定の項目は、各マニュアルリンクを開いて設定してください。",
+		recommendedSectionDesc:
+			"推奨プラグインの導入手順は次のマニュアルを参照してください。",
+		recommendedSectionGuideUrl:
+			"https://ptune.getperf.net/ptune-task/setup/recommended-plugins/",
 		manualLinkLabel: "マニュアルリンク",
 		openGuide: "案内を開く",
 		status: {
@@ -318,9 +334,12 @@ export const commonJa = {
 		},
 		messages: {
 			missingPrefix: "不足",
-			noteResourcesReady: "プロジェクト用ディレクトリが準備されています。",
-			dailyNotesPluginMissing: "Daily Notes コアプラグインを有効化してください。",
-			dailyNotesConfigMissing: "vault の設定ディレクトリに daily-notes.json が見つかりません。",
+			noteResourcesReady:
+				"プロジェクト用ディレクトリが準備されています。",
+			dailyNotesPluginMissing:
+				"Daily Notes コアプラグインを有効化してください。",
+			dailyNotesConfigMissing:
+				"vault の設定ディレクトリに daily-notes.json が見つかりません。",
 			dailyNotesReady: "Daily Notes が有効です。保存先: {folder}",
 			dailyNotesFolderMissing: "保存先フォルダが設定されていません。",
 			ptunesyncSkipped: "PtuneSync は Windows 環境でのみ必須です。",
@@ -328,6 +347,8 @@ export const commonJa = {
 			ptunesyncMissing: "PtuneSync の auth-status が成功しませんでした",
 			recommendedEnabled: "有効です。",
 			recommendedMissing: "推奨ですが有効になっていません。",
+			startupNoticeRequiredMissing:
+				"必須項目の設定が不完全です。セットアップ確認を開いて確認してください。",
 		},
 		noteResources: {
 			title: "ノート関連ディレクトリ",

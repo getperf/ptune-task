@@ -34,6 +34,18 @@ export default tseslint.config(
     },
   },
   {
+    files: ["src/shared/i18n/prompts/en.ts"],
+    rules: {
+      "obsidianmd/ui/sentence-case-locale-module": "off",
+    },
+  },
+  {
+    files: ["src/shared/i18n/settings/en.ts"],
+    rules: {
+      "obsidianmd/ui/sentence-case-locale-module": "off",
+    },
+  },
+  {
     files: ["**/*.test.ts", "**/__tests__/**/*.ts"],
     languageOptions: {
       globals: {
