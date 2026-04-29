@@ -165,7 +165,7 @@ export const commonJa = {
 			],
 			xmindFileLinkLabel: "編集用 XMind ファイルを開く",
 			xmindInputFileLinkLabel: "XMind インプットテキストを開く",
-			logseqJournalLinkLabel: "生成した Logseq 日誌を開く",
+			logseqJournalLinkLabel: "Logseq で日誌を開く",
 			xmindOutputHeading: "アウトプット（XMind 編集結果）",
 		},
 	},
@@ -353,7 +353,7 @@ export const commonJa = {
 		noteResources: {
 			title: "ノート関連ディレクトリ",
 			statusTitle: "状態",
-			desc: "_project、_journal、_templates、および _templates/note を作成します。",
+			desc: "_project、_journal、_template、および _template/note を作成します。",
 			run: "初期化を実行",
 			completed: "ノート関連ディレクトリを更新しました",
 		},

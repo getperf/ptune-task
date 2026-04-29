@@ -154,7 +154,7 @@ export const settingsJa = {
 		template: {
 			name: "テンプレートファイル",
 			desc: "新規ノート作成時に使用するテンプレート",
-			placeholder: "_templates/note/default.md",
+			placeholder: "_template/note/default.md",
 		},
 	},
 
@@ -200,7 +200,7 @@ export const settingsJa = {
 		xmindTemplatePath: {
 			name: "XMind テンプレートパス",
 			desc: "振り返りポイントの XMind テンプレートとして使う vault 相対パス",
-			placeholder: "_templates/xmind/template_analysis.xmind",
+			placeholder: "_template/xmind/template_analysis.xmind",
 		},
 
 		logseqRootPath: {
@@ -212,7 +212,7 @@ export const settingsJa = {
 		logseqJournalTemplatePath: {
 			name: "Logseq 日誌テンプレートパス",
 			desc: "生成した Logseq 日誌のテンプレートとして使う Vault 相対パス",
-			placeholder: "_templates/review-logseq-journal-template.md",
+			placeholder: "_template/review-logseq-journal-template.md",
 		},
 	},
 

@@ -123,7 +123,7 @@ function migrateLegacyReviewTemplatePaths(review: {
 } {
 	const xmindTemplatePath =
 		review.xmindTemplatePath === "_template/xmind/template_analysis.xmind"
-			? "_templates/xmind/template_analysis.xmind"
+			? "_template/xmind/template_analysis.xmind"
 			: review.xmindTemplatePath;
 
 	return {

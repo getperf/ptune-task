@@ -31,10 +31,10 @@ vault/
     YYYY-MM-DD.md
   _review_logseq/
     journals/
-      YYYY-MM-DD.md
+      YYYY_MM_DD.md
     pages/
     logseq/
-  _templates/
+  _template/
     review-logseq-journal-template.md
 ````
 
@@ -43,7 +43,7 @@ vault/
 #### 1. 入力生成
 
 Obsidian 側で当日用の Logseq journal を生成する。
-生成先は `_review_logseq/journals/{YYYY-MM-DD}.md` とする。
+生成先は `_review_logseq/journals/{YYYY_MM_DD}.md` とする。
 
 #### 2. テンプレート展開
 

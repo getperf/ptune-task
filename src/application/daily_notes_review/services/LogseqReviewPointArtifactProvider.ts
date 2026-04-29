@@ -12,9 +12,18 @@ export class LogseqReviewPointArtifactProvider implements ReviewPointArtifactPro
     note: DailyNote,
     doc?: DailyNotesReflectionDocument,
   ): Promise<ReviewPointArtifactLinks> {
-    const journal = await this.templateService.ensureForDailyNote(note, doc);
+    await this.templateService.ensureForDailyNote(note, doc);
+    
+    // 現在は Deep link を既定で使用。将来的に設定で切り替え可能にする。
+    const link = this.templateService.buildDeepLink(note.date);
+    
     return {
-      logseqJournalLink: journal.markdownLinkPath,
+      logseqJournalLink: link,
     };
+  }
+
+  async writeInputFile(note: DailyNote, content: string): Promise<ReviewPointArtifactLinks> {
+    await this.templateService.writeJournalContent(note, content);
+    return {};
   }
 }

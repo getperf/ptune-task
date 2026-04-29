@@ -3,7 +3,7 @@ import { config } from "../../config/config";
 
 export class LogseqJournalTemplateSetupService {
   private static readonly DEFAULT_LOGSEQ_JOURNAL_TEMPLATE_PATH =
-    "_templates/review-logseq-journal-template.md";
+    "_template/review-logseq-journal-template.md";
 
   private static readonly DEFAULT_LOGSEQ_JOURNAL_TEMPLATE = [
     "- Fact",

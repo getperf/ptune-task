@@ -26,10 +26,10 @@ describe("LogseqJournalTemplateSetupService", () => {
     const createdPaths: string[] = [];
     const templatePath = await service.ensureTemplateExists(createdPaths);
 
-    expect(templatePath).toBe("_templates/review-logseq-journal-template.md");
-    expect(createdPaths).toContain("_templates");
+    expect(templatePath).toBe("_template/review-logseq-journal-template.md");
+    expect(createdPaths).toContain("_template");
     const templateWrite = writes.find(
-      (write) => write.path === "_templates/review-logseq-journal-template.md",
+      (write) => write.path === "_template/review-logseq-journal-template.md",
     );
 
     expect(templateWrite).toBeDefined();
@@ -37,8 +37,8 @@ describe("LogseqJournalTemplateSetupService", () => {
   });
 
   test("does not overwrite existing Logseq journal template", async () => {
-    const folders = new Set<string>(["_templates"]);
-    const files = new Set<string>(["_templates/review-logseq-journal-template.md"]);
+    const folders = new Set<string>(["_template"]);
+    const files = new Set<string>(["_template/review-logseq-journal-template.md"]);
     const writes = [];
 
     const app = {

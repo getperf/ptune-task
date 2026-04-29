@@ -20,12 +20,12 @@ describe("NoteSetupHelper", () => {
 
   test("uses bundled template when packaged asset is unavailable", async () => {
     config.settings.review.xmindTemplatePath =
-      "_templates/xmind/template_analysis.xmind";
+      "_template/xmind/template_analysis.xmind";
     config.settings.review.logseqJournalTemplatePath =
-      "_templates/review-logseq-journal-template.md";
+      "_template/review-logseq-journal-template.md";
 
-    const folders = new Set<string>(["_templates"]);
-    const files = new Set<string>(["_templates/review-logseq-journal-template.md"]);
+    const folders = new Set<string>(["_template"]);
+    const files = new Set<string>(["_template/review-logseq-journal-template.md"]);
     const writes: BinaryWrite[] = [];
 
     const app = {
@@ -59,24 +59,24 @@ describe("NoteSetupHelper", () => {
     const result = await helper.ensureResources();
 
     expect(result.updatedTemplates).toEqual([
-      "_templates/xmind/template_analysis.xmind",
+      "_template/xmind/template_analysis.xmind",
     ]);
     expect(writes).toHaveLength(1);
-    expect(writes[0]?.path).toBe("_templates/xmind/template_analysis.xmind");
+    expect(writes[0]?.path).toBe("_template/xmind/template_analysis.xmind");
     expect(
       Buffer.from(writes[0]?.data ?? new ArrayBuffer(0)).toString(
         "base64",
       ),
     ).toBe(TEMPLATE_ANALYSIS_XMIND_BASE64);
     expect(app.vault.adapter.readBinary).not.toHaveBeenCalled();
-    expect(folders).toContain("_templates/note");
+    expect(folders).toContain("_template/note");
   });
 
   test("prefers packaged asset when available", async () => {
     config.settings.review.xmindTemplatePath =
-      "_templates/xmind/template_analysis.xmind";
+      "_template/xmind/template_analysis.xmind";
     config.settings.review.logseqJournalTemplatePath =
-      "_templates/review-logseq-journal-template.md";
+      "_template/review-logseq-journal-template.md";
 
     const folders = new Set<string>([
       "_template",
@@ -85,11 +85,11 @@ describe("NoteSetupHelper", () => {
       `${configDir}/plugins`,
       `${configDir}/plugins/ptune-task`,
       `${configDir}/plugins/ptune-task/assets`,
-      "_templates",
+      "_template",
     ]);
     const files = new Set<string>([
       `${configDir}/plugins/ptune-task/assets/template_analysis.xmind`,
-      "_templates/review-logseq-journal-template.md",
+      "_template/review-logseq-journal-template.md",
     ]);
     const writes: BinaryWrite[] = [];
     const packagedData = Uint8Array.from([1, 2, 3, 4]).buffer;
@@ -128,8 +128,8 @@ describe("NoteSetupHelper", () => {
   });
 
   test("creates Logseq journal template when missing", async () => {
-    config.settings.review.xmindTemplatePath = "_templates/xmind/template_analysis.xmind";
-    config.settings.review.logseqJournalTemplatePath = "_templates/review-logseq-journal-template.md";
+    config.settings.review.xmindTemplatePath = "_template/xmind/template_analysis.xmind";
+    config.settings.review.logseqJournalTemplatePath = "_template/review-logseq-journal-template.md";
 
     const folders = new Set<string>([
       "_template",
@@ -169,14 +169,14 @@ describe("NoteSetupHelper", () => {
     const result = await helper.ensureResources();
 
     expect(result.updatedTemplates).toContain(
-      "_templates/review-logseq-journal-template.md",
+      "_template/review-logseq-journal-template.md",
     );
     const templateWrite = writes.find(
-      (write) => write.path === "_templates/review-logseq-journal-template.md",
+      (write) => write.path === "_template/review-logseq-journal-template.md",
     );
 
     expect(templateWrite).toBeDefined();
     expect(templateWrite?.data).toContain("- Fact\n    {{NoteSummaryList}}\n- KPT");
-    expect(folders).toContain("_templates");
+    expect(folders).toContain("_template");
   });
 });

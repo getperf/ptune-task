@@ -87,7 +87,7 @@ describe("ConfigService", () => {
 		expect(service.getSettings().review.reviewPointOutputFormat).toBe("xmind");
 	});
 
-	test("load(): migrates legacy xmindTemplatePath to _templates path", async () => {
+	test("load(): migrates legacy xmindTemplatePath to _template path", async () => {
 		const service = new ConfigService();
 
 		const plugin = createPluginMock({
@@ -99,7 +99,7 @@ describe("ConfigService", () => {
 		await service.load(plugin);
 
 		expect(service.getSettings().review.xmindTemplatePath).toBe(
-			"_templates/xmind/template_analysis.xmind",
+			"_template/xmind/template_analysis.xmind",
 		);
 	});
 

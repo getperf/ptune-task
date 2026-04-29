@@ -154,7 +154,7 @@ export const settingsEn = {
 		template: {
 			name: "Template file",
 			desc: "Template used for new notes",
-			placeholder: "_templates/note/default.md",
+			placeholder: "_template/note/default.md",
 		},
 	},
 
@@ -200,7 +200,7 @@ export const settingsEn = {
 		xmindTemplatePath: {
 			name: "XMind template path",
 			desc: "Vault-relative path to the XMind template used for reflection points",
-			placeholder: "_templates/xmind/template_analysis.xmind",
+			placeholder: "_template/xmind/template_analysis.xmind",
 		},
 
 		logseqRootPath: {
@@ -212,7 +212,7 @@ export const settingsEn = {
 		logseqJournalTemplatePath: {
 			name: "Logseq journal template path",
 			desc: "Vault-relative path to the Logseq journal template used for generated review journals",
-			placeholder: "_templates/review-logseq-journal-template.md",
+			placeholder: "_template/review-logseq-journal-template.md",
 		},
 	},
 

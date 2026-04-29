@@ -356,7 +356,7 @@ export const commonEn = {
 		noteResources: {
 			title: "Note folders",
 			statusTitle: "Status",
-			desc: "Create _project, _journal, _templates, and _templates/note.",
+			desc: "Create _project, _journal, _template, and _template/note.",
 			run: "Initialize",
 			completed: "Updated note folders.",
 		},

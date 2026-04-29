@@ -40,13 +40,13 @@ describe("SetupChecklistService", () => {
     expect(noteResources?.status).toBe("missing");
     expect(noteResources?.message).toContain("review.xmindTemplatePath");
     expect(noteResources?.message).toContain("review.logseqJournalTemplatePath");
-    expect(noteResources?.message).toContain("_templates");
-    expect(noteResources?.message).toContain("_templates/note");
+    expect(noteResources?.message).toContain("_template");
+    expect(noteResources?.message).toContain("_template/note");
   });
 
   test("note_resources is ok when required folders exist and review template paths are configured", async () => {
     const existsMock = jest.fn(async (path: string) =>
-      ["_project", "_journal", "_templates", "_templates/note"].includes(path),
+      ["_project", "_journal", "_template", "_template/note"].includes(path),
     );
 
     const app = {

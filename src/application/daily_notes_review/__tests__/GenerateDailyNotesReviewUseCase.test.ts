@@ -265,6 +265,7 @@ describe("GenerateDailyNotesReviewUseCase", () => {
           markdownLinkPath: "_review_logseq/journals/2026_04_25.md",
           created: true,
         }),
+        buildDeepLink: jest.fn().mockReturnValue("logseq://graph/_review_logseq?page=2026-04-25"),
       };
 
       const useCase = new GenerateDailyNotesReviewUseCase(
@@ -292,7 +293,7 @@ describe("GenerateDailyNotesReviewUseCase", () => {
       expect(writer.write).toHaveBeenCalledWith(
         note,
         "- push時の差分ロジック見直し",
-        expect.stringContaining("[生成した Logseq 日誌を開く](_review_logseq/journals/2026_04_25.md)"),
+        expect.stringContaining("[Logseq で日誌を開く](logseq://graph/_review_logseq?page=2026-04-25)"),
       );
     } finally {
       config.settings.review.reviewPointOutputFormat = originalFormat;

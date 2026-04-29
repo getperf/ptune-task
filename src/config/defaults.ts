@@ -44,9 +44,9 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 		taskReviewEnabledDefault: true,
 		notesReviewEnabledDefault: true,
 		taskReviewOutputFormat: "outline",
-		xmindTemplatePath: "_templates/xmind/template_analysis.xmind",
+		xmindTemplatePath: "_template/xmind/template_analysis.xmind",
 		logseqRootPath: "_review_logseq",
-		logseqJournalTemplatePath: "_templates/review-logseq-journal-template.md",
+		logseqJournalTemplatePath: "_template/review-logseq-journal-template.md",
 		maxSentences: 0,
 	},
 

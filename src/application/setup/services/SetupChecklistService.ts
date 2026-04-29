@@ -42,8 +42,8 @@ export class SetupChecklistService {
   private static readonly NOTE_RESOURCE_PATHS = [
     "_project",
     "_journal",
-    "_templates",
-    "_templates/note",
+    "_template",
+    "_template/note",
   ] as const;
 
   private static readonly RECOMMENDED_PLUGINS: readonly RecommendedPlugin[] = [
@@ -73,7 +73,7 @@ export class SetupChecklistService {
   constructor(
     private readonly app: App,
     private readonly authService: PtuneSyncUriAuthService,
-  ) {}
+  ) { }
 
   async getChecklist(): Promise<SetupChecklist> {
     logger.debug("[Service] SetupChecklistService.getChecklist start");
@@ -115,19 +115,19 @@ export class SetupChecklistService {
 
     return missing.length === 0
       ? {
-          id: "note_resources",
-          title: i18n.common.setup.items.noteResources,
-          level: "required",
-          status: "ok",
-          message: i18n.common.setup.messages.noteResourcesReady,
-        }
+        id: "note_resources",
+        title: i18n.common.setup.items.noteResources,
+        level: "required",
+        status: "ok",
+        message: i18n.common.setup.messages.noteResourcesReady,
+      }
       : {
-          id: "note_resources",
-          title: i18n.common.setup.items.noteResources,
-          level: "required",
-          status: "missing",
-          message: `${i18n.common.setup.messages.missingPrefix}: ${missing.join(", ")}`,
-        };
+        id: "note_resources",
+        title: i18n.common.setup.items.noteResources,
+        level: "required",
+        status: "missing",
+        message: `${i18n.common.setup.messages.missingPrefix}: ${missing.join(", ")}`,
+      };
   }
 
   private async checkDailyNotes(): Promise<SetupItem> {
@@ -163,23 +163,23 @@ export class SetupChecklistService {
 
     return warnings.length === 0
       ? {
-          id: "daily_notes",
-          title: i18n.common.setup.items.dailyNotes,
-          level: "required",
-          status: "ok",
-          message: i18n.common.setup.messages.dailyNotesReady
-            .replace("{folder}", normalizedFolder)
-            .replace("{template}", ""),
-          actionUrl: SetupChecklistService.DAILY_NOTES_GUIDE_URL,
-        }
+        id: "daily_notes",
+        title: i18n.common.setup.items.dailyNotes,
+        level: "required",
+        status: "ok",
+        message: i18n.common.setup.messages.dailyNotesReady
+          .replace("{folder}", normalizedFolder)
+          .replace("{template}", ""),
+        actionUrl: SetupChecklistService.DAILY_NOTES_GUIDE_URL,
+      }
       : {
-          id: "daily_notes",
-          title: i18n.common.setup.items.dailyNotes,
-          level: "required",
-          status: "warning",
-          message: warnings.join("; "),
-          actionUrl: SetupChecklistService.DAILY_NOTES_GUIDE_URL,
-        };
+        id: "daily_notes",
+        title: i18n.common.setup.items.dailyNotes,
+        level: "required",
+        status: "warning",
+        message: warnings.join("; "),
+        actionUrl: SetupChecklistService.DAILY_NOTES_GUIDE_URL,
+      };
   }
 
   private async checkPtuneSync(): Promise<SetupItem> {
