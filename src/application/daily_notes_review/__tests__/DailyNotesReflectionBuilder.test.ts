@@ -69,6 +69,30 @@ describe("DailyNotesReflectionBuilder", () => {
     ].join("\n"));
   });
 
+  test("escapes angle brackets in structured logseq reflection text", () => {
+    const builder = new DailyNotesReflectionBuilder();
+    const markdown = builder.buildStructured(
+      {
+        folders: [
+          {
+            folderTitle: "ProtocolDispatcher の <XXX> 対応",
+            notes: [
+              {
+                noteTitle: "URI <起動> 調査",
+                sentences: ["ProtocolDispatcher の <XXX> は補助にとどめる"],
+              },
+            ],
+          },
+        ],
+      },
+      "logseq",
+    );
+
+    expect(markdown).toContain("- ProtocolDispatcher の &lt;XXX&gt; 対応");
+    expect(markdown).toContain("    - URI &lt;起動&gt; 調査");
+    expect(markdown).toContain("        - ProtocolDispatcher の &lt;XXX&gt; は補助にとどめる");
+  });
+
   test("builds xmind input via generic formatter API", () => {
     const builder = new DailyNotesReflectionBuilder();
     expect(builder.buildInput(buildDocument(), "xmind")).toContain("push時の差分ロジック見直し");

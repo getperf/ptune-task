@@ -2,6 +2,7 @@ import { DailyNotesReflectionDocument } from "../models/DailyNotesReflectionDocu
 import { StructuredReflectionText } from "../services/StructuredReflectionTextAdapter";
 import { ReflectionFormatter, ReflectionBuildOptions } from "./ReflectionFormatter";
 import { i18n } from "../../../shared/i18n/I18n";
+import { escapeMarkdownDisplayText } from "../builders/escapeMarkdownDisplayText";
 
 export class LogseqReflectionFormatter implements ReflectionFormatter {
   build(doc: DailyNotesReflectionDocument, options?: ReflectionBuildOptions): string {
@@ -39,11 +40,11 @@ export class LogseqReflectionFormatter implements ReflectionFormatter {
   private formatStructured(structured: StructuredReflectionText): string {
     const lines: string[] = [];
     for (const folder of structured.folders) {
-      lines.push(`- ${folder.folderTitle}`);
+      lines.push(`- ${escapeMarkdownDisplayText(folder.folderTitle)}`);
       for (const note of folder.notes) {
-        lines.push(`    - ${note.noteTitle}`);
+        lines.push(`    - ${escapeMarkdownDisplayText(note.noteTitle)}`);
         for (const sentence of note.sentences) {
-          lines.push(`        - ${sentence}`);
+          lines.push(`        - ${escapeMarkdownDisplayText(sentence)}`);
         }
       }
     }

@@ -3,7 +3,7 @@ import { TextGenerationPort } from "../../llm/ports/TextGenerationPort";
 import { ProjectNoteFrontmatterRepository } from "../../../infrastructure/repository/ProjectNoteFrontmatterRepository";
 import { buildNoteSummarySystemPrompt } from "../prompts/buildNoteSummaryPrompt";
 import { logger } from "../../../shared/logger/loggerInstance";
-import { NoteSummaryFormatter } from "./NoteSummaryFormatter";
+import { FormattedNoteSummary, NoteSummaryFormatter } from "./NoteSummaryFormatter";
 
 export class NoteSummaryGenerator {
   private static readonly MAX_INPUT_CHARS = 12000;
@@ -15,23 +15,26 @@ export class NoteSummaryGenerator {
     private readonly repository: ProjectNoteFrontmatterRepository,
   ) { }
 
-  async generate(file: TFile): Promise<string[]> {
+  async generate(file: TFile): Promise<FormattedNoteSummary> {
     logger.debug(`[Service] NoteSummaryGenerator.generate start path=${file.path}`);
 
     const body = await this.repository.readBody(file);
     const normalizedBody = this.normalizeBody(body, file.path);
     if (!normalizedBody) {
       logger.warn(`[Service] NoteSummaryGenerator.generate emptyBody path=${file.path}`);
-      return NoteSummaryGenerator.EMPTY_BODY_SUMMARY;
+      return {
+        summarySentences: NoteSummaryGenerator.EMPTY_BODY_SUMMARY,
+        summarySegmentsMarkdown: "",
+      };
     }
 
     const output = await this.generator.generate(
       buildNoteSummarySystemPrompt(),
       normalizedBody,
     );
-    const formatted = this.formatter.format(output?.trim() ?? "");
+    const formatted = this.formatter.formatWithSegments(output?.trim() ?? "");
 
-    if (formatted.length === 0) {
+    if (formatted.summarySentences.length === 0) {
       throw new Error(`Empty summary generated for ${file.path}`);
     }
 
