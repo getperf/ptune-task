@@ -1,6 +1,7 @@
 import { App, Modal, Setting } from "obsidian";
 import { NoteCreationKind } from "../../application/note/NoteCreationModels";
 import { TaskKeyOption } from "../../application/note/TaskKeyOption";
+import { NoteCreateOpenMode } from "../../config/types";
 import { i18n } from "../../shared/i18n/I18n";
 import { logger } from "../../shared/logger/loggerInstance";
 
@@ -9,12 +10,14 @@ export interface NoteCreatorModalSubmit {
   taskKey?: string;
   goal?: string;
   eventHookEnabled?: boolean;
+  noteCreateOpenMode?: NoteCreateOpenMode;
 }
 
 export class NoteCreatorModal extends Modal {
   private title = "";
   private taskKey: string | undefined;
   private eventHookEnabled: boolean;
+  private noteCreateOpenMode: NoteCreateOpenMode;
   private isTitleEdited = false;
 
   constructor(
@@ -24,10 +27,12 @@ export class NoteCreatorModal extends Modal {
     private readonly prefix: string,
     private readonly taskKeyOptions: TaskKeyOption[],
     initialEventHookEnabled: boolean,
+    initialNoteCreateOpenMode: NoteCreateOpenMode,
     private readonly onSubmit: (input: NoteCreatorModalSubmit) => Promise<boolean>,
   ) {
     super(app);
     this.eventHookEnabled = initialEventHookEnabled;
+    this.noteCreateOpenMode = initialNoteCreateOpenMode;
   }
 
   onOpen(): void {
@@ -100,6 +105,8 @@ export class NoteCreatorModal extends Modal {
       });
 
     if (this.kind === "project-note") {
+      let noteCreateOpenModeDropdown: { setDisabled(value: boolean): void } | null = null;
+
       new Setting(contentEl)
         .setName(t.modal.ptuneLogHookLabel)
         .setDesc(t.modal.ptuneLogHookDesc)
@@ -108,6 +115,23 @@ export class NoteCreatorModal extends Modal {
             .setValue(this.eventHookEnabled)
             .onChange((value) => {
               this.eventHookEnabled = value;
+              noteCreateOpenModeDropdown?.setDisabled(!value);
+            });
+        });
+
+      new Setting(contentEl)
+        .setName(t.modal.noteCreateOpenModeLabel)
+        .setDesc(t.modal.noteCreateOpenModeDesc)
+        .addDropdown((dropdown) => {
+          noteCreateOpenModeDropdown = dropdown;
+          dropdown
+            .addOption("prompt_draft", t.modal.noteCreateOpenModeOptions.promptDraft)
+            .addOption("work_note", t.modal.noteCreateOpenModeOptions.workNote)
+            .addOption("none", t.modal.noteCreateOpenModeOptions.none)
+            .setValue(this.noteCreateOpenMode)
+            .setDisabled(!this.eventHookEnabled)
+            .onChange((value) => {
+              this.noteCreateOpenMode = normalizeNoteCreateOpenMode(value);
             });
         });
     }
@@ -157,10 +181,18 @@ export class NoteCreatorModal extends Modal {
       title: this.title.trim(),
       taskKey: this.taskKey,
       eventHookEnabled: this.eventHookEnabled,
+      noteCreateOpenMode: this.noteCreateOpenMode,
     });
 
     if (completed) {
       this.close();
     }
   }
+}
+
+function normalizeNoteCreateOpenMode(value: string): NoteCreateOpenMode {
+  if (value === "work_note" || value === "none") {
+    return value;
+  }
+  return "prompt_draft";
 }

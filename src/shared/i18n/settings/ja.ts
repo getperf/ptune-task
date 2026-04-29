@@ -28,6 +28,15 @@ export const settingsJa = {
 			name: "イベントフックを有効化",
 			desc: "note-create / note-work-finished / note-attached / note-review-requested のイベントを ptune-log ブリッジへ送信します",
 		},
+		noteCreateOpenMode: {
+			name: "note-create 後の外部エディタ起動",
+			desc: "ノート作成時の note-create イベントで ptune-log 側に渡す既定の実行モード",
+			options: {
+				promptDraft: "ドラフトノートを作成して開く",
+				workNote: "作業ノートを開く",
+				none: "何もしない",
+			},
+		},
 		interopRoot: {
 			name: "Interop ルート",
 			desc: "event/status/lock ファイル連携のルートパス（空欄で既定値）",

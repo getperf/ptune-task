@@ -52,6 +52,14 @@ export const commonJa = {
 			ptuneLogHookLabel: "ptune-log フックを有効にする",
 			ptuneLogHookDesc:
 				"OFF の場合、ノート作成時に ptune-log 連携イベントを送信しません。",
+			noteCreateOpenModeLabel: "作業ノートの開き方",
+			noteCreateOpenModeDesc:
+				"note-create イベント後に ptune-log 側で外部エディタを開く方法を選択します。",
+			noteCreateOpenModeOptions: {
+				promptDraft: "ドラフトノートを作成して開く",
+				workNote: "作業ノートを開く",
+				none: "何もしない",
+			},
 		},
 
 		notice: {

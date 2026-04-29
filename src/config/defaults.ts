@@ -56,6 +56,7 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 
 	eventHook: {
 		enabled: false,
+		noteCreateOpenMode: "prompt_draft",
 		interopRoot: "",
 		statusWaitMs: 2500,
 		ensureOnEvent: true,

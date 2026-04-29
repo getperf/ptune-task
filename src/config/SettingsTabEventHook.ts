@@ -3,6 +3,7 @@ import { shell } from "electron";
 import { homedir } from "os";
 import { join } from "path";
 import { config } from "./config";
+import { NoteCreateOpenMode } from "./types";
 import { i18n } from "../shared/i18n/I18n";
 import {
 	DaemonState,
@@ -30,6 +31,22 @@ export function renderEventHookSettings(containerEl: HTMLElement, app: App) {
 					config.settings.eventHook.enabled = value;
 					await config.save();
 					daemonControl?.setHookEnabled(value);
+				}),
+		);
+
+	new Setting(containerEl)
+		.setName(t.noteCreateOpenMode.name)
+		.setDesc(t.noteCreateOpenMode.desc)
+		.addDropdown((dropdown) =>
+			dropdown
+				.addOption("prompt_draft", t.noteCreateOpenMode.options.promptDraft)
+				.addOption("work_note", t.noteCreateOpenMode.options.workNote)
+				.addOption("none", t.noteCreateOpenMode.options.none)
+				.setValue(config.settings.eventHook.noteCreateOpenMode)
+				.onChange(async (value) => {
+					config.settings.eventHook.noteCreateOpenMode =
+						normalizeNoteCreateOpenMode(value);
+					await config.save();
 				}),
 		);
 
@@ -139,6 +156,13 @@ export function renderEventHookSettings(containerEl: HTMLElement, app: App) {
 					await config.save();
 					}),
 		);
+}
+
+function normalizeNoteCreateOpenMode(value: string): NoteCreateOpenMode {
+	if (value === "work_note" || value === "none") {
+		return value;
+	}
+	return "prompt_draft";
 }
 
 function renderDaemonControlRow(

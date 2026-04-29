@@ -100,6 +100,7 @@ export interface EventHookEmitResult {
 
 export interface EventHookEmitOptions {
 	enabledOverride?: boolean;
+	payload?: Record<string, unknown>;
 }
 
 export class EventHookService {
@@ -259,7 +260,7 @@ export class EventHookService {
 		eventType: EventType,
 		notePath: string,
 		options?: EventHookEmitOptions,
-		payload?: ReviewRequestPayload,
+		payload?: Record<string, unknown>,
 	): Promise<EventHookEmitResult> {
 		const hookEnabled =
 			options?.enabledOverride ?? config.settings.eventHook.enabled;
@@ -289,7 +290,7 @@ export class EventHookService {
 			note_path: notePath,
 			vault_path: vaultPath,
 			created_at: createdAt,
-			payload,
+			payload: payload ?? options?.payload,
 		};
 
 		const interopRoot = this.resolveInteropRoot();
