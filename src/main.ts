@@ -30,6 +30,7 @@ export default class PtunePlugin extends Plugin {
 				.createEventHookService()
 				.ensureDaemonOnStartup();
 			if (!ensured) {
+				logger.warn("[EventHook] daemon startup ensure failed");
 				new Notice(i18n.common.eventHook.notice.timeout);
 			}
 		}

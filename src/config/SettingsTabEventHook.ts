@@ -5,6 +5,7 @@ import { join } from "path";
 import { config } from "./config";
 import { NoteCreateOpenMode } from "./types";
 import { i18n } from "../shared/i18n/I18n";
+import { logger } from "../shared/logger/loggerInstance";
 import {
 	DaemonState,
 	EventHookService,
@@ -257,6 +258,9 @@ function renderDaemonControlRow(
 						: await eventHookService.restartDaemon();
 			await refreshStatus();
 			if (result.ok) {
+				logger.info(
+					`[EventHook] daemon control action=${action} completed code=${result.code}`,
+				);
 				new Notice(
 					action === "start"
 						? t.daemonControl.notice.started
@@ -271,6 +275,9 @@ function renderDaemonControlRow(
 				new Notice(t.daemonControl.notice.alreadyStopped);
 				return;
 			}
+			logger.warn(
+				`[EventHook] daemon control action=${action} failed code=${result.code} message=${message}`,
+			);
 			new Notice(`${t.daemonControl.notice.failed}: ${message}`);
 		} finally {
 			isBusy = false;

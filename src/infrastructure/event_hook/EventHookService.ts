@@ -1,10 +1,19 @@
 import { App } from "obsidian";
-import { homedir } from "os";
 import { dirname, join } from "path";
-import { mkdir, readFile, rename, stat, writeFile } from "fs/promises";
-import { spawn } from "child_process";
+import { mkdir, readFile, rename, writeFile } from "fs/promises";
 import { config } from "../../config/config";
 import { logger } from "../../shared/logger/loggerInstance";
+import {
+	DaemonControlResult,
+	DaemonStatusResult,
+	EventHookDaemonService,
+} from "./EventHookDaemonService";
+
+export type {
+	DaemonControlResult,
+	DaemonState,
+	DaemonStatusResult,
+} from "./EventHookDaemonService";
 
 type EventType =
 	| "note-create"
@@ -15,16 +24,10 @@ type EventType =
 type HookStatus = "success" | "skipped" | "error" | "timeout";
 type PythonStatus = "success" | "skipped" | "error";
 
-interface ReviewRequestPayload {
+interface ReviewRequestPayload extends Record<string, unknown> {
 	profiles_file: string;
 	credentials_file: string;
 	profile_id: string;
-}
-
-interface DailyReviewRequestPayload extends ReviewRequestPayload {
-	dailynote_key: string;
-	updated_within_days?: number;
-	batch_id?: string;
 }
 
 interface EventEnvelope {
@@ -43,10 +46,6 @@ interface StatusEnvelope {
 	status: PythonStatus;
 	message?: string;
 	updated_at?: string;
-}
-
-interface DaemonLockEnvelope {
-	updated_at_epoch?: number;
 }
 
 interface NotificationEnvelope {
@@ -74,24 +73,6 @@ export interface DailyReviewAppliedResult {
 	failedNotes: string[];
 }
 
-type DaemonControlCommand = "status" | "start" | "stop" | "restart";
-
-export type DaemonState = "running" | "stopped" | "unknown";
-
-export interface DaemonStatusResult {
-	state: DaemonState;
-	pid: number | null;
-	reason: string;
-	ageSeconds: number | null;
-}
-
-export interface DaemonControlResult {
-	ok: boolean;
-	code: number | null;
-	stdout: string;
-	stderr: string;
-}
-
 export interface EventHookEmitResult {
 	requestId: string;
 	status: HookStatus;
@@ -104,73 +85,29 @@ export interface EventHookEmitOptions {
 }
 
 export class EventHookService {
-	constructor(private readonly app: App) { }
+	constructor(
+		private readonly app: App,
+		private readonly daemonService = new EventHookDaemonService(),
+	) { }
 
 	async ensureDaemonOnStartup(): Promise<boolean> {
-		if (!config.settings.eventHook.enabled) {
-			return true;
-		}
-		return this.ensureDaemonRunning("startup");
+		return this.daemonService.ensureDaemonOnStartup();
 	}
 
 	async getDaemonStatus(): Promise<DaemonStatusResult> {
-		const freshSeconds = this.resolveLockFreshSeconds();
-		const result = await this.runDaemonControlCommand("status", [
-			"--json",
-			"--stale-after-seconds",
-			String(freshSeconds),
-		]);
-		if (!result.ok) {
-			return {
-				state: "unknown",
-				pid: null,
-				reason: this.coalesceErrorMessage(result),
-				ageSeconds: null,
-			};
-		}
-
-		try {
-			const parsed = JSON.parse(result.stdout) as Record<string, unknown>;
-			const running = parsed.running === true;
-			const pid = this.toIntOrNull(parsed.pid);
-			const reason = this.toStringOrEmpty(parsed.reason) || (running ? "running" : "stopped");
-			const ageSeconds = this.toIntOrNull(parsed.age_seconds);
-			return {
-				state: running ? "running" : "stopped",
-				pid,
-				reason,
-				ageSeconds,
-			};
-		} catch {
-			return {
-				state: "unknown",
-				pid: null,
-				reason: "invalid_status_output",
-				ageSeconds: null,
-			};
-		}
+		return this.daemonService.getDaemonStatus();
 	}
 
 	async startDaemon(): Promise<DaemonControlResult> {
-		return this.runDaemonControlCommand("start");
+		return this.daemonService.startDaemon();
 	}
 
 	async stopDaemon(): Promise<DaemonControlResult> {
-		return this.runDaemonControlCommand("stop", [
-			"--timeout-seconds",
-			"15",
-			"--stale-after-seconds",
-			String(this.resolveLockFreshSeconds()),
-		]);
+		return this.daemonService.stopDaemon();
 	}
 
 	async restartDaemon(): Promise<DaemonControlResult> {
-		return this.runDaemonControlCommand("restart", [
-			"--timeout-seconds",
-			"15",
-			"--stale-after-seconds",
-			String(this.resolveLockFreshSeconds()),
-		]);
+		return this.daemonService.restartDaemon();
 	}
 
 	async emitNoteCreate(
@@ -218,7 +155,7 @@ export class EventHookService {
 		if (!resolvedBatchId) {
 			return null;
 		}
-		const interopRoot = this.resolveInteropRoot();
+		const interopRoot = this.daemonService.resolveInteropRoot();
 		const outboxPath = join(
 			interopRoot,
 			"interop",
@@ -293,12 +230,12 @@ export class EventHookService {
 			payload: payload ?? options?.payload,
 		};
 
-		const interopRoot = this.resolveInteropRoot();
+		const interopRoot = this.daemonService.resolveInteropRoot();
 		if (config.settings.eventHook.ensureOnEvent) {
-			const ensured = await this.ensureDaemonRunning("event");
+			const ensured = await this.daemonService.ensureDaemonRunning("event");
 			if (!ensured) {
 				logger.warn(
-					"[EventHook] ensure on event failed but continuing to emit event and wait for status",
+					`[EventHook] ensure on event failed but continuing to emit event and wait for status interopRoot=${interopRoot} lockPath=${this.daemonService.resolveLockFilePath()}`,
 				);
 			}
 		}
@@ -346,60 +283,6 @@ export class EventHookService {
 		}
 		const rounded = Math.floor(value);
 		return Math.max(300, rounded);
-	}
-
-	private resolveLockFreshSeconds(): number {
-		const value = config.settings.eventHook.lockFreshSeconds;
-		if (!Number.isFinite(value)) {
-			return 20;
-		}
-		const rounded = Math.floor(value);
-		return Math.max(3, rounded);
-	}
-
-	private resolveDaemonArgs(interopRoot: string): string[] {
-		const configured = config.settings.eventHook.daemonArgs.trim();
-		const base = configured
-			? this.splitArgs(configured)
-			: ["-m", "ptune_log.main", "daemon", "--debug"];
-		if (!base.includes("--interop-root")) {
-			base.push("--interop-root", interopRoot);
-		}
-		return base;
-	}
-
-	private resolvePythonExePath(): string {
-		const configured = config.settings.eventHook.pythonExePath.trim();
-		return configured || "python";
-	}
-
-	private async resolvePythonCommandForDaemon(): Promise<string> {
-		const configured = this.resolvePythonExePath();
-		if (
-			process.platform !== "win32" ||
-			!configured.toLowerCase().endsWith("python.exe")
-		) {
-			return configured;
-		}
-		const pythonwPath = join(dirname(configured), "pythonw.exe");
-		try {
-			await stat(pythonwPath);
-			return pythonwPath;
-		} catch {
-			return configured;
-		}
-	}
-
-	private resolveInteropRoot(): string {
-		const configured = config.settings.eventHook.interopRoot.trim();
-		if (configured) {
-			return configured;
-		}
-		return join(homedir(), ".ptune-log");
-	}
-
-	private resolveLockFilePath(): string {
-		return join(this.resolveInteropRoot(), "runtime", "locks", "daemon.lock");
 	}
 
 	private resolveVaultPath(): string | null {
@@ -453,117 +336,6 @@ export class EventHookService {
 			.replace(/\.\d{3}Z$/, "Z");
 		const suffix = Math.random().toString(16).slice(2, 4).padEnd(2, "0");
 		return `${iso}-${suffix}`;
-	}
-
-	private splitArgs(value: string): string[] {
-		const args: string[] = [];
-		const re = /"([^"]*)"|'([^']*)'|(\S+)/g;
-		let match: RegExpExecArray | null;
-		while ((match = re.exec(value)) !== null) {
-			args.push(match[1] ?? match[2] ?? match[3] ?? "");
-		}
-		return args.filter((v) => v.length > 0);
-	}
-
-	private async ensureDaemonRunning(trigger: "startup" | "event"): Promise<boolean> {
-		const interopRoot = this.resolveInteropRoot();
-		const lockPath = this.resolveLockFilePath();
-		const freshSeconds = this.resolveLockFreshSeconds();
-
-		if (await this.isDaemonLockFresh(lockPath, freshSeconds)) {
-			return true;
-		}
-
-		const pythonPath = await this.resolvePythonCommandForDaemon();
-		const daemonArgs = this.resolveDaemonArgs(interopRoot);
-		logger.info(
-			`[EventHook] ensure daemon trigger=${trigger} python=${pythonPath} args=${JSON.stringify(daemonArgs)}`,
-		);
-		try {
-			const child = spawn(pythonPath, daemonArgs, {
-				detached: true,
-				stdio: "ignore",
-				windowsHide: true,
-				cwd: interopRoot,
-			});
-			child.unref();
-		} catch (error) {
-			logger.warn("[EventHook] daemon start failed", error);
-			return false;
-		}
-
-		const deadline = Date.now() + 5000;
-		while (Date.now() < deadline) {
-			if (await this.isDaemonLockFresh(lockPath, freshSeconds)) {
-				return true;
-			}
-			await this.delay(250);
-		}
-		return false;
-	}
-
-	private async runDaemonControlCommand(
-		command: DaemonControlCommand,
-		extraArgs: string[] = [],
-	): Promise<DaemonControlResult> {
-		const pythonPath = await this.resolvePythonCommandForDaemon();
-		const interopRoot = this.resolveInteropRoot();
-		const args = [
-			"-m",
-			"ptune_log.main",
-			"daemon",
-			command,
-			"--interop-root",
-			interopRoot,
-			...extraArgs,
-		];
-		logger.info(
-			`[EventHook] daemon control command=${command} python=${pythonPath} args=${JSON.stringify(args)}`,
-		);
-
-		return new Promise<DaemonControlResult>((resolve) => {
-			const child = spawn(pythonPath, args, {
-				windowsHide: true,
-				cwd: interopRoot,
-			});
-			let stdout = "";
-			let stderr = "";
-
-			child.stdout?.on("data", (chunk: Buffer | string) => {
-				stdout += chunk.toString();
-			});
-			child.stderr?.on("data", (chunk: Buffer | string) => {
-				stderr += chunk.toString();
-			});
-			child.on("error", (error) => {
-				resolve({
-					ok: false,
-					code: null,
-					stdout: stdout.trim(),
-					stderr: `${stderr}\n${String(error)}`.trim(),
-				});
-			});
-			child.on("close", (code) => {
-				resolve({
-					ok: code === 0,
-					code,
-					stdout: stdout.trim(),
-					stderr: stderr.trim(),
-				});
-			});
-		});
-	}
-
-	private coalesceErrorMessage(result: DaemonControlResult): string {
-		const stderr = result.stderr.trim();
-		if (stderr) {
-			return stderr.split("\n")[0] ?? "daemon_status_failed";
-		}
-		const stdout = result.stdout.trim();
-		if (stdout) {
-			return stdout.split("\n")[0] ?? "daemon_status_failed";
-		}
-		return "daemon_status_failed";
 	}
 
 	private toIntOrNull(value: unknown): number | null {
@@ -634,24 +406,6 @@ export class EventHookService {
 		} catch {
 			const fallbackPath = targetPath.replace(/\.json$/i, `-${Date.now()}.json`);
 			await rename(sourcePath, fallbackPath);
-		}
-	}
-
-	private async isDaemonLockFresh(lockPath: string, freshSeconds: number): Promise<boolean> {
-		try {
-			const raw = await readFile(lockPath, "utf-8");
-			const payload = JSON.parse(raw) as DaemonLockEnvelope;
-			if (typeof payload.updated_at_epoch === "number") {
-				return Date.now() - payload.updated_at_epoch * 1000 <= freshSeconds * 1000;
-			}
-		} catch {
-			// Fallback to mtime check
-		}
-		try {
-			const fileStat = await stat(lockPath);
-			return Date.now() - fileStat.mtimeMs <= freshSeconds * 1000;
-		} catch {
-			return false;
 		}
 	}
 
