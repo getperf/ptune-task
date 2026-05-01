@@ -105,7 +105,10 @@ export class NoteCreatorModal extends Modal {
       });
 
     if (this.kind === "project-note") {
-      let noteCreateOpenModeDropdown: { setDisabled(value: boolean): void } | null = null;
+      let noteCreateOpenModeSetting: Setting | null = null;
+      const updateNoteCreateOpenModeVisibility = () => {
+        noteCreateOpenModeSetting?.settingEl.toggle(this.eventHookEnabled);
+      };
 
       new Setting(contentEl)
         .setName(t.modal.ptuneLogHookLabel)
@@ -115,25 +118,24 @@ export class NoteCreatorModal extends Modal {
             .setValue(this.eventHookEnabled)
             .onChange((value) => {
               this.eventHookEnabled = value;
-              noteCreateOpenModeDropdown?.setDisabled(!value);
+              updateNoteCreateOpenModeVisibility();
             });
         });
 
-      new Setting(contentEl)
+      noteCreateOpenModeSetting = new Setting(contentEl)
         .setName(t.modal.noteCreateOpenModeLabel)
         .setDesc(t.modal.noteCreateOpenModeDesc)
         .addDropdown((dropdown) => {
-          noteCreateOpenModeDropdown = dropdown;
           dropdown
             .addOption("prompt_draft", t.modal.noteCreateOpenModeOptions.promptDraft)
             .addOption("work_note", t.modal.noteCreateOpenModeOptions.workNote)
             .addOption("none", t.modal.noteCreateOpenModeOptions.none)
             .setValue(this.noteCreateOpenMode)
-            .setDisabled(!this.eventHookEnabled)
             .onChange((value) => {
               this.noteCreateOpenMode = normalizeNoteCreateOpenMode(value);
             });
         });
+      updateNoteCreateOpenModeVisibility();
     }
 
     new Setting(contentEl).addButton((button) =>

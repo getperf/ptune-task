@@ -279,6 +279,7 @@ export class EventHookDaemonService {
 				logger.warn(
 					`[EventHook] daemon control failed command=${command} code=null reason=${this.coalesceErrorMessage(result)}`,
 				);
+				this.logDaemonControlFailureDetails(command, result);
 				resolve(result);
 			});
 			child.on("close", (code) => {
@@ -292,10 +293,36 @@ export class EventHookDaemonService {
 					logger.warn(
 						`[EventHook] daemon control failed command=${command} code=${code} reason=${this.coalesceErrorMessage(result)}`,
 					);
+					this.logDaemonControlFailureDetails(command, result);
 				}
 				resolve(result);
 			});
 		});
+	}
+
+	private logDaemonControlFailureDetails(
+		command: DaemonControlCommand,
+		result: DaemonControlResult,
+	): void {
+		const stderr = this.normalizeLogBlock(result.stderr);
+		if (stderr) {
+			logger.warn(
+				`[EventHook] daemon control stderr command=${command} code=${result.code}\n${stderr}`,
+			);
+		}
+		const stdout = this.normalizeLogBlock(result.stdout);
+		if (stdout) {
+			logger.warn(
+				`[EventHook] daemon control stdout command=${command} code=${result.code}\n${stdout}`,
+			);
+		}
+	}
+
+	private normalizeLogBlock(value: string): string {
+		return value
+			.replace(/\r\n/g, "\n")
+			.replace(/\r/g, "\n")
+			.trim();
 	}
 
 	private coalesceErrorMessage(result: DaemonControlResult): string {

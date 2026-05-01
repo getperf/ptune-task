@@ -4,6 +4,7 @@ import { homedir } from "os";
 import { join } from "path";
 import { config } from "./config";
 import { NoteCreateOpenMode } from "./types";
+import { summarizeCommandFailure } from "./summarizeCommandFailure";
 import { i18n } from "../shared/i18n/I18n";
 import { logger } from "../shared/logger/loggerInstance";
 import {
@@ -293,17 +294,6 @@ function renderDaemonControlRow(
 			setButtonsDisabled(isBusy);
 		},
 	};
-}
-
-function summarizeCommandFailure(stdout: string, stderr: string): string {
-	const firstLine = (value: string): string | null => {
-		const line = value
-			.split(/\r?\n/)
-			.map((entry) => entry.trim())
-			.find((entry) => entry.length > 0);
-		return line ?? null;
-	};
-	return firstLine(stderr) ?? firstLine(stdout) ?? "unknown error";
 }
 
 async function openFolderInExplorer(path: string): Promise<boolean> {
