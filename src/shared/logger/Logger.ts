@@ -54,9 +54,12 @@ export class Logger {
 		const line = `[${new Date().toISOString()}][${level}] ${msg}\n`;
 
 		try {
+			if (!(await this.vault.adapter.exists(this.logDir))) {
+				await this.vault.adapter.mkdir(this.logDir);
+			}
 			await this.vault.adapter.append(this.getLogFile(), line);
-		} catch {
-			/* ignore */
+		} catch (error) {
+			console.warn("[ptune][warn] log file write failed", error);
 		}
 	}
 
@@ -125,4 +128,3 @@ export class Logger {
 		}
 	}
 }
-
