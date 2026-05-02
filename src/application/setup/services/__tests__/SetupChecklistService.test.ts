@@ -1,5 +1,6 @@
 import { App } from "obsidian";
 import { config } from "../../../../config/config";
+import { PtuneSyncUriAuthService } from "../../../../infrastructure/sync/ptune-sync-uri/PtuneSyncUriAuthService";
 import { SetupChecklistService } from "../SetupChecklistService";
 
 describe("SetupChecklistService", () => {
@@ -30,8 +31,10 @@ describe("SetupChecklistService", () => {
       internalPlugins: { plugins: {} },
     } as unknown as App;
 
-    const authService = { status: jest.fn().mockResolvedValue(undefined) };
-    const service = new SetupChecklistService(app, authService as any);
+    const authService = {
+      status: jest.fn().mockResolvedValue(undefined),
+    } as unknown as PtuneSyncUriAuthService;
+    const service = new SetupChecklistService(app, authService);
 
     const checklist = await service.getChecklist();
     const noteResources = checklist.required.find((item) => item.id === "note_resources");
@@ -60,8 +63,10 @@ describe("SetupChecklistService", () => {
       internalPlugins: { plugins: {} },
     } as unknown as App;
 
-    const authService = { status: jest.fn().mockResolvedValue(undefined) };
-    const service = new SetupChecklistService(app, authService as any);
+    const authService = {
+      status: jest.fn().mockResolvedValue(undefined),
+    } as unknown as PtuneSyncUriAuthService;
+    const service = new SetupChecklistService(app, authService);
 
     const checklist = await service.getChecklist();
     const noteResources = checklist.required.find((item) => item.id === "note_resources");

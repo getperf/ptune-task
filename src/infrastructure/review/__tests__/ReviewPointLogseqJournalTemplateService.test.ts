@@ -1,7 +1,15 @@
-import { App, TFile } from "obsidian";
+import { App } from "obsidian";
 import { DailyNote } from "../../../domain/daily/DailyNote";
 import { DailyNotesReflectionDocument } from "../../../application/daily_notes_review/models/DailyNotesReflectionDocument";
 import { ReviewPointLogseqJournalTemplateService } from "../ReviewPointLogseqJournalTemplateService";
+
+type LogseqTemplateServiceTestApi = {
+  fillTemplate: (
+    template: string,
+    note: DailyNote,
+    doc: DailyNotesReflectionDocument,
+  ) => string;
+};
 
 describe("ReviewPointLogseqJournalTemplateService", () => {
   test("creates the default template file and writes a Logseq journal when the template is missing", async () => {
@@ -10,7 +18,9 @@ describe("ReviewPointLogseqJournalTemplateService", () => {
       write: jest.fn().mockResolvedValue(undefined),
     };
 
-    const templateFile = { path: "_template/review-logseq-journal-template.md" } as unknown as TFile;
+    const templateFile = {
+      path: "_template/review-logseq-journal-template.md",
+    };
     const app = {
       vault: {
         adapter,
@@ -79,7 +89,11 @@ describe("ReviewPointLogseqJournalTemplateService", () => {
       },
     ]);
 
-    const result = (service as any).fillTemplate(template, note, doc);
+    const result = (service as unknown as LogseqTemplateServiceTestApi).fillTemplate(
+      template,
+      note,
+      doc,
+    );
 
     expect(result).toContain(
       "    - project_title\n        - note_title\n            - sentenct_summary",
