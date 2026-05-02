@@ -2,6 +2,7 @@ import { App, normalizePath } from "obsidian";
 import { config } from "../../config/config";
 import { TEMPLATE_ANALYSIS_XMIND_BASE64 } from "../../generated/templateAnalysisXmind";
 import { LogseqJournalTemplateSetupService } from "./LogseqJournalTemplateSetupService";
+import { ReviewPointXMindOutlineTemplateService } from "../review/ReviewPointXMindOutlineTemplateService";
 
 export type NoteSetupResult = {
   createdPaths: string[];
@@ -20,13 +21,17 @@ export class NoteSetupHelper {
   private static readonly SOURCE_TEMPLATE_PATH = "assets/template_analysis.xmind";
 
   private readonly logseqTemplateSetupService: LogseqJournalTemplateSetupService;
+  private readonly xmindOutlineTemplateSetupService: ReviewPointXMindOutlineTemplateService;
 
   constructor(
     private readonly app: App,
     logseqTemplateSetupService: LogseqJournalTemplateSetupService =
       new LogseqJournalTemplateSetupService(app),
+    xmindOutlineTemplateSetupService: ReviewPointXMindOutlineTemplateService =
+      new ReviewPointXMindOutlineTemplateService(app),
   ) {
     this.logseqTemplateSetupService = logseqTemplateSetupService;
+    this.xmindOutlineTemplateSetupService = xmindOutlineTemplateSetupService;
   }
 
   async ensureResources(): Promise<NoteSetupResult> {
@@ -49,6 +54,14 @@ export class NoteSetupHelper {
       const data = await this.readTemplateBinary();
       await this.app.vault.adapter.writeBinary(xmindTemplatePath, data);
       updatedTemplates.push(xmindTemplatePath);
+    }
+
+    const xmindOutlineTemplatePath =
+      await this.xmindOutlineTemplateSetupService.ensureTemplateExists(
+        createdPaths,
+      );
+    if (xmindOutlineTemplatePath) {
+      updatedTemplates.push(xmindOutlineTemplatePath);
     }
 
     const logseqTemplatePath = await this.logseqTemplateSetupService.ensureTemplateExists(

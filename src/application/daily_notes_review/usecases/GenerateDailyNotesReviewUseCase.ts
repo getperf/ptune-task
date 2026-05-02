@@ -66,10 +66,9 @@ export class GenerateDailyNotesReviewUseCase {
     private readonly reflectionDocumentBuilder = new DailyNotesReflectionDocumentBuilder(),
     private readonly reflectionBuilder = new DailyNotesReflectionBuilder(),
   ) {
-    if (this.reviewPointXMindTemplateService && this.reviewPointXMindInputFileService) {
+    if (this.reviewPointXMindTemplateService) {
       this.reviewPointArtifactProviders.xmind = new XMindReviewPointArtifactProvider(
         this.reviewPointXMindTemplateService,
-        this.reviewPointXMindInputFileService,
       );
     }
 
@@ -172,14 +171,13 @@ export class GenerateDailyNotesReviewUseCase {
     outputFormat: ReviewOutputFormat,
   ): Promise<string> {
     const doc = this.reflectionDocumentBuilder.build(summaries);
-    const artifactLinks = await this.prepareReviewPointArtifactLinks(note, outputFormat, doc);
 
     if (!this.textGenerator.hasValidApiKey()) {
-      return await this.finalizeManualReflectionOutput(doc, note, outputFormat, artifactLinks);
+      return await this.finalizeManualReflectionOutput(doc, note, outputFormat);
     }
 
     if (config.settings.review.sentenceMode !== "llm") {
-      return await this.finalizeReflectionOutput(doc, note, outputFormat, artifactLinks);
+      return await this.finalizeReflectionOutput(doc, note, outputFormat);
     }
 
     const adapter = new StructuredReflectionTextAdapter(doc);
@@ -191,7 +189,7 @@ export class GenerateDailyNotesReviewUseCase {
     );
 
     if (sentenceInputs === 0) {
-      return await this.finalizeReflectionOutput(doc, note, outputFormat, artifactLinks);
+      return await this.finalizeReflectionOutput(doc, note, outputFormat);
     }
 
     const reflection = await this.textGenerator.generate(
@@ -212,14 +210,13 @@ export class GenerateDailyNotesReviewUseCase {
           structured,
           note,
           outputFormat,
-          artifactLinks,
         );
       }
     } else {
       logger.warn("[UseCase] GenerateDailyNotesReviewUseCase reflectionResponse empty");
     }
 
-    return await this.finalizeReflectionOutput(doc, note, outputFormat, artifactLinks);
+    return await this.finalizeReflectionOutput(doc, note, outputFormat);
   }
 
   private async prepareReviewPointArtifactLinks(
@@ -239,8 +236,8 @@ export class GenerateDailyNotesReviewUseCase {
     doc: DailyNotesReflectionDocument,
     note: DailyNote,
     outputFormat: ReviewOutputFormat,
-    links: Record<string, string>,
   ): Promise<string> {
+    const links = await this.prepareReviewPointArtifactLinks(note, outputFormat, doc);
     const provider = this.reviewPointArtifactProviders[outputFormat];
     const inputContent = this.reflectionBuilder.buildInput(doc, outputFormat);
     const inputFileLinks =
@@ -258,8 +255,9 @@ export class GenerateDailyNotesReviewUseCase {
     structured: StructuredReflectionText,
     note: DailyNote,
     outputFormat: ReviewOutputFormat,
-    links: Record<string, string>,
   ): Promise<string> {
+    const doc = this.buildDocumentFromStructuredReflection(structured);
+    const links = await this.prepareReviewPointArtifactLinks(note, outputFormat, doc);
     const provider = this.reviewPointArtifactProviders[outputFormat];
     const inputContent = this.reflectionBuilder.buildStructuredInput(structured, outputFormat);
     const inputFileLinks =
@@ -277,8 +275,8 @@ export class GenerateDailyNotesReviewUseCase {
     doc: DailyNotesReflectionDocument,
     note: DailyNote,
     outputFormat: ReviewOutputFormat,
-    links: Record<string, string>,
   ): Promise<string> {
+    const links = await this.prepareReviewPointArtifactLinks(note, outputFormat, doc);
     const provider = this.reviewPointArtifactProviders[outputFormat];
     const inputContent = this.reflectionBuilder.buildInput(doc, outputFormat);
     const inputFileLinks =
@@ -290,6 +288,20 @@ export class GenerateDailyNotesReviewUseCase {
       ...links,
       ...inputFileLinks,
     });
+  }
+
+  private buildDocumentFromStructuredReflection(
+    structured: StructuredReflectionText,
+  ): DailyNotesReflectionDocument {
+    return new DailyNotesReflectionDocument(
+      structured.folders.map((folder) => ({
+        projectTitle: folder.folderTitle,
+        notes: folder.notes.map((note) => ({
+          noteTitle: note.noteTitle,
+          sentences: note.sentences.map((sentence) => ({ text: sentence })),
+        })),
+      })),
+    );
   }
 
   private resolveErrorMessage(error: unknown): string {

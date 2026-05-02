@@ -212,6 +212,12 @@ export const settingsEn = {
 			placeholder: "_template/xmind/template_analysis.xmind",
 		},
 
+		xmindReviewOutlineTemplatePath: {
+			name: "XMind outline template path",
+			desc: "Vault-relative Markdown template path for XMind topics appended after the generated Fact section",
+			placeholder: "_template/xmind/review-outline-template.md",
+		},
+
 		logseqRootPath: {
 			name: "Logseq root path",
 			desc: "Vault-relative root directory used for generated Logseq review content",

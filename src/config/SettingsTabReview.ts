@@ -91,6 +91,20 @@ export function renderReviewSettings(containerEl: HTMLElement) {
 		);
 
 	new Setting(containerEl)
+		.setName(t.xmindReviewOutlineTemplatePath.name)
+		.setDesc(t.xmindReviewOutlineTemplatePath.desc)
+		.addText((text) =>
+			text
+				.setPlaceholder(t.xmindReviewOutlineTemplatePath.placeholder)
+				.setValue(config.settings.review.xmindReviewOutlineTemplatePath)
+				.onChange(async (value) => {
+					config.settings.review.xmindReviewOutlineTemplatePath =
+						value.trim() || t.xmindReviewOutlineTemplatePath.placeholder;
+					await config.save();
+				}),
+		);
+
+	new Setting(containerEl)
 		.setName(t.logseqRootPath.name)
 		.setDesc(t.logseqRootPath.desc)
 		.addText((text) =>

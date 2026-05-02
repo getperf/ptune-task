@@ -116,9 +116,11 @@ function mergeSettings(
 
 function migrateLegacyReviewTemplatePaths(review: {
 	xmindTemplatePath: string;
+	xmindReviewOutlineTemplatePath: string;
 	logseqJournalTemplatePath: string;
 }): {
 	xmindTemplatePath: string;
+	xmindReviewOutlineTemplatePath: string;
 	logseqJournalTemplatePath: string;
 } {
 	const xmindTemplatePath =

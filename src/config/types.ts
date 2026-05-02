@@ -39,6 +39,7 @@ export interface ReviewSettings {
 	notesReviewEnabledDefault: boolean;
 	taskReviewOutputFormat: ReviewOutputFormat;
 	xmindTemplatePath: string;
+	xmindReviewOutlineTemplatePath: string;
 	logseqRootPath: string;
 	logseqJournalTemplatePath: string;
 	maxSentences: number;

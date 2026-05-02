@@ -191,20 +191,12 @@ describe("GenerateDailyNotesReviewUseCase", () => {
         enableReflection: true,
       });
 
-      expect(reviewPointXMindTemplateService.ensureForDailyNote).toHaveBeenCalledWith(note);
-      expect(reviewPointXMindInputFileService.writeForDailyNote).toHaveBeenCalledWith(
-        note,
-        expect.stringContaining("push時の差分ロジック見直し"),
-      );
+      expect(reviewPointXMindTemplateService.ensureForDailyNote).toHaveBeenCalledWith(note, expect.anything());
+      expect(reviewPointXMindInputFileService.writeForDailyNote).not.toHaveBeenCalled();
       expect(writer.write).toHaveBeenCalledWith(
         note,
         "- push時の差分ロジック見直し",
         expect.stringContaining("[編集用 XMind ファイルを開く](_journal/2026/03/2026-03-16_reviewpoint.xmind)"),
-      );
-      expect(writer.write).toHaveBeenCalledWith(
-        note,
-        "- push時の差分ロジック見直し",
-        expect.stringContaining("[XMind インプットテキストを開く](_journal/2026/03/2026-03-16_reviewpoint_input.txt)"),
       );
     } finally {
       config.settings.review.reviewPointOutputFormat = originalFormat;
@@ -301,7 +293,7 @@ describe("GenerateDailyNotesReviewUseCase", () => {
     }
   });
 
-  test("writes xmind input text from sentence summaries after llm reflection processing", async () => {
+  test("does not write xmind input text after llm reflection processing", async () => {
     const originalFormat = config.settings.review.reviewPointOutputFormat;
     const originalSentenceMode = config.settings.review.sentenceMode;
     config.settings.review.reviewPointOutputFormat = "xmind";
@@ -390,14 +382,26 @@ describe("GenerateDailyNotesReviewUseCase", () => {
         enableReflection: true,
       });
 
-      expect(reviewPointXMindInputFileService.writeForDailyNote).toHaveBeenCalledWith(
+      expect(reviewPointXMindTemplateService.ensureForDailyNote).toHaveBeenCalledWith(
         note,
-        expect.stringContaining("先頭のゴミ見出しを生成する箇所を特定した。"),
+        expect.objectContaining({
+          projects: [
+            expect.objectContaining({
+              projectTitle: "ptune-taskBases追加ユースケース",
+              notes: [
+                expect.objectContaining({
+                  noteTitle: "デイリーノートゴミ見出し出現問題調査",
+                  sentences: [
+                    { text: "先頭のゴミ見出しを生成する箇所を特定した。" },
+                    { text: "3月21日以降の複数ノートで再現している。" },
+                  ],
+                }),
+              ],
+            }),
+          ],
+        }),
       );
-      expect(reviewPointXMindInputFileService.writeForDailyNote).toHaveBeenCalledWith(
-        note,
-        expect.not.stringContaining("GenerateDailyReviewFlowUseCase によりデイリーノートの先頭にランダム文字列"),
-      );
+      expect(reviewPointXMindInputFileService.writeForDailyNote).not.toHaveBeenCalled();
     } finally {
       config.settings.review.reviewPointOutputFormat = originalFormat;
       config.settings.review.sentenceMode = originalSentenceMode;

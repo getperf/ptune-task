@@ -212,6 +212,12 @@ export const settingsJa = {
 			placeholder: "_template/xmind/template_analysis.xmind",
 		},
 
+		xmindReviewOutlineTemplatePath: {
+			name: "XMind アウトラインテンプレートパス",
+			desc: "Fact の後ろに追加する XMind トピックを記述した Markdown テンプレートの vault 相対パス",
+			placeholder: "_template/xmind/review-outline-template.md",
+		},
+
 		logseqRootPath: {
 			name: "Logseq ルートディレクトリ",
 			desc: "生成した Logseq レビューコンテンツを配置するルートディレクトリの Vault 相対パス",
