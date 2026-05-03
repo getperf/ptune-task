@@ -47,6 +47,7 @@ export class DailyTemplateBuilder {
     return PlannedTaskSectionBuilder.build({
       commentLine1: i18n.common.daily.planned.comment.line1,
       commentLine2: i18n.common.daily.planned.comment.line2,
+      commentLine3: i18n.common.daily.planned.comment.line3,
       morningHabits: options.morningHabits,
       eveningHabits: options.eveningHabits,
       keepExistingHabits: false,

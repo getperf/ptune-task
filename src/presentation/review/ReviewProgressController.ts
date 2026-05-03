@@ -26,6 +26,21 @@ export class ReviewProgressController {
 
   handleEvent(event: DailyReviewFlowProgressEvent): void {
     this.events.push(event);
+
+    if (event.type === "failed") {
+      if (
+        this.terminalState?.type === "failed" &&
+        this.terminalState.message === event.message
+      ) {
+        return;
+      }
+
+      this.isRunning = false;
+      this.terminalState = { type: "failed", message: event.message };
+      this.currentModal?.handleEvent(event);
+      return;
+    }
+
     this.currentModal?.handleEvent(event);
   }
 
@@ -36,6 +51,13 @@ export class ReviewProgressController {
   }
 
   markFailed(message: string): void {
+    if (
+      this.terminalState?.type === "failed" &&
+      this.terminalState.message === message
+    ) {
+      return;
+    }
+
     this.isRunning = false;
     this.terminalState = { type: "failed", message };
     this.currentModal?.markFailed(message);

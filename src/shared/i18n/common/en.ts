@@ -129,6 +129,11 @@ export const commonEn = {
 			comment: {
 				line1: "At the start of the morning, create today's task list (pull unfinished tasks → review → push to apply).",
 				line2: "During the day, use push to update changes incrementally.",
+				line3: "Note: tasks with the same title under the same parent cannot be synced. Add a qualifier to make each title unique.",
+			},
+			error: {
+				duplicateName:
+					"Duplicate planned task name: {taskKey}\nTasks with the same title under the same parent cannot be synced. Rename one of them.",
 			},
 		},
 

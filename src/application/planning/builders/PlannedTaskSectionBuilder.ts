@@ -5,6 +5,7 @@ import { i18n } from "../../../shared/i18n/I18n";
 export interface PlannedTaskSectionOptions {
   commentLine1: string;
   commentLine2: string;
+  commentLine3?: string;
   tasksMarkdown?: string;
   morningHabits: string[];
   eveningHabits: string[];
@@ -26,7 +27,13 @@ export class PlannedTaskSectionBuilder {
     const shouldInsertDefaultHabits =
       !options.keepExistingHabits || taskLines.length === 0;
 
-    lines.push("<!--", options.commentLine1, options.commentLine2, "-->", "");
+    const commentLines = [
+      options.commentLine1,
+      options.commentLine2,
+      options.commentLine3,
+    ].filter((line): line is string => Boolean(line));
+
+    lines.push("<!--", ...commentLines, "-->", "");
 
     if (shouldInsertDefaultHabits) {
       lines.push(...HabitService.buildHabitLines(options.morningHabits));
@@ -48,6 +55,8 @@ export class PlannedTaskSectionBuilder {
       commentLine1: i18n.common.daily.planned.comment.line1,
 
       commentLine2: i18n.common.daily.planned.comment.line2,
+
+      commentLine3: i18n.common.daily.planned.comment.line3,
 
       tasksMarkdown: options.tasksMarkdown,
 

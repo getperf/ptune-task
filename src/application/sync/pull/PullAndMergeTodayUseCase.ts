@@ -131,6 +131,7 @@ export class PullAndMergeTodayUseCase {
     const sectionMarkdown = PlannedTaskSectionBuilder.build({
       commentLine1: i18n.common.daily.planned.comment.line1,
       commentLine2: i18n.common.daily.planned.comment.line2,
+      commentLine3: i18n.common.daily.planned.comment.line3,
       tasksMarkdown: rendered.taskListMarkdown,
       morningHabits: existingMorningHabits,
       eveningHabits: existingEveningHabits,
