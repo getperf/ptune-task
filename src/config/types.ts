@@ -1,7 +1,6 @@
 export type LogLevel = "debug" | "info" | "warn" | "error" | "none";
 export type LlmProvider = "openai" | "claude" | "gemini" | "custom";
 export type ReviewOutputFormat = "outline" | "xmind" | "logseq";
-export type NoteCreateOpenMode = "prompt_draft" | "work_note" | "none";
 
 export interface LlmSettings {
 	provider: LlmProvider;
@@ -61,7 +60,6 @@ export interface DailyNoteTaskSettings {
 
 export interface EventHookSettings {
 	enabled: boolean;
-	noteCreateOpenMode: NoteCreateOpenMode;
 	interopRoot: string;
 	statusWaitMs: number;
 	ensureOnEvent: boolean;

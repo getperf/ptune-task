@@ -10,7 +10,6 @@ import {
 import { NoteCreationRequest } from "../../application/note/NoteCreationModels";
 import { NoteCreationUseCase } from "../../application/note/NoteCreationUseCase";
 import { config } from "../../config/config";
-import { NoteCreateOpenMode } from "../../config/types";
 import { ProjectFolder } from "../../domain/project/ProjectFolder";
 import { TodayTaskKeyReader } from "../../infrastructure/obsidian/TodayTaskKeyReader";
 import { EventHookNoticeMapper } from "../../infrastructure/event_hook/EventHookNoticeMapper";
@@ -86,7 +85,6 @@ export class NoteCreationFeature {
 				prefix,
 				taskKeyOptions,
 				config.settings.eventHook.enabled,
-				config.settings.eventHook.noteCreateOpenMode,
 				async (input) => {
 					if (!this.validateTitle(input.title)) {
 						return false;
@@ -156,7 +154,6 @@ export class NoteCreationFeature {
 				prefix,
 				taskKeyOptions,
 				config.settings.eventHook.enabled,
-				config.settings.eventHook.noteCreateOpenMode,
 				async (input) => {
 					if (!this.validateTitle(input.title)) {
 						return false;
@@ -180,7 +177,6 @@ export class NoteCreationFeature {
 						void this.emitNoteCreateEvent(
 							created.notePath,
 							input.eventHookEnabled,
-							input.noteCreateOpenMode,
 						);
 						return true;
 					} catch (error) {
@@ -266,7 +262,6 @@ export class NoteCreationFeature {
 	private async emitNoteCreateEvent(
 		notePath: string,
 		eventHookEnabled?: boolean,
-		noteCreateOpenMode?: NoteCreateOpenMode,
 	): Promise<void> {
 		if (eventHookEnabled === false) {
 			logger.info(
@@ -280,10 +275,6 @@ export class NoteCreationFeature {
 				notePath,
 				{
 					enabledOverride: eventHookEnabled,
-					payload: {
-						note_create_open_mode:
-							noteCreateOpenMode ?? config.settings.eventHook.noteCreateOpenMode,
-					},
 				},
 			);
 			const message = this.eventHookNoticeMapper.map(result);

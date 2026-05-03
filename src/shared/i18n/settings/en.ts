@@ -28,15 +28,6 @@ export const settingsEn = {
 			name: "Enable event hook",
 			desc: "Emit note-create, note-work-finished, note-attached, and note-review-requested events to the ptune-log bridge",
 		},
-		noteCreateOpenMode: {
-			name: "External editor mode after note-create",
-			desc: "Default execution mode sent to ptune-log with note-create events",
-			options: {
-				promptDraft: "Create and open prompt draft",
-				workNote: "Open work note",
-				none: "Do nothing",
-			},
-		},
 		interopRoot: {
 			name: "Interop root",
 			desc: "Root directory for event/status/lock file bridge (empty = default)",

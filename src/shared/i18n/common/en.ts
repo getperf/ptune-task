@@ -52,14 +52,6 @@ export const commonEn = {
 			ptuneLogHookLabel: "Enable ptune-log hook",
 			ptuneLogHookDesc:
 				"When off, no ptune-log integration event is sent after note creation.",
-			noteCreateOpenModeLabel: "Work note open mode",
-			noteCreateOpenModeDesc:
-				"Choose how ptune-log opens an external editor after the note-create event.",
-			noteCreateOpenModeOptions: {
-				promptDraft: "Create and open prompt draft",
-				workNote: "Open work note",
-				none: "Do nothing",
-			},
 		},
 
 		notice: {
