@@ -42,8 +42,8 @@ export const settingsEn = {
 		},
 		daemonArgs: {
 			name: "Daemon arguments",
-			desc: "Arguments passed to python process. Default: -m ptune_log.main daemon --debug",
-			placeholder: "-m ptune_log.main daemon --debug",
+			desc: "Arguments passed to python process. Default: -m ptune_log.main daemon foreground --debug",
+			placeholder: "-m ptune_log.main daemon foreground --debug",
 		},
 		ensureOnEvent: {
 			name: "Ensure on event emit",

@@ -61,7 +61,7 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 		statusWaitMs: 2500,
 		ensureOnEvent: true,
 		pythonExePath: "",
-		daemonArgs: "-m ptune_log.main daemon --debug",
+		daemonArgs: "-m ptune_log.main daemon foreground --debug",
 		lockFreshSeconds: 20,
 	},
 };

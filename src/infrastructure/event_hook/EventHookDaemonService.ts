@@ -5,6 +5,9 @@ import { dirname, join } from "path";
 import { config } from "../../config/config";
 import { logger } from "../../shared/logger/loggerInstance";
 
+const DAEMON_COMMANDS = new Set(["foreground", "restart", "start", "status", "stop"]);
+const DEFAULT_DAEMON_ARGS = ["-m", "ptune_log.main", "daemon", "foreground", "--debug"];
+
 interface DaemonLockEnvelope {
 	updated_at_epoch?: number;
 }
@@ -192,11 +195,12 @@ export class EventHookDaemonService {
 		const configured = config.settings.eventHook.daemonArgs.trim();
 		const base = configured
 			? this.splitArgs(configured)
-			: ["-m", "ptune_log.main", "daemon", "--debug"];
-		if (!base.includes("--interop-root")) {
-			base.push("--interop-root", interopRoot);
+			: DEFAULT_DAEMON_ARGS;
+		const args = normalizeDaemonArgsForEnsure(base);
+		if (!args.includes("--interop-root")) {
+			args.push("--interop-root", interopRoot);
 		}
-		return base;
+		return args;
 	}
 
 	private resolvePythonExePath(): string {
@@ -385,4 +389,30 @@ export class EventHookDaemonService {
 	private async delay(ms: number): Promise<void> {
 		await new Promise<void>((resolve) => window.setTimeout(resolve, ms));
 	}
+}
+
+export function normalizeDaemonArgsForEnsure(args: string[]): string[] {
+	const normalized = args.map((arg) =>
+		arg === "codex_md_export.main" ? "ptune_log.main" : arg,
+	);
+	const moduleIndex = normalized.findIndex((arg, index) =>
+		arg === "-m" &&
+		normalized[index + 1] === "ptune_log.main" &&
+		normalized[index + 2] === "daemon"
+	);
+	if (moduleIndex < 0) {
+		return normalized;
+	}
+
+	const commandIndex = moduleIndex + 3;
+	const command = normalized[commandIndex];
+	if (command !== undefined && DAEMON_COMMANDS.has(command)) {
+		return normalized;
+	}
+
+	return [
+		...normalized.slice(0, commandIndex),
+		"foreground",
+		...normalized.slice(commandIndex),
+	];
 }

@@ -42,8 +42,8 @@ export const settingsJa = {
 		},
 		daemonArgs: {
 			name: "Daemon 起動引数",
-			desc: "python 実行時に渡す引数。既定: -m ptune_log.main daemon --debug",
-			placeholder: "-m ptune_log.main daemon --debug",
+			desc: "python 実行時に渡す引数。既定: -m ptune_log.main daemon foreground --debug",
+			placeholder: "-m ptune_log.main daemon foreground --debug",
 		},
 		ensureOnEvent: {
 			name: "イベント送信時 ensure",
