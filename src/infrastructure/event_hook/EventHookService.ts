@@ -240,7 +240,7 @@ export class EventHookService {
 		}
 		if (mode === "new" || mode === "both") {
 			const newRoot = this.resolveNewInteropRoot();
-			inboxPaths.push(join(newRoot, "events", "inbox", `${requestId}.json`));
+			inboxPaths.push(join(newRoot, "inbox", `${requestId}.json`));
 		}
 
 		const statusPath = join(
