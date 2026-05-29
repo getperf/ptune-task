@@ -26,7 +26,7 @@ export const settingsEn = {
 		heading: "Event hook for ptune-log",
 		enabled: {
 			name: "Enable event hook",
-			desc: "Emit note-create, note-work-finished, note-attached, and note-review-requested events to the ptune-log bridge",
+			desc: "Emit note-create, note-attached, and note-review-requested events to the ptune-log bridge",
 		},
 		interopRoot: {
 			name: "Interop root",

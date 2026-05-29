@@ -17,7 +17,6 @@ export type {
 
 type EventType =
 	| "note-create"
-	| "note-work-finished"
 	| "note-attached"
 	| "note-review-requested"
 	| "daily-review-requested";
@@ -115,13 +114,6 @@ export class EventHookService {
 		options?: EventHookEmitOptions,
 	): Promise<EventHookEmitResult> {
 		return this.emit("note-create", notePath, options);
-	}
-
-	async emitNoteWorkFinished(
-		notePath: string,
-		options?: EventHookEmitOptions,
-	): Promise<EventHookEmitResult> {
-		return this.emit("note-work-finished", notePath, options);
 	}
 
 	async emitNoteAttached(
