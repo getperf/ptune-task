@@ -42,6 +42,24 @@ export function renderEventHookSettings(containerEl: HTMLElement, app: App) {
 	);
 
 	new Setting(containerEl)
+		.setName(t.interopMode.name)
+		.setDesc(t.interopMode.desc)
+		.addDropdown((dropdown) =>
+			dropdown
+				.addOptions({
+					old: t.interopMode.options.old,
+					new: t.interopMode.options.new,
+					both: t.interopMode.options.both,
+				})
+				.setValue(config.settings.eventHook.interopMode ?? "old")
+				.onChange(async (value) => {
+					if (value !== "old" && value !== "new" && value !== "both") return;
+					config.settings.eventHook.interopMode = value;
+					await config.save();
+				}),
+		);
+
+	new Setting(containerEl)
 		.setName(t.interopRoot.name)
 		.setDesc(t.interopRoot.desc)
 		.addText((text) =>
@@ -64,6 +82,33 @@ export function renderEventHookSettings(containerEl: HTMLElement, app: App) {
 					const opened = await openFolderInExplorer(interopRoot);
 					if (!opened) {
 						new Notice(t.interopRoot.openFailed);
+					}
+				}),
+		);
+
+	new Setting(containerEl)
+		.setName(t.interopRootNew.name)
+		.setDesc(t.interopRootNew.desc)
+		.addText((text) =>
+			text
+				.setPlaceholder(t.interopRootNew.placeholder)
+				.setValue(config.settings.eventHook.interopRootNew)
+				.onChange(async (value) => {
+					config.settings.eventHook.interopRootNew = value.trim();
+					await config.save();
+				}),
+		)
+		.addButton((button) =>
+			button
+				.setIcon("folder-open")
+				.setTooltip(t.interopRootNew.openButton)
+				.onClick(async () => {
+					const interopRootNew =
+						config.settings.eventHook.interopRootNew.trim() ||
+						join(homedir(), ".ptune-log", "interop-dev");
+					const opened = await openFolderInExplorer(interopRootNew);
+					if (!opened) {
+						new Notice(t.interopRootNew.openFailed);
 					}
 				}),
 		);

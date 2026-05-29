@@ -28,12 +28,28 @@ export const settingsJa = {
 			name: "イベントフックを有効化",
 			desc: "note-create / note-attached / note-review-requested のイベントを ptune-log ブリッジへ送信します",
 		},
+		interopMode: {
+			name: "送信先モード",
+			desc: "イベントの送信先を選択します。both は新 ptune-log 開発中の暫定モードです",
+			options: {
+				old: "旧のみ (old only)",
+				new: "新のみ (new only)",
+				both: "両方 (both) — 開発中",
+			},
+		},
 		interopRoot: {
-			name: "Interop ルート",
-			desc: "event/status/lock ファイル連携のルートパス（空欄で既定値）",
+			name: "旧 Interop ルート",
+			desc: "旧 ptune-log の event/status/lock ファイル連携ルートパス（空欄で既定値: ~/.ptune-log）",
 			placeholder: "C:/Users/<user>/.ptune-log",
 			openButton: "フォルダを開く",
 			openFailed: "Interop ルートを開けませんでした",
+		},
+		interopRootNew: {
+			name: "新 Interop ルート",
+			desc: "新 ptune-log の event/status/lock ファイル連携ルートパス（空欄で既定値: ~/.ptune-log/interop-dev）",
+			placeholder: "C:/Users/<user>/.ptune-log/interop-dev",
+			openButton: "フォルダを開く",
+			openFailed: "新 Interop ルートを開けませんでした",
 		},
 		pythonExePath: {
 			name: "Python 実行ファイル",

@@ -28,12 +28,28 @@ export const settingsEn = {
 			name: "Enable event hook",
 			desc: "Emit note-create, note-attached, and note-review-requested events to the ptune-log bridge",
 		},
+		interopMode: {
+			name: "Interop mode",
+			desc: "Select which ptune-log instance receives events. 'both' is a temporary mode for new ptune-log development",
+			options: {
+				old: "Old only",
+				new: "New only",
+				both: "Both — dev",
+			},
+		},
 		interopRoot: {
-			name: "Interop root",
-			desc: "Root directory for event/status/lock file bridge (empty = default)",
+			name: "Old interop root",
+			desc: "Root directory for the old ptune-log event/status/lock bridge (empty = default: ~/.ptune-log)",
 			placeholder: "C:/Users/<user>/.ptune-log",
 			openButton: "Open folder",
 			openFailed: "Could not open interop root folder",
+		},
+		interopRootNew: {
+			name: "New interop root",
+			desc: "Root directory for the new ptune-log event/status/lock bridge (empty = default: ~/.ptune-log/interop-dev)",
+			placeholder: "C:/Users/<user>/.ptune-log/interop-dev",
+			openButton: "Open folder",
+			openFailed: "Could not open new interop root folder",
 		},
 		pythonExePath: {
 			name: "Python executable",

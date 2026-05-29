@@ -57,7 +57,9 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 
 	eventHook: {
 		enabled: false,
+		interopMode: "old" as const,
 		interopRoot: "",
+		interopRootNew: "",
 		statusWaitMs: 2500,
 		ensureOnEvent: true,
 		pythonExePath: "",

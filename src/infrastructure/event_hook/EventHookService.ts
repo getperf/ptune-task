@@ -1,5 +1,6 @@
 import { App } from "obsidian";
 import { dirname, join } from "path";
+import { homedir } from "os";
 import { mkdir, readFile, rename, writeFile } from "fs/promises";
 import { config } from "../../config/config";
 import { logger } from "../../shared/logger/loggerInstance";
@@ -222,32 +223,36 @@ export class EventHookService {
 			payload: payload ?? options?.payload,
 		};
 
-		const interopRoot = this.daemonService.resolveInteropRoot();
+		const primaryRoot = this.daemonService.resolveInteropRoot();
+		const mode = config.settings.eventHook.interopMode ?? "old";
 		if (config.settings.eventHook.ensureOnEvent) {
 			const ensured = await this.daemonService.ensureDaemonRunning("event");
 			if (!ensured) {
 				logger.warn(
-					`[EventHook] ensure on event failed but continuing to emit event and wait for status interopRoot=${interopRoot} lockPath=${this.daemonService.resolveLockFilePath()}`,
+					`[EventHook] ensure on event failed but continuing to emit event and wait for status interopRoot=${primaryRoot} lockPath=${this.daemonService.resolveLockFilePath()}`,
 				);
 			}
 		}
-		const inboxPath = join(
-			interopRoot,
-			"interop",
-			"events",
-			"inbox",
-			`${requestId}.json`,
-		);
+
+		const inboxPaths: string[] = [];
+		if (mode === "old" || mode === "both") {
+			inboxPaths.push(join(primaryRoot, "interop", "events", "inbox", `${requestId}.json`));
+		}
+		if (mode === "new" || mode === "both") {
+			const newRoot = this.resolveNewInteropRoot();
+			inboxPaths.push(join(newRoot, "events", "inbox", `${requestId}.json`));
+		}
+
 		const statusPath = join(
-			interopRoot,
+			primaryRoot,
 			"interop",
 			"status",
 			`${requestId}.json`,
 		);
 
-		await this.writeJsonAtomic(inboxPath, event);
+		await Promise.all(inboxPaths.map((p) => this.writeJsonAtomic(p, event)));
 		logger.info(
-			`[EventHook] emitted eventType=${eventType} requestId=${requestId} note=${notePath}`,
+			`[EventHook] emitted eventType=${eventType} requestId=${requestId} note=${notePath} mode=${mode}`,
 		);
 
 		const timeoutMs = this.resolveStatusWaitMs();
@@ -266,6 +271,14 @@ export class EventHookService {
 			status: status.status,
 			message: status.message ?? `${status.status}`,
 		};
+	}
+
+	private resolveNewInteropRoot(): string {
+		const configured = config.settings.eventHook.interopRootNew.trim();
+		if (configured) {
+			return configured;
+		}
+		return join(homedir(), ".ptune-log", "interop-dev");
 	}
 
 	private resolveStatusWaitMs(): number {
