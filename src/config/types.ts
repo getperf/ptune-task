@@ -64,7 +64,6 @@ export interface EventHookSettings {
 	enabled: boolean;
 	interopMode: InteropMode;
 	interopRoot: string;
-	interopRootNew: string;
 	statusWaitMs: number;
 	ensureOnEvent: boolean;
 	pythonExePath: string;

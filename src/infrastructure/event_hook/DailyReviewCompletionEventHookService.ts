@@ -53,13 +53,12 @@ export class DailyReviewCompletionEventHookService {
     if (configured) {
       return configured;
     }
-    return join(homedir(), ".ptune-log");
+    return join(homedir(), ".ptune", "interop");
   }
 
   private resolveNotificationOutboxFile(requestId: string): string {
     return join(
       this.resolveInteropRoot(),
-      "interop",
       "notifications",
       "outbox",
       `${requestId}.json`,
@@ -69,7 +68,6 @@ export class DailyReviewCompletionEventHookService {
   private async archiveNotification(sourcePath: string, requestId: string): Promise<void> {
     const processedPath = join(
       this.resolveInteropRoot(),
-      "interop",
       "notifications",
       "processed",
       `${requestId}.json`,

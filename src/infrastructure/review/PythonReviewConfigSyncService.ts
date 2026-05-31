@@ -29,7 +29,7 @@ export class PythonReviewConfigSyncService {
 			);
 		}
 
-		const root = join(homedir(), ".ptune", "llm");
+		const root = join(homedir(), ".ptune", "config", "llm");
 		const profilesFile = join(root, "profiles.json");
 		const credentialsFile = join(root, "credentials.json");
 		await mkdir(root, { recursive: true });

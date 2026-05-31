@@ -108,11 +108,11 @@ export class EventHookDaemonService {
 		if (configured) {
 			return configured;
 		}
-		return join(homedir(), ".ptune-log");
+		return join(homedir(), ".ptune", "interop");
 	}
 
 	resolveLockFilePath(): string {
-		return join(this.resolveInteropRoot(), "runtime", "locks", "daemon.lock");
+		return join(dirname(this.resolveInteropRoot()), "runtime", "locks", "daemon.lock");
 	}
 
 	resolveLockFreshSeconds(): number {
@@ -198,7 +198,7 @@ export class EventHookDaemonService {
 			: DEFAULT_DAEMON_ARGS;
 		const args = normalizeDaemonArgsForEnsure(base);
 		if (!args.includes("--interop-root")) {
-			args.push("--interop-root", interopRoot);
+			args.push("--interop-root", dirname(interopRoot));
 		}
 		return args;
 	}
@@ -252,7 +252,7 @@ export class EventHookDaemonService {
 			"daemon",
 			command,
 			"--interop-root",
-			interopRoot,
+			dirname(interopRoot),
 			...extraArgs,
 		];
 		logger.info(

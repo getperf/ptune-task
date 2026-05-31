@@ -151,14 +151,12 @@ export class EventHookService {
 		const interopRoot = this.daemonService.resolveInteropRoot();
 		const outboxPath = join(
 			interopRoot,
-			"interop",
 			"notifications",
 			"outbox",
 			`${resolvedBatchId}.json`,
 		);
 		const processedPath = join(
 			interopRoot,
-			"interop",
 			"notifications",
 			"processed",
 			`${resolvedBatchId}.json`,
@@ -236,7 +234,7 @@ export class EventHookService {
 
 		const inboxPaths: string[] = [];
 		if (mode === "old" || mode === "both") {
-			inboxPaths.push(join(primaryRoot, "interop", "events", "inbox", `${requestId}.json`));
+			inboxPaths.push(join(primaryRoot, "events", "inbox", `${requestId}.json`));
 		}
 		if (mode === "new" || mode === "both") {
 			const newRoot = this.resolveNewInteropRoot();
@@ -245,7 +243,6 @@ export class EventHookService {
 
 		const statusPath = join(
 			primaryRoot,
-			"interop",
 			"status",
 			`${requestId}.json`,
 		);
@@ -274,11 +271,8 @@ export class EventHookService {
 	}
 
 	private resolveNewInteropRoot(): string {
-		const configured = config.settings.eventHook.interopRootNew.trim();
-		if (configured) {
-			return configured;
-		}
-		return join(homedir(), ".ptune-log", "interop-dev");
+		const base = config.settings.eventHook.interopRoot.trim() || join(homedir(), ".ptune", "interop");
+		return `${base}-dev`;
 	}
 
 	private resolveStatusWaitMs(): number {

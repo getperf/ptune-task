@@ -78,37 +78,10 @@ export function renderEventHookSettings(containerEl: HTMLElement, app: App) {
 				.onClick(async () => {
 					const interopRoot =
 						config.settings.eventHook.interopRoot.trim() ||
-						join(homedir(), ".ptune-log");
+						join(homedir(), ".ptune", "interop");
 					const opened = await openFolderInExplorer(interopRoot);
 					if (!opened) {
 						new Notice(t.interopRoot.openFailed);
-					}
-				}),
-		);
-
-	new Setting(containerEl)
-		.setName(t.interopRootNew.name)
-		.setDesc(t.interopRootNew.desc)
-		.addText((text) =>
-			text
-				.setPlaceholder(t.interopRootNew.placeholder)
-				.setValue(config.settings.eventHook.interopRootNew)
-				.onChange(async (value) => {
-					config.settings.eventHook.interopRootNew = value.trim();
-					await config.save();
-				}),
-		)
-		.addButton((button) =>
-			button
-				.setIcon("folder-open")
-				.setTooltip(t.interopRootNew.openButton)
-				.onClick(async () => {
-					const interopRootNew =
-						config.settings.eventHook.interopRootNew.trim() ||
-						join(homedir(), ".ptune-log", "interop-dev");
-					const opened = await openFolderInExplorer(interopRootNew);
-					if (!opened) {
-						new Notice(t.interopRootNew.openFailed);
 					}
 				}),
 		);

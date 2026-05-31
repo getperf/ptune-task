@@ -38,18 +38,11 @@ export const settingsEn = {
 			},
 		},
 		interopRoot: {
-			name: "Old interop root",
-			desc: "Root directory for the old ptune-log event/status/lock bridge (empty = default: ~/.ptune-log)",
-			placeholder: "C:/Users/<user>/.ptune-log",
+			name: "Interop root",
+			desc: "Root directory for event/status/lock bridge (empty = default: ~/.ptune/interop; dev variant appends -dev)",
+			placeholder: "C:/Users/<user>/.ptune/interop",
 			openButton: "Open folder",
 			openFailed: "Could not open interop root folder",
-		},
-		interopRootNew: {
-			name: "New interop root",
-			desc: "Root directory for the new ptune-log event/status/lock bridge (empty = default: ~/.ptune-log/interop-dev)",
-			placeholder: "C:/Users/<user>/.ptune-log/interop-dev",
-			openButton: "Open folder",
-			openFailed: "Could not open new interop root folder",
 		},
 		pythonExePath: {
 			name: "Python executable",

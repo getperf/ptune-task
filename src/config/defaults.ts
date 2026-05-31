@@ -59,7 +59,6 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 		enabled: false,
 		interopMode: "old" as const,
 		interopRoot: "",
-		interopRootNew: "",
 		statusWaitMs: 2500,
 		ensureOnEvent: true,
 		pythonExePath: "",

@@ -38,18 +38,11 @@ export const settingsJa = {
 			},
 		},
 		interopRoot: {
-			name: "旧 Interop ルート",
-			desc: "旧 ptune-log の event/status/lock ファイル連携ルートパス（空欄で既定値: ~/.ptune-log）",
-			placeholder: "C:/Users/<user>/.ptune-log",
+			name: "Interop ルート",
+			desc: "event/status/lock ファイル連携のルートパス（空欄で既定値: ~/.ptune/interop、開発用は末尾に -dev を付与）",
+			placeholder: "C:/Users/<user>/.ptune/interop",
 			openButton: "フォルダを開く",
 			openFailed: "Interop ルートを開けませんでした",
-		},
-		interopRootNew: {
-			name: "新 Interop ルート",
-			desc: "新 ptune-log の event/status/lock ファイル連携ルートパス（空欄で既定値: ~/.ptune-log/interop-dev）",
-			placeholder: "C:/Users/<user>/.ptune-log/interop-dev",
-			openButton: "フォルダを開く",
-			openFailed: "新 Interop ルートを開けませんでした",
 		},
 		pythonExePath: {
 			name: "Python 実行ファイル",
