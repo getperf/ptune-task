@@ -187,13 +187,24 @@ describe("GenerateDailyReviewFlowUseCase", () => {
     });
   });
 
-  test("requests ptune-log daily notes review when request port is available", async () => {
+  test("requests ptune-log daily notes review after task snapshot preparation", async () => {
     const taskNote = new DailyNote("2026-03-16", "daily/2026-03-16.md", "task");
+    const preparedTaskReview = {
+      date: "2026-03-16",
+      list: getDefaultTaskListId(),
+      tasks: [],
+      tree: {},
+    };
     const pullAndMergeTodayUseCase = {
       execute: jest.fn().mockResolvedValue({ note: taskNote, created: false }),
     } as unknown as PullAndMergeTodayUseCase;
+    const prepare = jest.fn().mockResolvedValue(preparedTaskReview);
+    const complete = jest.fn().mockResolvedValue({ note: taskNote, taskCount: 5 });
+    const execute = jest.fn();
     const taskReviewUseCase = {
-      execute: jest.fn().mockResolvedValue({ note: taskNote, taskCount: 5 }),
+      execute,
+      prepare,
+      complete,
     } as unknown as GenerateDailyReviewUseCase;
     const dailyNotesReviewUseCase = {
       execute: jest.fn(),
@@ -204,12 +215,13 @@ describe("GenerateDailyReviewFlowUseCase", () => {
     const textGenerator = {
       hasValidApiKey: jest.fn().mockReturnValue(true),
     } as unknown as TextGenerationPort;
+    const requestDailyReview = jest.fn().mockResolvedValue({
+      requestId: "request-1",
+      status: "success",
+      message: "accepted",
+    });
     const dailyReviewRequestPort = {
-      requestDailyReview: jest.fn().mockResolvedValue({
-        requestId: "request-1",
-        status: "success",
-        message: "accepted",
-      }),
+      requestDailyReview,
     } as unknown as DailyReviewRequestPort;
 
     const useCase = new GenerateDailyReviewFlowUseCase(
@@ -228,10 +240,15 @@ describe("GenerateDailyReviewFlowUseCase", () => {
       reviewPointOutputFormat: "xmind",
     });
 
-    expect(dailyReviewRequestPort.requestDailyReview).toHaveBeenCalledWith({
+    expect(execute).not.toHaveBeenCalled();
+    expect(prepare).toHaveBeenCalledWith("2026-03-16", getDefaultTaskListId());
+    expect(requestDailyReview).toHaveBeenCalledWith({
       date: "2026-03-16",
       reviewPointOutputFormat: "xmind",
     });
+    expect(complete).toHaveBeenCalledWith(preparedTaskReview);
+    expect(prepare.mock.invocationCallOrder[0]).toBeLessThan(requestDailyReview.mock.invocationCallOrder[0]);
+    expect(requestDailyReview.mock.invocationCallOrder[0]).toBeLessThan(complete.mock.invocationCallOrder[0]);
     expect(dailyNotesReviewUseCase.execute).not.toHaveBeenCalled();
     expect(result).toEqual({
       note: taskNote,
@@ -315,21 +332,24 @@ describe("GenerateDailyReviewFlowUseCase", () => {
     });
   });
 
-  test("finalizes reflection locally after ptune-log review completion notification", async () => {
+  test("waits for ptune-log review completion without local daily notes review", async () => {
     const taskNote = new DailyNote("2026-03-16", "daily/2026-03-16.md", "task");
-    const finalNote = new DailyNote("2026-03-16", "daily/2026-03-16.md", "final");
+    const preparedTaskReview = {
+      date: "2026-03-16",
+      list: getDefaultTaskListId(),
+      tasks: [],
+      tree: {},
+    };
     const pullAndMergeTodayUseCase = {
       execute: jest.fn().mockResolvedValue({ note: taskNote, created: false }),
     } as unknown as PullAndMergeTodayUseCase;
     const taskReviewUseCase = {
-      execute: jest.fn().mockResolvedValue({ note: taskNote, taskCount: 5 }),
+      execute: jest.fn(),
+      prepare: jest.fn().mockResolvedValue(preparedTaskReview),
+      complete: jest.fn().mockResolvedValue({ note: taskNote, taskCount: 5 }),
     } as unknown as GenerateDailyReviewUseCase;
     const dailyNotesReviewUseCase = {
-      execute: jest.fn().mockResolvedValue({
-        note: finalNote,
-        noteCount: 4,
-        generatedCount: 0,
-      }),
+      execute: jest.fn(),
     } as unknown as GenerateDailyNotesReviewUseCase;
     const createDailyNoteUseCase = {
       execute: jest.fn(),
@@ -376,24 +396,18 @@ describe("GenerateDailyReviewFlowUseCase", () => {
       requestId: "request-1",
       date: "2026-03-16",
     });
-    expect(dailyNotesReviewUseCase.execute).toHaveBeenCalledWith(
-      "2026-03-16",
-      expect.objectContaining({
-        reviewPointOutputFormat: "xmind",
-        enableSummaries: false,
-        enableReflection: true,
-      }),
-    );
+    expect(dailyNotesReviewUseCase.execute).not.toHaveBeenCalled();
     expect(result).toEqual({
-      note: finalNote,
+      note: taskNote,
       taskReview: {
         executed: true,
         taskCount: 5,
       },
       dailyNotesReview: {
         executed: true,
-        noteCount: 4,
+        noteCount: 0,
         generatedCount: 0,
+        requestedExternally: true,
       },
     });
   });

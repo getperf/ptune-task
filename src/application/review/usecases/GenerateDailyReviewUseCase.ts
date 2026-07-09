@@ -16,6 +16,13 @@ export type GenerateReviewResult = {
   taskCount: number;
 };
 
+export type PreparedDailyTaskReview = {
+  date: string;
+  list: string;
+  tasks: ReviewTaskDto[];
+  tree: ReviewTaskTree;
+};
+
 type ReviewResponse = {
   schema_version: number;
   list: string;
@@ -31,24 +38,38 @@ export class GenerateDailyReviewUseCase {
   ) {}
 
   async execute(date: string, list: string): Promise<GenerateReviewResult> {
-    logger.info("GenerateDailyReviewUseCase started");
+    const prepared = await this.prepare(date, list);
+    return await this.complete(prepared);
+  }
 
-    // 1) review 取得
+  async prepare(date: string, list: string): Promise<PreparedDailyTaskReview> {
+    logger.info(`GenerateDailyReviewUseCase prepare started: date=${date}`);
+
     const json = await this.ptuneSync.review({
       preset: "date",
       date,
       list,
     } as ReviewQuery);
     const parsed = JSON.parse(json) as ReviewResponse;
-
     const tasks = parsed.tasks ?? [];
-    const tree = ReviewTaskTree.fromDtos(tasks);
-    const trendStats = await this.loadTrendStats(date, list);
 
-    // 2) アクティブノート取得
-    const { note } = await this.createDailyNoteUseCase.execute(date);
+    logger.info(
+      `GenerateDailyReviewUseCase prepare completed: ${tasks.length} tasks`,
+    );
 
-    // 3) セクション生成＆適用
+    return {
+      date,
+      list,
+      tasks,
+      tree: ReviewTaskTree.fromDtos(tasks),
+    };
+  }
+
+  async complete(prepared: PreparedDailyTaskReview): Promise<GenerateReviewResult> {
+    logger.info(`GenerateDailyReviewUseCase complete started: date=${prepared.date}`);
+
+    const trendStats = await this.loadTrendStats(prepared.date, prepared.list);
+    const { note } = await this.createDailyNoteUseCase.execute(prepared.date);
     const now = new Date().toLocaleTimeString("ja-JP", {
       hour: "2-digit",
       minute: "2-digit",
@@ -57,17 +78,16 @@ export class GenerateDailyReviewUseCase {
     const adapter = new DailyNoteDocumentAdapter(note.content);
     const writer = new ReviewSectionWriter(adapter);
 
-    writer.appendReview(tree, now, trendStats);
+    writer.appendReview(prepared.tree, now, trendStats);
 
-    // 4) 保存
     const updatedNote = note.withContent(adapter.toString());
     await this.repository.save(updatedNote);
 
     logger.info(
-      `GenerateDailyReviewUseCase completed: ${tasks.length} tasks`,
+      `GenerateDailyReviewUseCase complete completed: ${prepared.tasks.length} tasks`,
     );
 
-    return { note: updatedNote, taskCount: tasks.length };
+    return { note: updatedNote, taskCount: prepared.tasks.length };
   }
 
   private async loadTrendStats(

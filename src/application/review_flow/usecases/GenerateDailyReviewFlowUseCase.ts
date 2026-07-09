@@ -33,6 +33,10 @@ export interface DailyReviewCompletionPort {
   } | null>;
 }
 
+type ExternalDailyReviewRequestResult = Awaited<
+  ReturnType<DailyReviewRequestPort["requestDailyReview"]>
+>;
+
 export class GenerateDailyReviewFlowUseCase {
   constructor(
     private readonly pullAndMergeTodayUseCase: PullAndMergeTodayUseCase,
@@ -54,32 +58,37 @@ export class GenerateDailyReviewFlowUseCase {
       onProgress?.({ type: "started", date: options.date });
       logger.debug(`[UseCase] GenerateDailyReviewFlowUseCase options date=${options.date} taskReviewEnabled=${options.taskReviewEnabled} notesReviewEnabled=${options.dailyNotesReviewEnabled} reviewPointFormat=${options.reviewPointOutputFormat}`);
 
-      const externalDailyReviewRequestPromise =
-        options.dailyNotesReviewEnabled &&
-          !options.skipExternalDailyReviewRequest &&
-          this.dailyReviewRequestPort &&
-          this.textGenerator.hasValidApiKey()
-          ? this.dailyReviewRequestPort.requestDailyReview({
-            date: options.date,
-            reviewPointOutputFormat: options.reviewPointOutputFormat,
-          })
-          : null;
-
+      const shouldRequestExternalDailyReview = this.shouldRequestExternalDailyReview(options);
+      let externalDailyReviewRequestPromise: Promise<ExternalDailyReviewRequestResult> | null = null;
       let taskReviewResult: Awaited<ReturnType<GenerateDailyReviewUseCase["execute"]>> | null = null;
 
       if (options.taskReviewEnabled) {
         onProgress?.({ type: "task_review_started", date: options.date });
         await this.pullAndMergeTodayUseCase.execute();
-        taskReviewResult = await this.taskReviewUseCase.execute(
-          options.date,
-          getDefaultTaskListId(),
-        );
+
+        if (shouldRequestExternalDailyReview) {
+          const preparedTaskReview = await this.taskReviewUseCase.prepare(
+            options.date,
+            getDefaultTaskListId(),
+          );
+          externalDailyReviewRequestPromise = this.requestExternalDailyReview(options);
+          taskReviewResult = await this.taskReviewUseCase.complete(preparedTaskReview);
+        } else {
+          taskReviewResult = await this.taskReviewUseCase.execute(
+            options.date,
+            getDefaultTaskListId(),
+          );
+        }
+
         onProgress?.({
           type: "task_review_completed",
           taskCount: taskReviewResult.taskCount,
         });
       } else {
         onProgress?.({ type: "task_review_skipped" });
+        if (shouldRequestExternalDailyReview) {
+          externalDailyReviewRequestPromise = this.requestExternalDailyReview(options);
+        }
       }
 
       if (!options.dailyNotesReviewEnabled) {
@@ -109,64 +118,20 @@ export class GenerateDailyReviewFlowUseCase {
       }
 
       if (externalDailyReviewRequestPromise) {
-        const requested = await externalDailyReviewRequestPromise;
-        if (requested) {
-          if (requested.status === "error") {
-            throw new Error(requested.message || "daily-review-requested failed");
-          }
-          onProgress?.({
-            type: "daily_notes_review_started",
-            date: options.date,
-            targetCount: 0,
-          });
-
-          if (this.dailyReviewCompletionPort) {
-            const applied = await this.dailyReviewCompletionPort.waitForDailyReviewApplied({
-              requestId: requested.requestId,
-              date: options.date,
-            });
-            if (applied && applied.reportGenerationRequested && applied.appliedCount > 0) {
-              const dailyNotesReviewResult = await this.executeDailyNotesReview(
-                options,
-                onProgress,
-                false,
-              );
-              logger.debug(
-                `[UseCase:end] GenerateDailyReviewFlowUseCase date=${options.date} taskCount=${taskReviewResult?.taskCount ?? 0} noteCount=${dailyNotesReviewResult.noteCount} generated=${dailyNotesReviewResult.generatedCount} requestId=${requested.requestId} mode=external-complete`,
-              );
-              onProgress?.({ type: "completed" });
-              return {
-                note: dailyNotesReviewResult.note ?? taskReviewResult?.note ?? (await this.resolveDailyNote(options.date)),
-                taskReview: taskReviewResult
-                  ? {
-                    executed: true,
-                    taskCount: taskReviewResult.taskCount,
-                  }
-                  : {
-                    executed: false,
-                    taskCount: 0,
-                  },
-                dailyNotesReview: {
-                  executed: true,
-                  noteCount: dailyNotesReviewResult.noteCount,
-                  generatedCount: dailyNotesReviewResult.generatedCount,
-                },
-              };
-            }
-          }
-
-          onProgress?.({
-            type: "daily_notes_review_completed",
-            noteCount: 0,
-            generatedCount: 0,
-          });
+        const externalResult = await this.resolveExternalDailyReview(
+          options,
+          externalDailyReviewRequestPromise,
+          onProgress,
+        );
+        if (externalResult) {
+          const note = taskReviewResult?.note ?? (await this.resolveDailyNote(options.date));
           onProgress?.({ type: "completed" });
           logger.debug(
-            `[UseCase:end] GenerateDailyReviewFlowUseCase date=${options.date} dailyReview=requested status=${requested.status} requestId=${requested.requestId}`,
+            `[UseCase:end] GenerateDailyReviewFlowUseCase date=${options.date} taskCount=${taskReviewResult?.taskCount ?? 0} dailyReview=requested requestId=${externalResult.requestId}`,
           );
 
           return {
-            note: taskReviewResult?.note ?? (await this.resolveDailyNote(options.date)),
+            note,
             taskReview: taskReviewResult
               ? {
                 executed: true,
@@ -225,6 +190,64 @@ export class GenerateDailyReviewFlowUseCase {
       );
       throw error;
     }
+  }
+
+  private shouldRequestExternalDailyReview(options: ReviewFlowRunOptions): boolean {
+    return Boolean(
+      options.dailyNotesReviewEnabled &&
+        !options.skipExternalDailyReviewRequest &&
+        this.dailyReviewRequestPort &&
+        this.textGenerator.hasValidApiKey(),
+    );
+  }
+
+  private requestExternalDailyReview(
+    options: ReviewFlowRunOptions,
+  ): Promise<ExternalDailyReviewRequestResult> {
+    if (!this.dailyReviewRequestPort) {
+      return Promise.resolve(null);
+    }
+
+    return this.dailyReviewRequestPort.requestDailyReview({
+      date: options.date,
+      reviewPointOutputFormat: options.reviewPointOutputFormat,
+    });
+  }
+
+  private async resolveExternalDailyReview(
+    options: ReviewFlowRunOptions,
+    requestPromise: Promise<ExternalDailyReviewRequestResult>,
+    onProgress: ((event: DailyReviewFlowProgressEvent) => void) | undefined,
+  ): Promise<{ requestId: string } | null> {
+    const requested = await requestPromise;
+    if (!requested) {
+      return null;
+    }
+
+    if (requested.status === "error" || requested.status === "skipped") {
+      throw new Error(requested.message || "daily-review-requested failed");
+    }
+
+    onProgress?.({
+      type: "daily_notes_review_started",
+      date: options.date,
+      targetCount: 0,
+    });
+
+    if (this.dailyReviewCompletionPort) {
+      await this.dailyReviewCompletionPort.waitForDailyReviewApplied({
+        requestId: requested.requestId,
+        date: options.date,
+      });
+    }
+
+    onProgress?.({
+      type: "daily_notes_review_completed",
+      noteCount: 0,
+      generatedCount: 0,
+    });
+
+    return { requestId: requested.requestId };
   }
 
   private resolveErrorMessage(error: unknown): string {
