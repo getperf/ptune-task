@@ -4,7 +4,7 @@ import { NoteSummaries } from "../../../domain/note/NoteSummaries";
 import { GenerateDailyNotesReviewUseCase } from "../usecases/GenerateDailyNotesReviewUseCase";
 
 describe("GenerateDailyNotesReviewUseCase", () => {
-  test("shows existing summaries in report even when auto summary generation is disabled", async () => {
+  test("uses existing summaries without generating missing summaries", async () => {
     const originalFormat = config.settings.review.reviewPointOutputFormat;
     config.settings.review.reviewPointOutputFormat = "outline";
 
@@ -32,13 +32,6 @@ describe("GenerateDailyNotesReviewUseCase", () => {
       };
       const createdRepo = {
         findByDate: jest.fn().mockReturnValue(createdFiles),
-        hasSummary: jest.fn(),
-      };
-      const noteRepo = {
-        saveSummary: jest.fn(),
-      };
-      const noteSummaryGenerator = {
-        generate: jest.fn(),
       };
       const textGenerator = {
         generate: jest.fn(),
@@ -68,8 +61,6 @@ describe("GenerateDailyNotesReviewUseCase", () => {
         dailyNoteRepository as never,
         collectUseCase as never,
         createdRepo as never,
-        noteRepo as never,
-        noteSummaryGenerator as never,
         textGenerator as never,
         writer as never,
         reportBuilder as never,
@@ -79,11 +70,9 @@ describe("GenerateDailyNotesReviewUseCase", () => {
 
       const result = await useCase.execute("2026-03-16", {
         reviewPointOutputFormat: "outline",
-        enableSummaries: false,
         enableReflection: true,
       });
 
-      expect(noteSummaryGenerator.generate).not.toHaveBeenCalled();
       expect(textGenerator.generate).not.toHaveBeenCalled();
       expect(reviewPointXMindTemplateService.ensureForDailyNote).not.toHaveBeenCalled();
       expect(reportBuilder.build).toHaveBeenCalledWith(
@@ -103,7 +92,6 @@ describe("GenerateDailyNotesReviewUseCase", () => {
       expect(result).toEqual({
         note: updated,
         noteCount: 1,
-        generatedCount: 0,
       });
     } finally {
       config.settings.review.reviewPointOutputFormat = originalFormat;
@@ -139,13 +127,6 @@ describe("GenerateDailyNotesReviewUseCase", () => {
       };
       const createdRepo = {
         findByDate: jest.fn().mockReturnValue([{ path: summaries.getAll()[0].notePath }]),
-        hasSummary: jest.fn(),
-      };
-      const noteRepo = {
-        saveSummary: jest.fn(),
-      };
-      const noteSummaryGenerator = {
-        generate: jest.fn(),
       };
       const textGenerator = {
         generate: jest.fn(),
@@ -176,8 +157,6 @@ describe("GenerateDailyNotesReviewUseCase", () => {
         dailyNoteRepository as never,
         collectUseCase as never,
         createdRepo as never,
-        noteRepo as never,
-        noteSummaryGenerator as never,
         textGenerator as never,
         writer as never,
         reportBuilder as never,
@@ -187,7 +166,6 @@ describe("GenerateDailyNotesReviewUseCase", () => {
 
       await useCase.execute("2026-03-16", {
         reviewPointOutputFormat: "xmind",
-        enableSummaries: false,
         enableReflection: true,
       });
 
@@ -233,13 +211,6 @@ describe("GenerateDailyNotesReviewUseCase", () => {
       };
       const createdRepo = {
         findByDate: jest.fn().mockReturnValue([{ path: summaries.getAll()[0].notePath }]),
-        hasSummary: jest.fn(),
-      };
-      const noteRepo = {
-        saveSummary: jest.fn(),
-      };
-      const noteSummaryGenerator = {
-        generate: jest.fn(),
       };
       const textGenerator = {
         generate: jest.fn(),
@@ -265,8 +236,6 @@ describe("GenerateDailyNotesReviewUseCase", () => {
         dailyNoteRepository as never,
         collectUseCase as never,
         createdRepo as never,
-        noteRepo as never,
-        noteSummaryGenerator as never,
         textGenerator as never,
         writer as never,
         reportBuilder as never,
@@ -277,7 +246,6 @@ describe("GenerateDailyNotesReviewUseCase", () => {
 
       await useCase.execute("2026-04-25", {
         reviewPointOutputFormat: "logseq",
-        enableSummaries: false,
         enableReflection: true,
       });
 
@@ -325,13 +293,6 @@ describe("GenerateDailyNotesReviewUseCase", () => {
       };
       const createdRepo = {
         findByDate: jest.fn().mockReturnValue([{ path: summaries.getAll()[0].notePath }]),
-        hasSummary: jest.fn(),
-      };
-      const noteRepo = {
-        saveSummary: jest.fn(),
-      };
-      const noteSummaryGenerator = {
-        generate: jest.fn(),
       };
       const textGenerator = {
         generate: jest.fn().mockResolvedValue([
@@ -367,8 +328,6 @@ describe("GenerateDailyNotesReviewUseCase", () => {
         dailyNoteRepository as never,
         collectUseCase as never,
         createdRepo as never,
-        noteRepo as never,
-        noteSummaryGenerator as never,
         textGenerator as never,
         writer as never,
         reportBuilder as never,
@@ -378,7 +337,6 @@ describe("GenerateDailyNotesReviewUseCase", () => {
 
       await useCase.execute("2026-03-24", {
         reviewPointOutputFormat: "xmind",
-        enableSummaries: false,
         enableReflection: true,
       });
 

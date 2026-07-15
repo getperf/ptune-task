@@ -111,7 +111,6 @@ export class GenerateDailyReviewFlowUseCase {
           dailyNotesReview: {
             executed: false,
             noteCount: 0,
-            generatedCount: 0,
             skippedReason: "disabled",
           },
         };
@@ -144,7 +143,6 @@ export class GenerateDailyReviewFlowUseCase {
             dailyNotesReview: {
               executed: true,
               noteCount: 0,
-              generatedCount: 0,
               requestedExternally: true,
             },
           };
@@ -154,11 +152,10 @@ export class GenerateDailyReviewFlowUseCase {
       const dailyNotesReviewResult = await this.executeDailyNotesReview(
         options,
         onProgress,
-        this.textGenerator.hasValidApiKey(),
       );
 
       logger.debug(
-        `[UseCase:end] GenerateDailyReviewFlowUseCase date=${options.date} taskCount=${taskReviewResult?.taskCount ?? 0} noteCount=${dailyNotesReviewResult.noteCount} generated=${dailyNotesReviewResult.generatedCount}`,
+        `[UseCase:end] GenerateDailyReviewFlowUseCase date=${options.date} taskCount=${taskReviewResult?.taskCount ?? 0} noteCount=${dailyNotesReviewResult.noteCount}`,
       );
       onProgress?.({ type: "completed" });
 
@@ -176,7 +173,6 @@ export class GenerateDailyReviewFlowUseCase {
         dailyNotesReview: {
           executed: true,
           noteCount: dailyNotesReviewResult.noteCount,
-          generatedCount: dailyNotesReviewResult.generatedCount,
         },
       };
     } catch (error) {
@@ -244,7 +240,6 @@ export class GenerateDailyReviewFlowUseCase {
     onProgress?.({
       type: "daily_notes_review_completed",
       noteCount: 0,
-      generatedCount: 0,
     });
 
     return { requestId: requested.requestId };
@@ -270,12 +265,10 @@ export class GenerateDailyReviewFlowUseCase {
   private async executeDailyNotesReview(
     options: ReviewFlowRunOptions,
     onProgress: ((event: DailyReviewFlowProgressEvent) => void) | undefined,
-    enableSummaries: boolean,
   ) {
     let targetCount = 0;
     const dailyNotesReviewOptions: GenerateDailyNotesReviewOptions = {
       reviewPointOutputFormat: options.reviewPointOutputFormat,
-      enableSummaries,
       enableReflection: true,
       onProgress: (progress) => {
         if (progress.type === "targets_resolved") {
@@ -303,7 +296,6 @@ export class GenerateDailyReviewFlowUseCase {
     onProgress?.({
       type: "daily_notes_review_completed",
       noteCount: dailyNotesReviewResult.noteCount,
-      generatedCount: dailyNotesReviewResult.generatedCount,
     });
     return dailyNotesReviewResult;
   }

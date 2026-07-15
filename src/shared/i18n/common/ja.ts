@@ -237,7 +237,7 @@ export const commonJa = {
 	reviewCommand: {
 		notice: {
 			generated:
-				"レビューを生成しました（タスク {taskCount} 件、ノート {noteCount}/{generatedCount} 件）",
+				"レビューを生成しました（タスク {taskCount} 件、ノート {noteCount} 件）",
 			generatedWithoutNotesReview:
 				"レビューを生成しました（タスク {taskCount} 件、ノートレビューはスキップ: {reason}）",
 			dailyNotesReviewRequested:

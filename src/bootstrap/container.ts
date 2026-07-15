@@ -4,7 +4,7 @@ import { GenerateDailyReviewUseCase } from "../application/review/usecases/Gener
 import { GenerateDailyNotesReviewUseCase } from "../application/daily_notes_review/usecases/GenerateDailyNotesReviewUseCase";
 import { DailyNotesReportBuilder } from "../application/daily_notes_review/builders/DailyNotesReportBuilder";
 import { CollectCreatedNotesUseCase } from "../application/note_scan/usecases/CollectCreatedNotesUseCase";
-import { NoteSummaryGenerator } from "../application/note_review/services/NoteSummaryGenerator";
+
 import { ReviewFlowOptionsResolver } from "../application/review_flow/services/ReviewFlowOptionsResolver";
 import { ObsidianContext } from "../infrastructure/obsidian/ObsidianContext";
 import { PullTodayCommand } from "../presentation/pull/PullTodayCommand";
@@ -139,8 +139,6 @@ export class Container {
       this.runtime.dailyNoteRepository,
       new CollectCreatedNotesUseCase(createdRepo, noteRepo),
       createdRepo,
-      noteRepo,
-      new NoteSummaryGenerator(llm, noteRepo),
       llm,
       new DailyNotesReviewWriter(),
       new DailyNotesReportBuilder(),

@@ -91,8 +91,7 @@ export class ReviewCommand {
 
     return t.generated
       .replace("{taskCount}", String(result.taskReview.taskCount))
-      .replace("{noteCount}", String(result.dailyNotesReview.noteCount))
-      .replace("{generatedCount}", String(result.dailyNotesReview.generatedCount));
+      .replace("{noteCount}", String(result.dailyNotesReview.noteCount));
   }
 
   private buildRecentDates(today: string, days: number): string[] {

@@ -125,7 +125,7 @@ export class EventHookService {
 
 	async emitNoteReviewRequested(
 		notePath: string,
-		payload: ReviewRequestPayload,
+		payload?: ReviewRequestPayload,
 		options?: EventHookEmitOptions,
 	): Promise<EventHookEmitResult> {
 		return this.emit("note-review-requested", notePath, options, payload);

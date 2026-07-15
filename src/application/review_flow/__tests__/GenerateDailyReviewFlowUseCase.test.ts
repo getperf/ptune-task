@@ -58,7 +58,6 @@ describe("GenerateDailyReviewFlowUseCase", () => {
       dailyNotesReview: {
         executed: false,
         noteCount: 0,
-        generatedCount: 0,
         skippedReason: "disabled",
       },
     });
@@ -76,7 +75,6 @@ describe("GenerateDailyReviewFlowUseCase", () => {
       execute: jest.fn().mockResolvedValue({
         note: taskNote,
         noteCount: 3,
-        generatedCount: 0,
       }),
     } as unknown as GenerateDailyNotesReviewUseCase;
     const createDailyNoteUseCase = {
@@ -110,7 +108,6 @@ describe("GenerateDailyReviewFlowUseCase", () => {
       "2026-03-16",
       expect.objectContaining({
         reviewPointOutputFormat: "outline",
-        enableSummaries: false,
         enableReflection: true,
       }),
     );
@@ -123,7 +120,6 @@ describe("GenerateDailyReviewFlowUseCase", () => {
       dailyNotesReview: {
         executed: true,
         noteCount: 3,
-        generatedCount: 0,
       },
     });
   });
@@ -141,7 +137,6 @@ describe("GenerateDailyReviewFlowUseCase", () => {
       execute: jest.fn().mockResolvedValue({
         note: finalNote,
         noteCount: 4,
-        generatedCount: 3,
       }),
     } as unknown as GenerateDailyNotesReviewUseCase;
     const createDailyNoteUseCase = {
@@ -182,7 +177,6 @@ describe("GenerateDailyReviewFlowUseCase", () => {
       dailyNotesReview: {
         executed: true,
         noteCount: 4,
-        generatedCount: 3,
       },
     });
   });
@@ -259,7 +253,6 @@ describe("GenerateDailyReviewFlowUseCase", () => {
       dailyNotesReview: {
         executed: true,
         noteCount: 0,
-        generatedCount: 0,
         requestedExternally: true,
       },
     });
@@ -277,7 +270,6 @@ describe("GenerateDailyReviewFlowUseCase", () => {
       execute: jest.fn().mockResolvedValue({
         note: taskNote,
         noteCount: 4,
-        generatedCount: 0,
       }),
     } as unknown as GenerateDailyNotesReviewUseCase;
     const createDailyNoteUseCase = {
@@ -327,7 +319,6 @@ describe("GenerateDailyReviewFlowUseCase", () => {
       dailyNotesReview: {
         executed: true,
         noteCount: 4,
-        generatedCount: 0,
       },
     });
   });
@@ -406,7 +397,6 @@ describe("GenerateDailyReviewFlowUseCase", () => {
       dailyNotesReview: {
         executed: true,
         noteCount: 0,
-        generatedCount: 0,
         requestedExternally: true,
       },
     });

@@ -76,7 +76,7 @@ export class ReviewProgressModal extends Modal {
         this.appendLine(`${t.events.notesReviewSkipped}: ${event.reason}`);
         return;
       case "daily_notes_review_completed":
-        this.appendLine(`${t.events.notesReviewCompleted}: ${event.noteCount}/${event.generatedCount}`);
+        this.appendLine(`${t.events.notesReviewCompleted}: ${event.noteCount}`);
         return;
       case "completed":
         return;

@@ -17,13 +17,11 @@ export type DailyReviewFlowResult = {
     | {
         executed: true;
         noteCount: number;
-        generatedCount: number;
         requestedExternally?: boolean;
       }
     | {
         executed: false;
         noteCount: 0;
-        generatedCount: 0;
         skippedReason: DailyNotesReviewSkippedReason;
       };
 };

@@ -1,24 +1,14 @@
 import { App, Notice, Plugin, TFile } from "obsidian";
-import { TextGenerationPort } from "../../application/llm/ports/TextGenerationPort";
-import { LoadNoteSummaryUseCase } from "../../application/note_review/usecases/LoadNoteSummaryUseCase";
-import { PreviewNoteSummaryUseCase } from "../../application/note_review/usecases/PreviewNoteSummaryUseCase";
-import { SaveNoteSummaryUseCase } from "../../application/note_review/usecases/SaveNoteSummaryUseCase";
 import { config } from "../../config/config";
 import { EventHookNoticeMapper } from "../../infrastructure/event_hook/EventHookNoticeMapper";
 import { EventHookService } from "../../infrastructure/event_hook/EventHookService";
 import { PythonReviewConfigSyncService } from "../../infrastructure/review/PythonReviewConfigSyncService";
 import { i18n } from "../../shared/i18n/I18n";
 import { logger } from "../../shared/logger/loggerInstance";
-import { NoteSummaryModal } from "./NoteSummaryModal";
-import type { EditableNoteSummary } from "../../application/note_review/models/EditableNoteSummary";
 
 export class NoteReviewFeature {
 	constructor(
 		private readonly app: App,
-		private readonly textGenerator: TextGenerationPort,
-		private readonly loadUseCase: LoadNoteSummaryUseCase,
-		private readonly previewUseCase: PreviewNoteSummaryUseCase,
-		private readonly saveUseCase: SaveNoteSummaryUseCase,
 		private readonly eventHookService: EventHookService,
 		private readonly eventHookNoticeMapper: EventHookNoticeMapper,
 		private readonly reviewConfigSyncService: PythonReviewConfigSyncService,
@@ -75,34 +65,7 @@ export class NoteReviewFeature {
 
 	private async open(file: TFile): Promise<void> {
 		try {
-			if (config.settings.eventHook.enabled) {
-				await this.requestPythonReview(file);
-				return;
-			}
-
-			const llmAvailable = this.textGenerator.hasValidApiKey();
-			if (llmAvailable) {
-				new Notice(i18n.common.noteReview.notice.generating);
-			}
-			const preview: EditableNoteSummary = llmAvailable
-				? await this.previewUseCase.execute(file)
-				: await this.loadUseCase.execute(file);
-			new NoteSummaryModal(
-				this.app,
-				preview,
-				async (value: EditableNoteSummary) => {
-					await this.saveUseCase.execute(file, value);
-					new Notice(i18n.common.noteReview.notice.saved);
-				},
-				async (): Promise<EditableNoteSummary> => await this.previewUseCase.execute(file),
-				llmAvailable
-					? undefined
-					: {
-							description:
-								i18n.common.noteReview.modal.manualDescription,
-							canRegenerate: false,
-						},
-			).open();
+			await this.requestPythonReview(file);
 		} catch (error) {
 			logger.warn("[Command] NoteReviewFeature.open failed", error);
 			new Notice(i18n.common.noteReview.notice.failed);
@@ -110,19 +73,18 @@ export class NoteReviewFeature {
 	}
 
 	private async requestPythonReview(file: TFile): Promise<void> {
-		if (!this.textGenerator.hasValidApiKey()) {
-			new Notice(i18n.common.noteReview.notice.apiKeyNotSet);
-			return;
-		}
-
-		const synced = await this.reviewConfigSyncService.sync();
+		const synced = config.settings.eventHook.enabled
+			? await this.reviewConfigSyncService.sync()
+			: null;
 		const result = await this.eventHookService.emitNoteReviewRequested(
 			file.path,
-			{
-				profiles_file: synced.profilesFile,
-				credentials_file: synced.credentialsFile,
-				profile_id: synced.profileId,
-			},
+			synced
+				? {
+						profiles_file: synced.profilesFile,
+						credentials_file: synced.credentialsFile,
+						profile_id: synced.profileId,
+					}
+				: undefined,
 		);
 		logger.info(
 			`[EventHook] note-review-requested status=${result.status} requestId=${result.requestId} note=${file.path}`,

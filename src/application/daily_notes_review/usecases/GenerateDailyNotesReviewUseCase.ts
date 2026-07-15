@@ -1,6 +1,5 @@
 import { CreateDailyNoteUseCase } from "../../calendar/usecases/CreateDailyNoteUseCase";
 import { CollectCreatedNotesUseCase } from "../../note_scan/usecases/CollectCreatedNotesUseCase";
-import { NoteSummaryGenerator } from "../../note_review/services/NoteSummaryGenerator";
 import { DailyNotesReflectionBuilder } from "../builders/DailyNotesReflectionBuilder";
 import { DailyNotesReflectionDocumentBuilder } from "../builders/DailyNotesReflectionDocumentBuilder";
 import { DailyNotesReflectionDocument } from "../models/DailyNotesReflectionDocument";
@@ -10,7 +9,7 @@ import {
   StructuredReflectionText,
   StructuredReflectionTextAdapter,
 } from "../services/StructuredReflectionTextAdapter";
-import { ProjectNoteFrontmatterRepository } from "../../../infrastructure/repository/ProjectNoteFrontmatterRepository";
+
 import { CreatedProjectNoteRepository } from "../../../infrastructure/repository/CreatedProjectNoteRepository";
 import { DailyNotesReviewWriter } from "../../../infrastructure/document/review/DailyNotesReviewWriter";
 import { DailyNoteRepository } from "../../../infrastructure/repository/DailyNoteRepository";
@@ -30,11 +29,10 @@ import { XMindReviewPointArtifactProvider } from "../services/XMindReviewPointAr
 export type GenerateDailyNotesReviewResult = {
   note?: DailyNote;
   noteCount: number;
-  generatedCount: number;
 };
 
 export type DailyNotesReviewProgress = {
-  type: "targets_resolved" | "summary_generated" | "writing_report";
+  type: "targets_resolved" | "writing_report";
   total: number;
   completed: number;
   path?: string;
@@ -42,7 +40,6 @@ export type DailyNotesReviewProgress = {
 
 export type GenerateDailyNotesReviewOptions = {
   reviewPointOutputFormat?: ReviewOutputFormat;
-  enableSummaries?: boolean;
   enableReflection?: boolean;
   onProgress?: (progress: DailyNotesReviewProgress) => void;
 };
@@ -55,8 +52,6 @@ export class GenerateDailyNotesReviewUseCase {
     private readonly dailyNoteRepository: DailyNoteRepository,
     private readonly collectUseCase: CollectCreatedNotesUseCase,
     private readonly createdRepo: CreatedProjectNoteRepository,
-    private readonly noteRepo: ProjectNoteFrontmatterRepository,
-    private readonly noteSummaryGenerator: NoteSummaryGenerator,
     private readonly textGenerator: TextGenerationPort,
     private readonly writer: DailyNotesReviewWriter,
     private readonly reportBuilder: DailyNotesReportBuilder,
@@ -94,39 +89,13 @@ export class GenerateDailyNotesReviewUseCase {
         completed: 0,
       });
 
-      let generatedCount = 0;
-
-      const enableSummaries = options?.enableSummaries ?? true;
-
-      if (enableSummaries) {
-        for (const file of files) {
-          if (await this.createdRepo.hasSummary(file)) {
-            continue;
-          }
-
-          const generated = await this.noteSummaryGenerator.generate(file);
-          await this.noteRepo.saveSummary(file, {
-            summary: generated.summarySentences.join("\n"),
-            summarySegmentsMarkdown: generated.summarySegmentsMarkdown,
-          });
-          generatedCount += 1;
-          options?.onProgress?.({
-            type: "summary_generated",
-            total: files.length,
-            completed: generatedCount,
-            path: file.path,
-          });
-        }
-      }
-
       const summaries = await this.collectUseCase.execute(date);
 
       if (summaries.getAll().length === 0) {
-        logger.debug(`[UseCase:end] GenerateDailyNotesReviewUseCase date=${date} notes=0 generated=${generatedCount}`);
+        logger.debug(`[UseCase:end] GenerateDailyNotesReviewUseCase date=${date} notes=0`);
         return {
           note: undefined,
           noteCount: 0,
-          generatedCount,
         };
       }
 
@@ -136,7 +105,7 @@ export class GenerateDailyNotesReviewUseCase {
       options?.onProgress?.({
         type: "writing_report",
         total: summaries.getAll().length,
-        completed: generatedCount,
+        completed: 0,
       });
       const { note } = await this.createDailyNoteUseCase.execute(date);
       const reflection = (options?.enableReflection ?? true)
@@ -149,12 +118,11 @@ export class GenerateDailyNotesReviewUseCase {
       const updated = this.writer.write(note, report, reflection);
       await this.dailyNoteRepository.save(updated);
 
-      logger.debug(`[UseCase:end] GenerateDailyNotesReviewUseCase date=${date} notes=${summaries.getAll().length} generated=${generatedCount}`);
+      logger.debug(`[UseCase:end] GenerateDailyNotesReviewUseCase date=${date} notes=${summaries.getAll().length}`);
 
       return {
         note: updated,
         noteCount: summaries.getAll().length,
-        generatedCount,
       };
     } catch (error) {
       logger.warn(

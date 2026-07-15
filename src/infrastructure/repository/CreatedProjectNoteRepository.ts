@@ -1,5 +1,5 @@
 import { App, TFile } from "obsidian";
-import { MarkdownFile } from "md-ast-core";
+
 import { ProjectFolder } from "../../domain/project/ProjectFolder";
 import { logger } from "../../shared/logger/loggerInstance";
 
@@ -42,21 +42,6 @@ export class CreatedProjectNoteRepository {
     );
 
     return matched;
-  }
-
-  async hasSummary(file: TFile): Promise<boolean> {
-    const text = await this.app.vault.read(file);
-    const summary = MarkdownFile.parse(text).getFrontmatter().get("summary");
-
-    if (typeof summary === "string") {
-      return summary.trim().length > 0;
-    }
-
-    if (Array.isArray(summary)) {
-      return summary.some((line) => typeof line === "string" && line.trim().length > 0);
-    }
-
-    return false;
   }
 
   private buildLooseThreshold(date: string): number {

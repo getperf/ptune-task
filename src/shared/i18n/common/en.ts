@@ -241,7 +241,7 @@ export const commonEn = {
 	reviewCommand: {
 		notice: {
 			generated:
-				"Review generated ({taskCount} tasks, notes {noteCount}/{generatedCount})",
+				"Review generated ({taskCount} tasks, notes {noteCount})",
 			generatedWithoutNotesReview:
 				"Review generated ({taskCount} tasks, notes review skipped: {reason})",
 			dailyNotesReviewRequested:
