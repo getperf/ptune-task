@@ -58,16 +58,12 @@ export interface DailyNoteTaskSettings {
 	subTaskTemplates: string[];
 }
 
-export type InteropMode = "old" | "new" | "both";
-
 export interface EventHookSettings {
 	enabled: boolean;
-	interopMode: InteropMode;
 	interopRoot: string;
 	statusWaitMs: number;
 	ensureOnEvent: boolean;
 	pythonExePath: string;
-	daemonArgs: string;
 	lockFreshSeconds: number;
 }
 

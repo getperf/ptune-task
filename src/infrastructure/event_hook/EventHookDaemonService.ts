@@ -5,14 +5,11 @@ import { dirname, join } from "path";
 import { config } from "../../config/config";
 import { logger } from "../../shared/logger/loggerInstance";
 
-const DAEMON_COMMANDS = new Set(["foreground", "restart", "start", "status", "stop"]);
-const DEFAULT_DAEMON_ARGS = ["-m", "ptune_log.main", "daemon", "foreground", "--debug"];
-
 interface DaemonLockEnvelope {
 	updated_at_epoch?: number;
 }
 
-type DaemonControlCommand = "status" | "start" | "stop" | "restart";
+export type DaemonControlCommand = "status" | "start" | "stop" | "restart";
 
 export type DaemonState = "running" | "stopped" | "unknown";
 
@@ -39,12 +36,7 @@ export class EventHookDaemonService {
 	}
 
 	async getDaemonStatus(): Promise<DaemonStatusResult> {
-		const freshSeconds = this.resolveLockFreshSeconds();
-		const result = await this.runDaemonControlCommand("status", [
-			"--json",
-			"--stale-after-seconds",
-			String(freshSeconds),
-		]);
+		const result = await this.runDaemonControlCommand("status", ["--json"]);
 		if (!result.ok) {
 			const reason = this.coalesceErrorMessage(result);
 			logger.warn(
@@ -60,7 +52,7 @@ export class EventHookDaemonService {
 
 		try {
 			const parsed = JSON.parse(result.stdout) as Record<string, unknown>;
-			const running = parsed.running === true;
+			const running = parsed.status === "running";
 			const pid = this.toIntOrNull(parsed.pid);
 			const reason = this.toStringOrEmpty(parsed.reason) || (running ? "running" : "stopped");
 			const ageSeconds = this.toIntOrNull(parsed.age_seconds);
@@ -82,25 +74,15 @@ export class EventHookDaemonService {
 	}
 
 	async startDaemon(): Promise<DaemonControlResult> {
-		return this.runDaemonControlCommand("start");
+		return this.runDaemonControlCommand("start", ["--open-ui"]);
 	}
 
 	async stopDaemon(): Promise<DaemonControlResult> {
-		return this.runDaemonControlCommand("stop", [
-			"--timeout-seconds",
-			"15",
-			"--stale-after-seconds",
-			String(this.resolveLockFreshSeconds()),
-		]);
+		return this.runDaemonControlCommand("stop");
 	}
 
 	async restartDaemon(): Promise<DaemonControlResult> {
-		return this.runDaemonControlCommand("restart", [
-			"--timeout-seconds",
-			"15",
-			"--stale-after-seconds",
-			String(this.resolveLockFreshSeconds()),
-		]);
+		return this.runDaemonControlCommand("restart", ["--open-ui"]);
 	}
 
 	resolveInteropRoot(): string {
@@ -112,7 +94,7 @@ export class EventHookDaemonService {
 	}
 
 	resolveLockFilePath(): string {
-		return join(dirname(this.resolveInteropRoot()), "runtime", "locks", "daemon.lock");
+		return join(dirname(this.resolveInteropRoot()), "runtime", "daemon.lock");
 	}
 
 	resolveLockFreshSeconds(): number {
@@ -132,6 +114,15 @@ export class EventHookDaemonService {
 		if (await this.isDaemonLockFresh(lockPath, freshSeconds)) {
 			return true;
 		}
+		// The new daemon lock stores a PID and is not a heartbeat. Once its mtime
+		// ages past the fast-path window, the CLI status is authoritative.
+		const currentStatus = await this.getDaemonStatus();
+		if (currentStatus.state === "running") {
+			logger.info(
+				`[EventHook] daemon ensured by status trigger=${trigger} pid=${currentStatus.pid} lockPath=${lockPath}`,
+			);
+			return true;
+		}
 
 		try {
 			await mkdir(interopRoot, { recursive: true });
@@ -142,41 +133,32 @@ export class EventHookDaemonService {
 			);
 			return false;
 		}
-		const pythonPath = await this.resolvePythonCommandForDaemon();
-		const daemonArgs = this.resolveDaemonArgs(interopRoot);
 		logger.info(
-			`[EventHook] ensure daemon trigger=${trigger} python=${pythonPath} args=${JSON.stringify(daemonArgs)} interopRoot=${interopRoot} lockPath=${lockPath}`,
+			`[EventHook] ensure daemon trigger=${trigger} interopRoot=${interopRoot} lockPath=${lockPath}`,
 		);
-
-		let spawnError: Error | null = null;
-		try {
-			const child = spawn(pythonPath, daemonArgs, {
-				detached: true,
-				stdio: "ignore",
-				windowsHide: true,
-				cwd: interopRoot,
-			});
-			child.once("error", (error) => {
-				spawnError = error;
-				logger.warn(
-					`[EventHook] daemon start failed trigger=${trigger} python=${pythonPath} interopRoot=${interopRoot}`,
-					error,
+		// Startup/event ensure must remain quiet; only explicit settings actions
+		// open the dedicated ptune-log window.
+		const startResult = await this.runDaemonControlCommand("start", [
+			"--no-open-ui",
+		]);
+		if (!startResult.ok) {
+			// Another startup path can win after the preflight status check. Treat
+			// that race as success when the authoritative status is now running.
+			const recoveredStatus = await this.getDaemonStatus();
+			if (recoveredStatus.state === "running") {
+				logger.info(
+					`[EventHook] daemon start race recovered trigger=${trigger} pid=${recoveredStatus.pid}`,
 				);
-			});
-			child.unref();
-		} catch (error) {
+				return true;
+			}
 			logger.warn(
-				`[EventHook] daemon start failed trigger=${trigger} python=${pythonPath} interopRoot=${interopRoot}`,
-				error,
+				`[EventHook] daemon start failed trigger=${trigger} code=${startResult.code} reason=${this.coalesceErrorMessage(startResult)}`,
 			);
 			return false;
 		}
 
 		const deadline = Date.now() + 5000;
 		while (Date.now() < deadline) {
-			if (spawnError) {
-				return false;
-			}
 			if (await this.isDaemonLockFresh(lockPath, freshSeconds)) {
 				logger.info(
 					`[EventHook] daemon ensured trigger=${trigger} lockPath=${lockPath}`,
@@ -186,21 +168,9 @@ export class EventHookDaemonService {
 			await this.delay(250);
 		}
 		logger.warn(
-			`[EventHook] daemon start timeout trigger=${trigger} python=${pythonPath} args=${JSON.stringify(daemonArgs)} interopRoot=${interopRoot} lockPath=${lockPath} freshSeconds=${freshSeconds}`,
+			`[EventHook] daemon start timeout trigger=${trigger} interopRoot=${interopRoot} lockPath=${lockPath} freshSeconds=${freshSeconds}`,
 		);
 		return false;
-	}
-
-	private resolveDaemonArgs(interopRoot: string): string[] {
-		const configured = config.settings.eventHook.daemonArgs.trim();
-		const base = configured
-			? this.splitArgs(configured)
-			: DEFAULT_DAEMON_ARGS;
-		const args = normalizeDaemonArgsForEnsure(base);
-		if (!args.includes("--interop-root")) {
-			args.push("--interop-root", dirname(interopRoot));
-		}
-		return args;
 	}
 
 	private resolvePythonExePath(): string {
@@ -208,28 +178,11 @@ export class EventHookDaemonService {
 		return configured || "python";
 	}
 
-	private async resolvePythonCommandForDaemon(): Promise<string> {
-		const configured = this.resolvePythonExePath();
-		if (
-			process.platform !== "win32" ||
-			!configured.toLowerCase().endsWith("python.exe")
-		) {
-			return configured;
-		}
-		const pythonwPath = join(dirname(configured), "pythonw.exe");
-		try {
-			await stat(pythonwPath);
-			return pythonwPath;
-		} catch {
-			return configured;
-		}
-	}
-
 	private async runDaemonControlCommand(
 		command: DaemonControlCommand,
 		extraArgs: string[] = [],
 	): Promise<DaemonControlResult> {
-		const pythonPath = await this.resolvePythonCommandForDaemon();
+		const pythonPath = this.resolvePythonExePath();
 		const interopRoot = this.resolveInteropRoot();
 		try {
 			await mkdir(interopRoot, { recursive: true });
@@ -246,15 +199,7 @@ export class EventHookDaemonService {
 				stderr: message,
 			};
 		}
-		const args = [
-			"-m",
-			"ptune_log.main",
-			"daemon",
-			command,
-			"--interop-root",
-			dirname(interopRoot),
-			...extraArgs,
-		];
+		const args = buildDaemonControlArgs(command, extraArgs);
 		logger.info(
 			`[EventHook] daemon control command=${command} python=${pythonPath} args=${JSON.stringify(args)} interopRoot=${interopRoot}`,
 		);
@@ -341,16 +286,6 @@ export class EventHookDaemonService {
 		return "daemon_status_failed";
 	}
 
-	private splitArgs(value: string): string[] {
-		const args: string[] = [];
-		const re = /"([^"]*)"|'([^']*)'|(\S+)/g;
-		let match: RegExpExecArray | null;
-		while ((match = re.exec(value)) !== null) {
-			args.push(match[1] ?? match[2] ?? match[3] ?? "");
-		}
-		return args.filter((v) => v.length > 0);
-	}
-
 	private async isDaemonLockFresh(lockPath: string, freshSeconds: number): Promise<boolean> {
 		try {
 			const raw = await readFile(lockPath, "utf-8");
@@ -391,28 +326,9 @@ export class EventHookDaemonService {
 	}
 }
 
-export function normalizeDaemonArgsForEnsure(args: string[]): string[] {
-	const normalized = args.map((arg) =>
-		arg === "codex_md_export.main" ? "ptune_log.main" : arg,
-	);
-	const moduleIndex = normalized.findIndex((arg, index) =>
-		arg === "-m" &&
-		normalized[index + 1] === "ptune_log.main" &&
-		normalized[index + 2] === "daemon"
-	);
-	if (moduleIndex < 0) {
-		return normalized;
-	}
-
-	const commandIndex = moduleIndex + 3;
-	const command = normalized[commandIndex];
-	if (command !== undefined && DAEMON_COMMANDS.has(command)) {
-		return normalized;
-	}
-
-	return [
-		...normalized.slice(0, commandIndex),
-		"foreground",
-		...normalized.slice(commandIndex),
-	];
+export function buildDaemonControlArgs(
+	command: DaemonControlCommand,
+	extraArgs: string[] = [],
+): string[] {
+	return ["-m", "ptune_log.main", "daemon", command, ...extraArgs];
 }

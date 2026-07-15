@@ -28,31 +28,17 @@ export const settingsEn = {
 			name: "Enable event hook",
 			desc: "Emit note-create, note-attached, and note-review-requested events to the ptune-log bridge",
 		},
-		interopMode: {
-			name: "Interop mode",
-			desc: "Select which ptune-log instance receives events. 'both' is a temporary mode for new ptune-log development",
-			options: {
-				old: "Old only",
-				new: "New only",
-				both: "Both — dev",
-			},
-		},
 		interopRoot: {
 			name: "Interop root",
-			desc: "Root directory for event/status/lock bridge (empty = default: ~/.ptune/interop; dev variant appends -dev)",
+			desc: "New ptune-log inbox/status bridge root (empty = ~/.ptune/interop)",
 			placeholder: "C:/Users/<user>/.ptune/interop",
 			openButton: "Open folder",
 			openFailed: "Could not open interop root folder",
 		},
 		pythonExePath: {
 			name: "Python executable",
-			desc: "Absolute path to python.exe for daemon ensure startup (empty = default)",
-			placeholder: "C:/home/.../codex-md-export/.venv/Scripts/python.exe",
-		},
-		daemonArgs: {
-			name: "Daemon arguments",
-			desc: "Arguments passed to python process. Default: -m ptune_log.main daemon foreground --debug",
-			placeholder: "-m ptune_log.main daemon foreground --debug",
+			desc: "Absolute path to the new ptune-log python.exe (empty = python on PATH)",
+			placeholder: "C:/home/.../ptune-log/.venv/Scripts/python.exe",
 		},
 		ensureOnEvent: {
 			name: "Ensure on event emit",
@@ -66,7 +52,7 @@ export const settingsEn = {
 		statusWaitMs: {
 			name: "Status wait (ms)",
 			desc: "How long to wait for status response before notice timeout",
-			placeholder: "2500",
+			placeholder: "5000",
 		},
 		daemonControl: {
 			name: "Daemon control",

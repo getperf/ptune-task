@@ -1,6 +1,5 @@
 import { App } from "obsidian";
 import { dirname, join } from "path";
-import { homedir } from "os";
 import { mkdir, readFile, rename, writeFile } from "fs/promises";
 import { config } from "../../config/config";
 import { logger } from "../../shared/logger/loggerInstance";
@@ -222,7 +221,6 @@ export class EventHookService {
 		};
 
 		const primaryRoot = this.daemonService.resolveInteropRoot();
-		const mode = config.settings.eventHook.interopMode ?? "old";
 		if (config.settings.eventHook.ensureOnEvent) {
 			const ensured = await this.daemonService.ensureDaemonRunning("event");
 			if (!ensured) {
@@ -232,24 +230,16 @@ export class EventHookService {
 			}
 		}
 
-		const inboxPaths: string[] = [];
-		if (mode === "old" || mode === "both") {
-			inboxPaths.push(join(primaryRoot, "events", "inbox", `${requestId}.json`));
-		}
-		if (mode === "new" || mode === "both") {
-			const newRoot = this.resolveNewInteropRoot();
-			inboxPaths.push(join(newRoot, "inbox", `${requestId}.json`));
-		}
-
+		const inboxPath = join(primaryRoot, "inbox", `${requestId}.json`);
 		const statusPath = join(
 			primaryRoot,
 			"status",
 			`${requestId}.json`,
 		);
 
-		await Promise.all(inboxPaths.map((p) => this.writeJsonAtomic(p, event)));
+		await this.writeJsonAtomic(inboxPath, event);
 		logger.info(
-			`[EventHook] emitted eventType=${eventType} requestId=${requestId} note=${notePath} mode=${mode}`,
+			`[EventHook] emitted eventType=${eventType} requestId=${requestId} note=${notePath} interopRoot=${primaryRoot}`,
 		);
 
 		const timeoutMs = this.resolveStatusWaitMs();
@@ -268,11 +258,6 @@ export class EventHookService {
 			status: status.status,
 			message: status.message ?? `${status.status}`,
 		};
-	}
-
-	private resolveNewInteropRoot(): string {
-		const base = config.settings.eventHook.interopRoot.trim() || join(homedir(), ".ptune", "interop");
-		return `${base}-dev`;
 	}
 
 	private resolveStatusWaitMs(): number {

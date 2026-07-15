@@ -42,24 +42,6 @@ export function renderEventHookSettings(containerEl: HTMLElement, app: App) {
 	);
 
 	new Setting(containerEl)
-		.setName(t.interopMode.name)
-		.setDesc(t.interopMode.desc)
-		.addDropdown((dropdown) =>
-			dropdown
-				.addOptions({
-					old: t.interopMode.options.old,
-					new: t.interopMode.options.new,
-					both: t.interopMode.options.both,
-				})
-				.setValue(config.settings.eventHook.interopMode ?? "old")
-				.onChange(async (value) => {
-					if (value !== "old" && value !== "new" && value !== "both") return;
-					config.settings.eventHook.interopMode = value;
-					await config.save();
-				}),
-		);
-
-	new Setting(containerEl)
 		.setName(t.interopRoot.name)
 		.setDesc(t.interopRoot.desc)
 		.addText((text) =>
@@ -98,21 +80,6 @@ export function renderEventHookSettings(containerEl: HTMLElement, app: App) {
 					await config.save();
 				}),
 		);
-
-	new Setting(containerEl)
-		.setName(t.daemonArgs.name)
-		.setDesc(t.daemonArgs.desc)
-		.addTextArea((text) => {
-			text
-				.setPlaceholder(t.daemonArgs.placeholder)
-				.setValue(config.settings.eventHook.daemonArgs)
-				.onChange(async (value) => {
-					config.settings.eventHook.daemonArgs = value.trim();
-					await config.save();
-				});
-			text.inputEl.rows = 3;
-			return text;
-		});
 
 	new Setting(containerEl)
 		.setName(t.ensureOnEvent.name)

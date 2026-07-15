@@ -57,12 +57,10 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 
 	eventHook: {
 		enabled: false,
-		interopMode: "old" as const,
 		interopRoot: "",
-		statusWaitMs: 2500,
+		statusWaitMs: 5000,
 		ensureOnEvent: true,
 		pythonExePath: "",
-		daemonArgs: "-m ptune_log.main daemon foreground --debug",
 		lockFreshSeconds: 20,
 	},
 };

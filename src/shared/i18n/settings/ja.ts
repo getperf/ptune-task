@@ -28,31 +28,17 @@ export const settingsJa = {
 			name: "イベントフックを有効化",
 			desc: "note-create / note-attached / note-review-requested のイベントを ptune-log ブリッジへ送信します",
 		},
-		interopMode: {
-			name: "送信先モード",
-			desc: "イベントの送信先を選択します。both は新 ptune-log 開発中の暫定モードです",
-			options: {
-				old: "旧のみ (old only)",
-				new: "新のみ (new only)",
-				both: "両方 (both) — 開発中",
-			},
-		},
 		interopRoot: {
 			name: "Interop ルート",
-			desc: "event/status/lock ファイル連携のルートパス（空欄で既定値: ~/.ptune/interop、開発用は末尾に -dev を付与）",
+			desc: "新 ptune-log の inbox/status ファイル連携ルート（空欄で ~/.ptune/interop）",
 			placeholder: "C:/Users/<user>/.ptune/interop",
 			openButton: "フォルダを開く",
 			openFailed: "Interop ルートを開けませんでした",
 		},
 		pythonExePath: {
 			name: "Python 実行ファイル",
-			desc: "daemon ensure 起動に使う python.exe の絶対パス（空欄で既定）",
-			placeholder: "C:/home/.../codex-md-export/.venv/Scripts/python.exe",
-		},
-		daemonArgs: {
-			name: "Daemon 起動引数",
-			desc: "python 実行時に渡す引数。既定: -m ptune_log.main daemon foreground --debug",
-			placeholder: "-m ptune_log.main daemon foreground --debug",
+			desc: "新 ptune-log の daemon 制御に使う python.exe の絶対パス（空欄で PATH 上の python）",
+			placeholder: "C:/home/.../ptune-log/.venv/Scripts/python.exe",
 		},
 		ensureOnEvent: {
 			name: "イベント送信時 ensure",
@@ -66,7 +52,7 @@ export const settingsJa = {
 		statusWaitMs: {
 			name: "ステータス待機時間 (ms)",
 			desc: "status 応答待機のタイムアウト時間",
-			placeholder: "2500",
+			placeholder: "5000",
 		},
 		daemonControl: {
 			name: "Daemon 制御",
