@@ -87,6 +87,10 @@ export const commonEn = {
 			reviewRequested: "Requested note summary review",
 			reviewRequestedTimeout:
 				"Accepted the note summary review request. Check whether the review GUI opens.",
+			nonWorkNote:
+				"Not a work note (no `dailynote`); no ptune-log event was sent.",
+			eventHookDisabled:
+				"The ptune-log event hook is disabled. Enable it in settings.",
 		},
 	},
 

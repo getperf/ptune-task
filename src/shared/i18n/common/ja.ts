@@ -87,6 +87,10 @@ export const commonJa = {
 			reviewRequested: "ノート要約レビューを依頼しました",
 			reviewRequestedTimeout:
 				"ノート要約レビュー依頼を受け付けました。GUI 起動を確認してください",
+			nonWorkNote:
+				"作業ノート（dailynote）ではないため、ptune-log イベントは送信しません",
+			eventHookDisabled:
+				"ptune-log イベントフックが無効です。設定で有効化してください",
 		},
 	},
 
