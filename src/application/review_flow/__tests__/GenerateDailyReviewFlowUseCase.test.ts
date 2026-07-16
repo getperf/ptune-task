@@ -254,6 +254,7 @@ describe("GenerateDailyReviewFlowUseCase", () => {
         executed: true,
         noteCount: 0,
         requestedExternally: true,
+        outcome: "completed",
       },
     });
   });
@@ -356,9 +357,10 @@ describe("GenerateDailyReviewFlowUseCase", () => {
       }),
     } as unknown as DailyReviewRequestPort;
     const dailyReviewCompletionPort = {
-      waitForDailyReviewApplied: jest.fn().mockResolvedValue({
-        appliedCount: 3,
-        reportGenerationRequested: true,
+      waitForDailyReviewCompleted: jest.fn().mockResolvedValue({
+        outcome: "completed",
+        reportSaved: true,
+        message: "",
       }),
     } as unknown as DailyReviewCompletionPort;
 
@@ -383,7 +385,7 @@ describe("GenerateDailyReviewFlowUseCase", () => {
       date: "2026-03-16",
       reviewPointOutputFormat: "xmind",
     });
-    expect(dailyReviewCompletionPort.waitForDailyReviewApplied).toHaveBeenCalledWith({
+    expect(dailyReviewCompletionPort.waitForDailyReviewCompleted).toHaveBeenCalledWith({
       requestId: "request-1",
       date: "2026-03-16",
     });
@@ -398,6 +400,7 @@ describe("GenerateDailyReviewFlowUseCase", () => {
         executed: true,
         noteCount: 0,
         requestedExternally: true,
+        outcome: "completed",
       },
     });
   });

@@ -3,49 +3,74 @@ import { dirname, join } from "path";
 import { mkdir, readFile, rename } from "fs/promises";
 import { config } from "../../config/config";
 
-type ReviewAppliedNotification = {
+export type DailyReviewOutcome = "completed" | "cancelled" | "failed" | "timeout";
+
+export type DailyReviewCompletionResult = {
+  outcome: DailyReviewOutcome;
+  reportSaved: boolean;
+  message: string;
+};
+
+type DailyReviewCompletedNotification = {
   event_type?: string;
   request_id?: string;
   payload?: {
     scope?: string;
-    batch_id?: string;
     dailynote_key?: string;
-    report_generation_requested?: boolean;
-    applied_count?: number;
+    outcome?: string;
+    report_saved?: boolean;
+    message?: string;
   };
 };
 
+// A human review can take a while, so poll until the daemon publishes the
+// terminal or this budget elapses. Bounded (no infinite loop); overridable.
+const DEFAULT_TIMEOUT_MS = 60 * 60 * 1000;
+const POLL_INTERVAL_MS = 500;
+
 export class DailyReviewCompletionEventHookService {
-  async waitForDailyReviewApplied(options: {
+  async waitForDailyReviewCompleted(options: {
     requestId: string;
     date: string;
-  }): Promise<{
-    appliedCount: number;
-    reportGenerationRequested: boolean;
-  } | null> {
+    timeoutMs?: number;
+  }): Promise<DailyReviewCompletionResult> {
     const outboxPath = this.resolveNotificationOutboxFile(options.requestId);
+    const deadline = Date.now() + (options.timeoutMs ?? DEFAULT_TIMEOUT_MS);
 
     for (;;) {
       try {
         const raw = await readFile(outboxPath, "utf-8");
-        const parsed = JSON.parse(raw) as ReviewAppliedNotification;
+        const parsed = JSON.parse(raw) as DailyReviewCompletedNotification;
         if (
-          parsed.event_type === "review.applied" &&
-          parsed.payload?.scope === "daily" &&
-          parsed.payload?.batch_id === options.requestId &&
+          parsed.event_type === "daily-review-completed" &&
+          parsed.request_id === options.requestId &&
           parsed.payload?.dailynote_key === options.date
         ) {
           await this.archiveNotification(outboxPath, options.requestId);
           return {
-            appliedCount: this.toInt(parsed.payload?.applied_count),
-            reportGenerationRequested: parsed.payload?.report_generation_requested !== false,
+            outcome: this.normalizeOutcome(parsed.payload?.outcome),
+            reportSaved: parsed.payload?.report_saved === true,
+            message:
+              typeof parsed.payload?.message === "string"
+                ? parsed.payload.message
+                : "",
           };
         }
       } catch {
         // continue polling
       }
-      await this.delay(500);
+      if (Date.now() >= deadline) {
+        return { outcome: "timeout", reportSaved: false, message: "" };
+      }
+      await this.delay(POLL_INTERVAL_MS);
     }
+  }
+
+  private normalizeOutcome(value: unknown): DailyReviewOutcome {
+    if (value === "completed" || value === "cancelled" || value === "failed") {
+      return value;
+    }
+    return "failed";
   }
 
   private resolveInteropRoot(): string {
@@ -78,19 +103,6 @@ export class DailyReviewCompletionEventHookService {
     } catch {
       // Ignore archive failures. The notification has already been consumed.
     }
-  }
-
-  private toInt(value: unknown): number {
-    if (typeof value === "number" && Number.isFinite(value)) {
-      return Math.trunc(value);
-    }
-    if (typeof value === "string" && value.trim().length > 0) {
-      const parsed = Number.parseInt(value, 10);
-      if (!Number.isNaN(parsed)) {
-        return parsed;
-      }
-    }
-    return 0;
   }
 
   private async delay(ms: number): Promise<void> {

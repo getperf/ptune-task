@@ -2,6 +2,8 @@ import { DailyNote } from "../../../domain/daily/DailyNote";
 
 export type DailyNotesReviewSkippedReason = "disabled" | "llm-unavailable";
 
+export type DailyReviewOutcome = "completed" | "cancelled" | "failed" | "timeout";
+
 export type DailyReviewFlowResult = {
   note: DailyNote;
   taskReview:
@@ -18,6 +20,7 @@ export type DailyReviewFlowResult = {
         executed: true;
         noteCount: number;
         requestedExternally?: boolean;
+        outcome?: DailyReviewOutcome;
       }
     | {
         executed: false;

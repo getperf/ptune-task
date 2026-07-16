@@ -9,7 +9,10 @@ import { GenerateDailyReviewUseCase } from "../../review/usecases/GenerateDailyR
 import { PullAndMergeTodayUseCase } from "../../sync/pull/PullAndMergeTodayUseCase";
 import { getDefaultTaskListId } from "../../sync/shared/DefaultTaskListId";
 import { DailyReviewFlowProgressEvent } from "../types/DailyReviewFlowProgressEvent";
-import { DailyReviewFlowResult } from "../types/DailyReviewFlowResult";
+import {
+  DailyReviewFlowResult,
+  DailyReviewOutcome,
+} from "../types/DailyReviewFlowResult";
 import { ReviewFlowRunOptions } from "../types/ReviewFlowRunOptions";
 
 export interface DailyReviewRequestPort {
@@ -24,13 +27,14 @@ export interface DailyReviewRequestPort {
 }
 
 export interface DailyReviewCompletionPort {
-  waitForDailyReviewApplied(options: {
+  waitForDailyReviewCompleted(options: {
     requestId: string;
     date: string;
   }): Promise<{
-    appliedCount: number;
-    reportGenerationRequested: boolean;
-  } | null>;
+    outcome: DailyReviewOutcome;
+    reportSaved: boolean;
+    message: string;
+  }>;
 }
 
 type ExternalDailyReviewRequestResult = Awaited<
@@ -144,6 +148,7 @@ export class GenerateDailyReviewFlowUseCase {
               executed: true,
               noteCount: 0,
               requestedExternally: true,
+              outcome: externalResult.outcome,
             },
           };
         }
@@ -214,7 +219,7 @@ export class GenerateDailyReviewFlowUseCase {
     options: ReviewFlowRunOptions,
     requestPromise: Promise<ExternalDailyReviewRequestResult>,
     onProgress: ((event: DailyReviewFlowProgressEvent) => void) | undefined,
-  ): Promise<{ requestId: string } | null> {
+  ): Promise<{ requestId: string; outcome: DailyReviewOutcome } | null> {
     const requested = await requestPromise;
     if (!requested) {
       return null;
@@ -230,11 +235,17 @@ export class GenerateDailyReviewFlowUseCase {
       targetCount: 0,
     });
 
+    // The daemon terminal fires when the human finishes the work review
+    // (report saved / cancelled / failed). Wait for it rather than assuming
+    // instant completion; a timeout yields a "timeout" outcome, never a hang.
+    let outcome: DailyReviewOutcome = "completed";
     if (this.dailyReviewCompletionPort) {
-      await this.dailyReviewCompletionPort.waitForDailyReviewApplied({
-        requestId: requested.requestId,
-        date: options.date,
-      });
+      const completion =
+        await this.dailyReviewCompletionPort.waitForDailyReviewCompleted({
+          requestId: requested.requestId,
+          date: options.date,
+        });
+      outcome = completion.outcome;
     }
 
     onProgress?.({
@@ -242,7 +253,7 @@ export class GenerateDailyReviewFlowUseCase {
       noteCount: 0,
     });
 
-    return { requestId: requested.requestId };
+    return { requestId: requested.requestId, outcome };
   }
 
   private resolveErrorMessage(error: unknown): string {
