@@ -95,7 +95,7 @@ export class GenerateDailyReviewUseCase {
     list: string,
   ): Promise<ReviewDailyTrendStat[]> {
     const stats: ReviewDailyTrendStat[] = [];
-    const trendDays = Math.min(30, Math.max(1, config.settings.review.reviewTrendDays ?? 7));
+    const trendDays = Math.min(30, Math.max(1, config.settings.taskReview.trendDays));
 
     for (let offset = trendDays - 1; offset >= 0; offset--) {
       const date = this.shiftDate(targetDate, -offset);

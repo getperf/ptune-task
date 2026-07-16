@@ -3,7 +3,6 @@ import { config } from "../../config/config";
 import { isWorkNoteFrontmatter } from "../../domain/note/isWorkNote";
 import { EventHookNoticeMapper } from "../../infrastructure/event_hook/EventHookNoticeMapper";
 import { EventHookService } from "../../infrastructure/event_hook/EventHookService";
-import { PythonReviewConfigSyncService } from "../../infrastructure/review/PythonReviewConfigSyncService";
 import { i18n } from "../../shared/i18n/I18n";
 import { logger } from "../../shared/logger/loggerInstance";
 
@@ -12,7 +11,6 @@ export class NoteReviewFeature {
 		private readonly app: App,
 		private readonly eventHookService: EventHookService,
 		private readonly eventHookNoticeMapper: EventHookNoticeMapper,
-		private readonly reviewConfigSyncService: PythonReviewConfigSyncService,
 	) {}
 
 	start(plugin: Plugin): void {
@@ -109,18 +107,8 @@ export class NoteReviewFeature {
 	}
 
 	private async requestPythonReview(file: TFile): Promise<void> {
-		const synced = config.settings.eventHook.enabled
-			? await this.reviewConfigSyncService.sync()
-			: null;
 		const result = await this.eventHookService.emitNoteReviewRequested(
 			file.path,
-			synced
-				? {
-						profiles_file: synced.profilesFile,
-						credentials_file: synced.credentialsFile,
-						profile_id: synced.profileId,
-					}
-				: undefined,
 		);
 		logger.info(
 			`[EventHook] note-review-requested status=${result.status} requestId=${result.requestId} note=${file.path}`,

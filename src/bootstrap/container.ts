@@ -1,9 +1,6 @@
 import { App } from "obsidian";
 import { GenerateDailyReviewFlowUseCase } from "../application/review_flow/usecases/GenerateDailyReviewFlowUseCase";
 import { GenerateDailyReviewUseCase } from "../application/review/usecases/GenerateDailyReviewUseCase";
-import { GenerateDailyNotesReviewUseCase } from "../application/daily_notes_review/usecases/GenerateDailyNotesReviewUseCase";
-import { DailyNotesReportBuilder } from "../application/daily_notes_review/builders/DailyNotesReportBuilder";
-import { CollectCreatedNotesUseCase } from "../application/note_scan/usecases/CollectCreatedNotesUseCase";
 
 import { ReviewFlowOptionsResolver } from "../application/review_flow/services/ReviewFlowOptionsResolver";
 import { ObsidianContext } from "../infrastructure/obsidian/ObsidianContext";
@@ -22,18 +19,10 @@ import { DailyNoteOpenHook } from "../infrastructure/obsidian/DailyNoteOpenHook"
 import { LayoutReadyHook } from "../infrastructure/obsidian/LayoutReadyHook";
 import { ProjectIndexOpenHook } from "../infrastructure/obsidian/ProjectIndexOpenHook";
 import { PtuneSyncUriAuthService } from "../infrastructure/sync/ptune-sync-uri/PtuneSyncUriAuthService";
-import { DailyNotesReviewWriter } from "../infrastructure/document/review/DailyNotesReviewWriter";
-import { LlmClient } from "../infrastructure/llm/LlmClient";
-import { CreatedProjectNoteRepository } from "../infrastructure/repository/CreatedProjectNoteRepository";
-import { ProjectNoteFrontmatterRepository } from "../infrastructure/repository/ProjectNoteFrontmatterRepository";
-import { ReviewPointXMindTemplateService } from "../infrastructure/review/ReviewPointXMindTemplateService";
-import { ReviewPointXMindInputFileService } from "../infrastructure/review/ReviewPointXMindInputFileService";
-import { ReviewPointLogseqJournalTemplateService } from "../infrastructure/review/ReviewPointLogseqJournalTemplateService";
 import { SetupChecklistService } from "../application/setup/services/SetupChecklistService";
 import { NoteSetupHelper } from "../infrastructure/setup/NoteSetupHelper";
 import { SetupWizardDialog } from "../presentation/setup/SetupWizardDialog";
 import { AuthLoginProgressService } from "../presentation/auth/AuthLoginProgressService";
-import { PythonReviewConfigSyncService } from "../infrastructure/review/PythonReviewConfigSyncService";
 import { EventHookService } from "../infrastructure/event_hook/EventHookService";
 import { DailyReviewEventHookService } from "../infrastructure/event_hook/DailyReviewEventHookService";
 import { DailyReviewCompletionEventHookService } from "../infrastructure/event_hook/DailyReviewCompletionEventHookService";
@@ -108,10 +97,6 @@ export class Container {
     return this.reviewFeatureFactory.createNoteReviewFeature();
   }
 
-  createPythonReviewConfigSyncService(): PythonReviewConfigSyncService {
-    return new PythonReviewConfigSyncService();
-  }
-
   createEventHookService(): EventHookService {
     return new EventHookService(this.app);
   }
@@ -124,42 +109,13 @@ export class Container {
     );
   }
 
-  createReviewPointLogseqJournalTemplateService(): ReviewPointLogseqJournalTemplateService {
-    return new ReviewPointLogseqJournalTemplateService(this.app);
-  }
-
-  createGenerateDailyNotesReviewUseCase(
-    llm = new LlmClient(),
-  ): GenerateDailyNotesReviewUseCase {
-    const noteRepo = new ProjectNoteFrontmatterRepository(this.app);
-    const createdRepo = new CreatedProjectNoteRepository(this.app);
-
-    return new GenerateDailyNotesReviewUseCase(
-      this.calendarFactory.createCreateDailyNoteUseCase(),
-      this.runtime.dailyNoteRepository,
-      new CollectCreatedNotesUseCase(createdRepo, noteRepo),
-      createdRepo,
-      llm,
-      new DailyNotesReviewWriter(),
-      new DailyNotesReportBuilder(),
-      new ReviewPointXMindTemplateService(this.app),
-      new ReviewPointXMindInputFileService(this.app),
-      new ReviewPointLogseqJournalTemplateService(this.app),
-    );
-  }
-
   createGenerateDailyReviewFlowUseCase(): GenerateDailyReviewFlowUseCase {
-    const llm = new LlmClient();
-
     return new GenerateDailyReviewFlowUseCase(
       this.syncFactory.createPullAndMergeTodayUseCase(),
       this.createGenerateDailyReviewUseCase(),
-      this.createGenerateDailyNotesReviewUseCase(llm),
       this.calendarFactory.createCreateDailyNoteUseCase(),
-      llm,
       new DailyReviewEventHookService(
         new EventHookService(this.app),
-        new PythonReviewConfigSyncService(),
       ),
       new DailyReviewCompletionEventHookService(),
     );

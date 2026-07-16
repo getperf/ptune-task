@@ -24,7 +24,6 @@ export default class PtunePlugin extends Plugin {
 		);
 
 		const container = new Container(this.app);
-		await container.createPythonReviewConfigSyncService().syncIfEnabled();
 		if (config.settings.eventHook.enabled) {
 			const ensured = await container
 				.createEventHookService()

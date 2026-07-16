@@ -1,16 +1,4 @@
 export type LogLevel = "debug" | "info" | "warn" | "error" | "none";
-export type LlmProvider = "openai" | "claude" | "gemini" | "custom";
-export type ReviewOutputFormat = "outline" | "xmind" | "logseq";
-
-export interface LlmSettings {
-	provider: LlmProvider;
-	apiKey: string;
-	baseUrl: string;
-	model: string;
-	temperature: number;
-	maxTokens: number;
-}
-
 export interface NoteSettings {
 	folderPrefix: "serial" | "date";
 	notePrefix: "serial" | "date";
@@ -27,21 +15,8 @@ export interface SnippetSettings {
 	filename: string;
 }
 
-export type SentenceMode = "none" | "llm";
-
-export interface ReviewSettings {
-	sentenceMode: SentenceMode;
-	noteSummaryOutputFormat: ReviewOutputFormat;
-	reviewPointOutputFormat: ReviewOutputFormat;
-	reviewTrendDays: number;
-	taskReviewEnabledDefault: boolean;
-	notesReviewEnabledDefault: boolean;
-	taskReviewOutputFormat: ReviewOutputFormat;
-	xmindTemplatePath: string;
-	xmindReviewOutlineTemplatePath: string;
-	logseqRootPath: string;
-	logseqJournalTemplatePath: string;
-	maxSentences: number;
+export interface TaskReviewSettings {
+	trendDays: number;
 }
 
 export type Lang = "ja" | "en";
@@ -72,12 +47,10 @@ export interface PluginSettings {
 
 	logLevel: LogLevel;
 	enableLogFile: boolean;
-	llm: LlmSettings;
-
 	note: NoteSettings;
 	projectIndex: ProjectIndexSettings;
 	snippet: SnippetSettings;
-	review: ReviewSettings;
+	taskReview: TaskReviewSettings;
 	habitTasks: HabitTaskSettings;
 	dailyNoteTask?: DailyNoteTaskSettings;
 	eventHook: EventHookSettings;

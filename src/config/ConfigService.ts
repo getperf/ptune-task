@@ -73,25 +73,17 @@ function mergeSettings(
 				data.dailyNoteTask?.subTaskTemplates ?? defaults.dailyNoteTask.subTaskTemplates,
 		}
 		: data.dailyNoteTask;
-	const mergedReview = migrateLegacyReviewTemplatePaths({
-		...defaults.review,
-		...(data.review ?? {}),
-	});
-
-	if (
-		data.review?.reviewPointOutputFormat === undefined
-		&& data.review?.noteSummaryOutputFormat !== undefined
-	) {
-		mergedReview.reviewPointOutputFormat = data.review.noteSummaryOutputFormat;
-	}
+	const legacyReview = (data as { review?: { reviewTrendDays?: number } }).review;
+	const taskReview = {
+		...defaults.taskReview,
+		...(data.taskReview ?? {}),
+		// Preserve the only ptune-task-owned legacy review preference.
+		trendDays: data.taskReview?.trendDays ?? legacyReview?.reviewTrendDays ?? defaults.taskReview.trendDays,
+	};
 
 	return {
 		...defaults,
 		...data,
-		llm: {
-			...defaults.llm,
-			...(data.llm ?? {}),
-		},
 		note: {
 			...defaults.note,
 			...(data.note ?? {}),
@@ -104,32 +96,12 @@ function mergeSettings(
 			...defaults.snippet,
 			...(data.snippet ?? {}),
 		},
-		review: mergedReview,
+		taskReview,
 		eventHook: {
 			...defaults.eventHook,
 			...(data.eventHook ?? {}),
 		},
 		habitTasks: mergedLegacyHabitTasks,
 		dailyNoteTask: mergedDailyNoteTask,
-	};
-}
-
-function migrateLegacyReviewTemplatePaths(review: {
-	xmindTemplatePath: string;
-	xmindReviewOutlineTemplatePath: string;
-	logseqJournalTemplatePath: string;
-}): {
-	xmindTemplatePath: string;
-	xmindReviewOutlineTemplatePath: string;
-	logseqJournalTemplatePath: string;
-} {
-	const xmindTemplatePath =
-		review.xmindTemplatePath === "_template/xmind/template_analysis.xmind"
-			? "_template/xmind/template_analysis.xmind"
-			: review.xmindTemplatePath;
-
-	return {
-		...review,
-		xmindTemplatePath,
 	};
 }

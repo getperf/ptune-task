@@ -23,11 +23,7 @@ type EventType =
 type HookStatus = "success" | "skipped" | "error" | "timeout";
 type PythonStatus = "success" | "skipped" | "error";
 
-interface ReviewRequestPayload extends Record<string, unknown> {
-	profiles_file: string;
-	credentials_file: string;
-	profile_id: string;
-}
+interface ReviewRequestPayload extends Record<string, unknown> {}
 
 interface EventEnvelope {
 	schema_version: 1;

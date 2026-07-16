@@ -1,10 +1,5 @@
 import { logger } from "../../../shared/logger/loggerInstance";
 import { CreateDailyNoteUseCase } from "../../calendar/usecases/CreateDailyNoteUseCase";
-import {
-  GenerateDailyNotesReviewUseCase,
-  GenerateDailyNotesReviewOptions,
-} from "../../daily_notes_review/usecases/GenerateDailyNotesReviewUseCase";
-import { TextGenerationPort } from "../../llm/ports/TextGenerationPort";
 import { GenerateDailyReviewUseCase } from "../../review/usecases/GenerateDailyReviewUseCase";
 import { PullAndMergeTodayUseCase } from "../../sync/pull/PullAndMergeTodayUseCase";
 import { getDefaultTaskListId } from "../../sync/shared/DefaultTaskListId";
@@ -18,7 +13,6 @@ import { ReviewFlowRunOptions } from "../types/ReviewFlowRunOptions";
 export interface DailyReviewRequestPort {
   requestDailyReview(options: {
     date: string;
-    reviewPointOutputFormat: ReviewFlowRunOptions["reviewPointOutputFormat"];
   }): Promise<{
     requestId: string;
     status: string;
@@ -45,9 +39,7 @@ export class GenerateDailyReviewFlowUseCase {
   constructor(
     private readonly pullAndMergeTodayUseCase: PullAndMergeTodayUseCase,
     private readonly taskReviewUseCase: GenerateDailyReviewUseCase,
-    private readonly dailyNotesReviewUseCase: GenerateDailyNotesReviewUseCase,
     private readonly createDailyNoteUseCase: CreateDailyNoteUseCase,
-    private readonly textGenerator: TextGenerationPort,
     private readonly dailyReviewRequestPort?: DailyReviewRequestPort,
     private readonly dailyReviewCompletionPort?: DailyReviewCompletionPort,
   ) { }
@@ -60,7 +52,7 @@ export class GenerateDailyReviewFlowUseCase {
 
     try {
       onProgress?.({ type: "started", date: options.date });
-      logger.debug(`[UseCase] GenerateDailyReviewFlowUseCase options date=${options.date} taskReviewEnabled=${options.taskReviewEnabled} notesReviewEnabled=${options.dailyNotesReviewEnabled} reviewPointFormat=${options.reviewPointOutputFormat}`);
+      logger.debug(`[UseCase] GenerateDailyReviewFlowUseCase options date=${options.date} taskReviewEnabled=${options.taskReviewEnabled} notesReviewEnabled=${options.dailyNotesReviewEnabled}`);
 
       const shouldRequestExternalDailyReview = this.shouldRequestExternalDailyReview(options);
       let externalDailyReviewRequestPromise: Promise<ExternalDailyReviewRequestResult> | null = null;
@@ -154,32 +146,7 @@ export class GenerateDailyReviewFlowUseCase {
         }
       }
 
-      const dailyNotesReviewResult = await this.executeDailyNotesReview(
-        options,
-        onProgress,
-      );
-
-      logger.debug(
-        `[UseCase:end] GenerateDailyReviewFlowUseCase date=${options.date} taskCount=${taskReviewResult?.taskCount ?? 0} noteCount=${dailyNotesReviewResult.noteCount}`,
-      );
-      onProgress?.({ type: "completed" });
-
-      return {
-        note: dailyNotesReviewResult.note ?? taskReviewResult?.note ?? (await this.resolveDailyNote(options.date)),
-        taskReview: taskReviewResult
-          ? {
-            executed: true,
-            taskCount: taskReviewResult.taskCount,
-          }
-          : {
-            executed: false,
-            taskCount: 0,
-          },
-        dailyNotesReview: {
-          executed: true,
-          noteCount: dailyNotesReviewResult.noteCount,
-        },
-      };
+      throw new Error("ptune-log daily review service is unavailable");
     } catch (error) {
       onProgress?.({
         type: "failed",
@@ -197,8 +164,7 @@ export class GenerateDailyReviewFlowUseCase {
     return Boolean(
       options.dailyNotesReviewEnabled &&
         !options.skipExternalDailyReviewRequest &&
-        this.dailyReviewRequestPort &&
-        this.textGenerator.hasValidApiKey(),
+        this.dailyReviewRequestPort,
     );
   }
 
@@ -211,7 +177,6 @@ export class GenerateDailyReviewFlowUseCase {
 
     return this.dailyReviewRequestPort.requestDailyReview({
       date: options.date,
-      reviewPointOutputFormat: options.reviewPointOutputFormat,
     });
   }
 
@@ -273,41 +238,4 @@ export class GenerateDailyReviewFlowUseCase {
     return note;
   }
 
-  private async executeDailyNotesReview(
-    options: ReviewFlowRunOptions,
-    onProgress: ((event: DailyReviewFlowProgressEvent) => void) | undefined,
-  ) {
-    let targetCount = 0;
-    const dailyNotesReviewOptions: GenerateDailyNotesReviewOptions = {
-      reviewPointOutputFormat: options.reviewPointOutputFormat,
-      enableReflection: true,
-      onProgress: (progress) => {
-        if (progress.type === "targets_resolved") {
-          targetCount = progress.total;
-          onProgress?.({
-            type: "daily_notes_review_started",
-            date: options.date,
-            targetCount,
-          });
-          return;
-        }
-
-        onProgress?.({
-          type: "daily_notes_review_progress",
-          completed: progress.completed,
-          total: progress.total,
-          path: progress.path ?? "",
-        });
-      },
-    };
-    const dailyNotesReviewResult = await this.dailyNotesReviewUseCase.execute(
-      options.date,
-      dailyNotesReviewOptions,
-    );
-    onProgress?.({
-      type: "daily_notes_review_completed",
-      noteCount: dailyNotesReviewResult.noteCount,
-    });
-    return dailyNotesReviewResult;
-  }
 }

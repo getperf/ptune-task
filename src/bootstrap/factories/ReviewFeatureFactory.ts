@@ -2,7 +2,6 @@ import { App } from "obsidian";
 
 import { EventHookNoticeMapper } from "../../infrastructure/event_hook/EventHookNoticeMapper";
 import { EventHookService } from "../../infrastructure/event_hook/EventHookService";
-import { PythonReviewConfigSyncService } from "../../infrastructure/review/PythonReviewConfigSyncService";
 
 import { NoteReviewFeature } from "../../presentation/note_review/NoteReviewFeature";
 
@@ -15,8 +14,7 @@ export class ReviewFeatureFactory {
       this.app,
 
       new EventHookService(this.app),
-      new EventHookNoticeMapper(),
-      new PythonReviewConfigSyncService(),
+		new EventHookNoticeMapper(),
     );
   }
 }

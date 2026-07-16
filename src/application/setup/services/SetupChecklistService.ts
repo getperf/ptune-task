@@ -1,6 +1,5 @@
 import { App, Platform, normalizePath } from "obsidian";
 import { PtuneSyncUriAuthService } from "../../../infrastructure/sync/ptune-sync-uri/PtuneSyncUriAuthService";
-import { config } from "../../../config/config";
 import { SetupChecklist, SetupItem } from "../types/SetupChecklist";
 import { i18n } from "../../../shared/i18n/I18n";
 import { logger } from "../../../shared/logger/loggerInstance";
@@ -103,14 +102,6 @@ export class SetupChecklistService {
       if (!(await this.app.vault.adapter.exists(path))) {
         missing.push(path);
       }
-    }
-
-    if (!config.settings.review.xmindTemplatePath?.trim()) {
-      missing.push("review.xmindTemplatePath");
-    }
-
-    if (!config.settings.review.logseqJournalTemplatePath?.trim()) {
-      missing.push("review.logseqJournalTemplatePath");
     }
 
     return missing.length === 0
