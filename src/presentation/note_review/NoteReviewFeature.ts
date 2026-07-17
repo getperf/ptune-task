@@ -2,15 +2,24 @@ import { App, Notice, Plugin, TFile } from "obsidian";
 import { config } from "../../config/config";
 import { isWorkNoteFrontmatter } from "../../domain/note/isWorkNote";
 import { EventHookNoticeMapper } from "../../infrastructure/event_hook/EventHookNoticeMapper";
-import { EventHookService } from "../../infrastructure/event_hook/EventHookService";
+import {
+	EventHookEmitResult,
+	EventHookService,
+} from "../../infrastructure/event_hook/EventHookService";
+import {
+	NoteReviewCompletionEventHookService,
+	NoteReviewOutcome,
+} from "../../infrastructure/event_hook/NoteReviewCompletionEventHookService";
 import { i18n } from "../../shared/i18n/I18n";
 import { logger } from "../../shared/logger/loggerInstance";
+import { NoteReviewProgressModal } from "./NoteReviewProgressModal";
 
 export class NoteReviewFeature {
 	constructor(
 		private readonly app: App,
 		private readonly eventHookService: EventHookService,
 		private readonly eventHookNoticeMapper: EventHookNoticeMapper,
+		private readonly noteReviewCompletionService: NoteReviewCompletionEventHookService,
 	) {}
 
 	start(plugin: Plugin): void {
@@ -113,12 +122,53 @@ export class NoteReviewFeature {
 		logger.info(
 			`[EventHook] note-review-requested status=${result.status} requestId=${result.requestId} note=${file.path}`,
 		);
+
+		// Only an accepted (enqueued) request produces a ptune-log terminal to
+		// wait on; open the confirmation modal and surface the real outcome.
+		if (result.status === "success") {
+			await this.showReviewProgress(file.path, result.requestId);
+			return;
+		}
+
 		if (this.shouldShowReviewRequestNotice(result.status, result.message)) {
 			const message = this.mapReviewRequestNotice(
 				result.status,
 				result.message,
 			);
 			new Notice(message);
+		}
+	}
+
+	private async showReviewProgress(
+		notePath: string,
+		requestId: string,
+	): Promise<void> {
+		const modal = new NoteReviewProgressModal(this.app);
+		modal.open();
+		const completion =
+			await this.noteReviewCompletionService.waitForNoteReviewCompleted({
+				requestId,
+				notePath,
+			});
+		logger.info(
+			`[EventHook] note-review-completed outcome=${completion.outcome} requestId=${requestId} note=${notePath}`,
+		);
+		const isError =
+			completion.outcome === "failed" || completion.outcome === "timeout";
+		modal.showOutcome(this.mapOutcomeMessage(completion.outcome), isError);
+	}
+
+	private mapOutcomeMessage(outcome: NoteReviewOutcome): string {
+		const t = i18n.common.noteReview.notice;
+		switch (outcome) {
+			case "completed":
+				return t.reviewCompleted;
+			case "skipped":
+				return t.reviewAlreadySummarized;
+			case "failed":
+				return t.reviewGenerateFailed;
+			case "timeout":
+				return t.reviewWaitTimeout;
 		}
 	}
 
@@ -176,15 +226,13 @@ export class NoteReviewFeature {
 
 	private mapReviewRequestNotice(status: string, rawMessage: string): string {
 		const t = i18n.common.noteReview.notice;
-		if (status === "success") {
-			return t.reviewRequested;
-		}
+		// A successful (enqueued) ack is handled by the progress modal, not here.
 		if (status === "timeout") {
 			return t.reviewRequestedTimeout;
 		}
 		return this.eventHookNoticeMapper.map({
 			requestId: "",
-			status,
+			status: status as EventHookEmitResult["status"],
 			message: rawMessage,
 		});
 	}

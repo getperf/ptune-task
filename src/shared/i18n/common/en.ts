@@ -69,28 +69,24 @@ export const commonEn = {
 			menu: "Note summary",
 			hookMenu: "Reconnect transcript capture",
 		},
-		modal: {
+		progress: {
 			title: "Note summary",
-			manualDescription:
-				"Automatic generation is unavailable because no language model is configured. Review the note body and enter the key points manually at a level that will be useful for later reflection.",
-			summaryLabel: "Summary",
-			summarySegmentsLabel: "Summary segments (raw Markdown)",
-			save: "Save",
-			regenerate: "Regenerate",
+			processing: "Generating summary…",
+			seeLog: "See the ptune-log log for details.",
 		},
 		notice: {
-			generating: "Note summary generation started. Please wait.",
-			saved: "Note summary saved",
 			failed: "Failed to generate note summary",
 			noActiveNote: "No active note",
-			apiKeyNotSet: "No language model API key is configured",
-			reviewRequested: "Requested note summary review",
 			reviewRequestedTimeout:
 				"Accepted the note summary review request. Check whether the review GUI opens.",
 			nonWorkNote:
 				"Not a work note (no `dailynote`); no ptune-log event was sent.",
 			eventHookDisabled:
 				"The ptune-log event hook is disabled. Enable it in settings.",
+			reviewCompleted: "Summary generated",
+			reviewAlreadySummarized: "Already summarized; skipped",
+			reviewGenerateFailed: "Failed to generate summary",
+			reviewWaitTimeout: "Timed out waiting for the completion notification",
 		},
 	},
 

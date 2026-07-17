@@ -69,28 +69,24 @@ export const commonJa = {
 			menu: "ノート要約",
 			hookMenu: "Transcript キャプチャー再接続",
 		},
-		modal: {
+		progress: {
 			title: "ノート要約",
-			manualDescription:
-				"LLM が未設定のため自動生成は行いません。ノート本文を確認しながら、振り返りに使いやすい粒度で要点を手動で記述してください。",
-			summaryLabel: "要約",
-			summarySegmentsLabel: "要約セグメント（Raw Markdown）",
-			save: "保存",
-			regenerate: "再生成",
+			processing: "要約を生成中…",
+			seeLog: "詳細は ptune-log ログを参照してください。",
 		},
 		notice: {
-			generating: "ノート要約を開始しました。しばらくお待ちください。",
-			saved: "ノート要約を保存しました",
 			failed: "ノート要約の生成に失敗しました",
 			noActiveNote: "アクティブなノートがありません",
-			apiKeyNotSet: "LLM の API キーが未設定です",
-			reviewRequested: "ノート要約レビューを依頼しました",
 			reviewRequestedTimeout:
 				"ノート要約レビュー依頼を受け付けました。GUI 起動を確認してください",
 			nonWorkNote:
 				"作業ノート（dailynote）ではないため、ptune-log イベントは送信しません",
 			eventHookDisabled:
 				"ptune-log イベントフックが無効です。設定で有効化してください",
+			reviewCompleted: "要約を生成しました",
+			reviewAlreadySummarized: "既に要約済みのためスキップしました",
+			reviewGenerateFailed: "要約生成に失敗しました",
+			reviewWaitTimeout: "完了通知の待機がタイムアウトしました",
 		},
 	},
 
