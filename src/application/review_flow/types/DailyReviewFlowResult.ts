@@ -1,6 +1,6 @@
 import { DailyNote } from "../../../domain/daily/DailyNote";
 
-export type DailyNotesReviewSkippedReason = "disabled" | "llm-unavailable";
+export type DailyNotesReviewSkippedReason = "disabled" | "event-hook-disabled";
 
 export type DailyReviewOutcome = "completed" | "cancelled" | "failed" | "timeout";
 

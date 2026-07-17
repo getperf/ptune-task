@@ -205,6 +205,8 @@ export const commonEn = {
 			reviewPointFormatLabel: "Reflection point format",
 			run: "Run",
 			atLeastOneRequired: "Select at least one review option.",
+			notesReviewRequiresEventHook:
+				"Daily notes review requires enabling the ptune-log event hook.",
 			options: {
 				outline: "Text outline",
 				xmind: "Mind map",
@@ -223,7 +225,6 @@ export const commonEn = {
 				taskReviewCompleted: "Task review completed",
 				notesReviewStarted: "Daily notes review started",
 				notesReviewSkipped: "Daily notes review skipped",
-				notesReviewProgress: "Generating note summaries",
 				notesReviewCompleted: "Daily notes review completed",
 				externalReviewRequested: "Requested external review",
 				externalReviewAccepted: "Review UI accepted",
@@ -250,6 +251,12 @@ export const commonEn = {
 				"Review generated ({taskCount} tasks, notes review skipped: {reason})",
 			dailyNotesReviewRequested:
 				"Review generated ({taskCount} tasks). Requested daily notes review from ptune-log.",
+			generatedTaskOnlyEventHookDisabled:
+				"Task review generated ({taskCount} tasks). Daily notes review requires enabling the ptune-log event hook.",
+			dailyNotesReviewFailed:
+				"Review generated ({taskCount} tasks). Daily notes review failed.",
+			dailyNotesReviewTimeout:
+				"Review generated ({taskCount} tasks). Timed out waiting for daily notes review completion.",
 		},
 	},
 

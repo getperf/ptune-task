@@ -1,4 +1,5 @@
 import { App } from "obsidian";
+import { config } from "../../config/config";
 import { TodayResolver } from "../../application/calendar/services/TodayResolver";
 import { DailyReviewFlowProgressEvent } from "../../application/review_flow/types/DailyReviewFlowProgressEvent";
 import { ReviewFlowDialogOptions } from "../../application/review_flow/types/ReviewFlowDialogOptions";
@@ -31,11 +32,16 @@ export class ReviewCommand {
   execute(): void {
     const today = this.todayResolver.resolve();
     const defaults = this.optionsResolver.resolve();
+    // Daily notes review is delegated to ptune-log via the event hook. When the
+    // hook is disabled it cannot run, so the toggle is offered disabled/off.
+    const notesReviewAvailable = config.settings.eventHook.enabled;
     const dialogOptions: ReviewFlowDialogOptions = {
       date: today,
       dateCandidates: this.buildRecentDates(today, 7),
       taskReviewEnabled: defaults.taskReviewEnabledDefault,
-      dailyNotesReviewEnabled: defaults.notesReviewEnabledDefault,
+      dailyNotesReviewEnabled:
+        defaults.notesReviewEnabledDefault && notesReviewAvailable,
+      notesReviewAvailable,
     };
 
     new ReviewSetupModal(
@@ -64,10 +70,18 @@ export class ReviewCommand {
       await this.presenter.openNote(result.note);
       await this.presenter.refreshCalendar();
 
-      progress.markCompleted();
-      this.presenter.showInfo(this.buildMessage(result));
+      const notice = this.buildNotice(result);
+      if (notice.error) {
+        // The task review still succeeded, but the delegated work-note review
+        // failed or timed out. Surface it instead of a false success.
+        progress.markFailed(notice.message);
+        this.presenter.showError(notice.message);
+      } else {
+        progress.markCompleted();
+        this.presenter.showInfo(notice.message);
+      }
 
-      logger.info(`[Command] ReviewCommand completed date=${options.date}`);
+      logger.info(`[Command] ReviewCommand completed date=${options.date} notesReviewError=${notice.error}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       progress.markFailed(message);
@@ -75,22 +89,48 @@ export class ReviewCommand {
     }
   }
 
-  private buildMessage(result: Awaited<ReturnType<GenerateDailyReviewFlowUseCase["execute"]>>): string {
+  private buildNotice(
+    result: Awaited<ReturnType<GenerateDailyReviewFlowUseCase["execute"]>>,
+  ): { message: string; error: boolean } {
     const t = i18n.common.reviewCommand.notice;
+    const taskCount = String(result.taskReview.taskCount);
+
     if (!result.dailyNotesReview.executed) {
-      return t.generatedWithoutNotesReview
-        .replace("{taskCount}", String(result.taskReview.taskCount))
-        .replace("{reason}", result.dailyNotesReview.skippedReason);
+      if (result.dailyNotesReview.skippedReason === "event-hook-disabled") {
+        return {
+          message: t.generatedTaskOnlyEventHookDisabled.replace("{taskCount}", taskCount),
+          error: false,
+        };
+      }
+      return {
+        message: t.generatedWithoutNotesReview
+          .replace("{taskCount}", taskCount)
+          .replace("{reason}", result.dailyNotesReview.skippedReason),
+        error: false,
+      };
     }
 
     if (result.dailyNotesReview.requestedExternally === true) {
-      return t.dailyNotesReviewRequested
-        .replace("{taskCount}", String(result.taskReview.taskCount));
+      // Only failed/timeout terminals are surfaced as errors; a cancelled
+      // review is a deliberate user action and needs no extra notice.
+      if (result.dailyNotesReview.outcome === "failed") {
+        return { message: t.dailyNotesReviewFailed.replace("{taskCount}", taskCount), error: true };
+      }
+      if (result.dailyNotesReview.outcome === "timeout") {
+        return { message: t.dailyNotesReviewTimeout.replace("{taskCount}", taskCount), error: true };
+      }
+      return {
+        message: t.dailyNotesReviewRequested.replace("{taskCount}", taskCount),
+        error: false,
+      };
     }
 
-    return t.generated
-      .replace("{taskCount}", String(result.taskReview.taskCount))
-      .replace("{noteCount}", String(result.dailyNotesReview.noteCount));
+    return {
+      message: t.generated
+        .replace("{taskCount}", taskCount)
+        .replace("{noteCount}", String(result.dailyNotesReview.noteCount)),
+      error: false,
+    };
   }
 
   private buildRecentDates(today: string, days: number): string[] {

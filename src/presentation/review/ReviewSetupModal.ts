@@ -25,7 +25,10 @@ export class ReviewSetupModal extends Modal {
     this.state = {
       date: options.date,
       taskReviewEnabled: options.taskReviewEnabled,
-      dailyNotesReviewEnabled: options.dailyNotesReviewEnabled,
+      // Daily notes review requires the ptune-log event hook. Force it off when
+      // the hook is unavailable so it can never be submitted enabled.
+      dailyNotesReviewEnabled:
+        options.notesReviewAvailable && options.dailyNotesReviewEnabled,
     };
   }
 
@@ -63,15 +66,19 @@ export class ReviewSetupModal extends Modal {
           }),
       );
 
-    new Setting(contentEl)
+    const notesReviewSetting = new Setting(contentEl)
       .setName(t.notesReviewLabel)
       .addToggle((toggle) =>
         toggle
+          .setDisabled(!this.options.notesReviewAvailable)
           .setValue(this.state.dailyNotesReviewEnabled)
           .onChange((value) => {
             this.state.dailyNotesReviewEnabled = value;
           }),
       );
+    if (!this.options.notesReviewAvailable) {
+      notesReviewSetting.setDesc(t.notesReviewRequiresEventHook);
+    }
 
     new Setting(contentEl)
       .addButton((button) =>

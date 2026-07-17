@@ -39,20 +39,20 @@ describe("ConfigService", () => {
 		});
 	});
 
-	test("load(): nested review settings preserve defaults", async () => {
+	test("load(): nested taskReview settings preserve defaults", async () => {
 		const service = new ConfigService();
 
 		const plugin = createPluginMock({
-			review: {
-				sentenceMode: "none",
+			taskReview: {
+				trendDays: 14,
 			},
 		}) as unknown as Plugin;
 
 		await service.load(plugin);
 
-		expect(service.getSettings().review).toEqual({
-			...DEFAULT_SETTINGS.review,
-			sentenceMode: "none",
+		expect(service.getSettings().taskReview).toEqual({
+			...DEFAULT_SETTINGS.taskReview,
+			trendDays: 14,
 		});
 	});
 
@@ -73,34 +73,35 @@ describe("ConfigService", () => {
 		});
 	});
 
-	test("load(): reviewPointOutputFormat falls back to legacy noteSummaryOutputFormat", async () => {
+	test("load(): taskReview.trendDays falls back to legacy review.reviewTrendDays", async () => {
 		const service = new ConfigService();
 
 		const plugin = createPluginMock({
 			review: {
-				noteSummaryOutputFormat: "xmind",
+				reviewTrendDays: 30,
 			},
 		}) as unknown as Plugin;
 
 		await service.load(plugin);
 
-		expect(service.getSettings().review.reviewPointOutputFormat).toBe("xmind");
+		expect(service.getSettings().taskReview.trendDays).toBe(30);
 	});
 
-	test("load(): migrates legacy xmindTemplatePath to _template path", async () => {
+	test("load(): explicit taskReview.trendDays overrides legacy review.reviewTrendDays", async () => {
 		const service = new ConfigService();
 
 		const plugin = createPluginMock({
 			review: {
-				xmindTemplatePath: "_template/xmind/template_analysis.xmind",
+				reviewTrendDays: 30,
+			},
+			taskReview: {
+				trendDays: 5,
 			},
 		}) as unknown as Plugin;
 
 		await service.load(plugin);
 
-		expect(service.getSettings().review.xmindTemplatePath).toBe(
-			"_template/xmind/template_analysis.xmind",
-		);
+		expect(service.getSettings().taskReview.trendDays).toBe(5);
 	});
 
 	test("load(): dailyNoteTask.habit falls back to legacy habitTasks when not configured", async () => {

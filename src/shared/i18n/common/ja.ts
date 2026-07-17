@@ -203,6 +203,8 @@ export const commonJa = {
 			reviewPointFormatLabel: "振り返りポイント形式",
 			run: "実行",
 			atLeastOneRequired: "少なくとも1つのレビューを選択してください",
+			notesReviewRequiresEventHook:
+				"当日作成ノートレビューには ptune-log イベントフックの有効化が必要です",
 			options: {
 				outline: "outline",
 				xmind: "xmind",
@@ -221,7 +223,6 @@ export const commonJa = {
 				taskReviewCompleted: "タスクレビューが完了しました",
 				notesReviewStarted: "当日作成ノートレビューを開始しました",
 				notesReviewSkipped: "当日作成ノートレビューをスキップしました",
-				notesReviewProgress: "ノート要約を生成中",
 				notesReviewCompleted: "当日作成ノートレビューが完了しました",
 				externalReviewRequested: "Python 側レビューを依頼しました",
 				externalReviewAccepted: "レビュー UI 起動を確認しました",
@@ -246,6 +247,12 @@ export const commonJa = {
 				"レビューを生成しました（タスク {taskCount} 件、ノートレビューはスキップ: {reason}）",
 			dailyNotesReviewRequested:
 				"レビューを生成しました（タスク {taskCount} 件）。当日作成ノートレビューを ptune-log に依頼しました。",
+			generatedTaskOnlyEventHookDisabled:
+				"タスクレビューを生成しました（{taskCount} 件）。当日作成ノートレビューには ptune-log イベントフックの有効化が必要です。",
+			dailyNotesReviewFailed:
+				"レビューを生成しました（タスク {taskCount} 件）。当日作成ノートレビューは失敗しました。",
+			dailyNotesReviewTimeout:
+				"レビューを生成しました（タスク {taskCount} 件）。当日作成ノートレビューの完了通知待機がタイムアウトしました。",
 		},
 	},
 

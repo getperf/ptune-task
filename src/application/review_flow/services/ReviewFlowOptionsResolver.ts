@@ -1,4 +1,3 @@
-import { config } from "../../../config/config";
 import { ReviewFlowOptions } from "../types/ReviewFlowOptions";
 
 export class ReviewFlowOptionsResolver {

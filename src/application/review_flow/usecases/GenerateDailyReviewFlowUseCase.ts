@@ -95,15 +95,7 @@ export class GenerateDailyReviewFlowUseCase {
 
         return {
           note: taskReviewResult?.note ?? (await this.resolveDailyNote(options.date)),
-          taskReview: taskReviewResult
-            ? {
-              executed: true,
-              taskCount: taskReviewResult.taskCount,
-            }
-            : {
-              executed: false,
-              taskCount: 0,
-            },
+          taskReview: this.toTaskReviewResult(taskReviewResult),
           dailyNotesReview: {
             executed: false,
             noteCount: 0,
@@ -127,15 +119,7 @@ export class GenerateDailyReviewFlowUseCase {
 
           return {
             note,
-            taskReview: taskReviewResult
-              ? {
-                executed: true,
-                taskCount: taskReviewResult.taskCount,
-              }
-              : {
-                executed: false,
-                taskCount: 0,
-              },
+            taskReview: this.toTaskReviewResult(taskReviewResult),
             dailyNotesReview: {
               executed: true,
               noteCount: 0,
@@ -146,7 +130,28 @@ export class GenerateDailyReviewFlowUseCase {
         }
       }
 
-      throw new Error("ptune-log daily review service is unavailable");
+      // Reaching here means the work-note analysis could not be delegated to
+      // ptune-log (event hook disabled or the request port returned null).
+      // Finish gracefully with the task review only instead of failing the run.
+      onProgress?.({
+        type: "daily_notes_review_skipped",
+        reason: "event-hook-disabled",
+      });
+      const note = taskReviewResult?.note ?? (await this.resolveDailyNote(options.date));
+      onProgress?.({ type: "completed" });
+      logger.debug(
+        `[UseCase:end] GenerateDailyReviewFlowUseCase date=${options.date} taskCount=${taskReviewResult?.taskCount ?? 0} notesReview=skipped reason=event-hook-disabled`,
+      );
+
+      return {
+        note,
+        taskReview: this.toTaskReviewResult(taskReviewResult),
+        dailyNotesReview: {
+          executed: false,
+          noteCount: 0,
+          skippedReason: "event-hook-disabled",
+        },
+      };
     } catch (error) {
       onProgress?.({
         type: "failed",
@@ -219,6 +224,14 @@ export class GenerateDailyReviewFlowUseCase {
     });
 
     return { requestId: requested.requestId, outcome };
+  }
+
+  private toTaskReviewResult(
+    taskReviewResult: Awaited<ReturnType<GenerateDailyReviewUseCase["execute"]>> | null,
+  ): DailyReviewFlowResult["taskReview"] {
+    return taskReviewResult
+      ? { executed: true, taskCount: taskReviewResult.taskCount }
+      : { executed: false, taskCount: 0 };
   }
 
   private resolveErrorMessage(error: unknown): string {
