@@ -18,6 +18,7 @@ export interface DailyReviewRequestPort {
     status: string;
     message: string;
   } | null>;
+  cancelDailyReview?(options: { requestId: string; date: string }): Promise<{ status: string; message: string }>;
 }
 
 export interface DailyReviewCompletionPort {
@@ -47,6 +48,7 @@ export class GenerateDailyReviewFlowUseCase {
   async execute(
     options: ReviewFlowRunOptions,
     onProgress?: (event: DailyReviewFlowProgressEvent) => void,
+    onCancelReady?: (cancel: () => Promise<void>) => void,
   ): Promise<DailyReviewFlowResult> {
     logger.debug(`[UseCase:start] GenerateDailyReviewFlowUseCase date=${options.date}`);
 
@@ -109,6 +111,7 @@ export class GenerateDailyReviewFlowUseCase {
           options,
           externalDailyReviewRequestPromise,
           onProgress,
+          onCancelReady,
         );
         if (externalResult) {
           const note = taskReviewResult?.note ?? (await this.resolveDailyNote(options.date));
@@ -189,10 +192,18 @@ export class GenerateDailyReviewFlowUseCase {
     options: ReviewFlowRunOptions,
     requestPromise: Promise<ExternalDailyReviewRequestResult>,
     onProgress: ((event: DailyReviewFlowProgressEvent) => void) | undefined,
+    onCancelReady: ((cancel: () => Promise<void>) => void) | undefined,
   ): Promise<{ requestId: string; outcome: DailyReviewOutcome } | null> {
     const requested = await requestPromise;
     if (!requested) {
       return null;
+    }
+    const requestPort = this.dailyReviewRequestPort;
+    if (requestPort?.cancelDailyReview) {
+      onCancelReady?.(() => requestPort.cancelDailyReview!({
+        requestId: requested.requestId,
+        date: options.date,
+      }).then(() => undefined));
     }
 
     if (requested.status === "error" || requested.status === "skipped") {

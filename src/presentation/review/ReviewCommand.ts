@@ -65,6 +65,7 @@ export class ReviewCommand {
         (event: DailyReviewFlowProgressEvent) => {
           progress.handleEvent(event);
         },
+        (cancel) => progress.setCancelAction(cancel),
       );
 
       await this.presenter.openNote(result.note);

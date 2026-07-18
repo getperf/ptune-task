@@ -19,7 +19,8 @@ type EventType =
 	| "note-create"
 	| "note-attached"
 	| "note-review-requested"
-	| "daily-review-requested";
+	| "daily-review-requested"
+	| "daily-review-cancel-requested";
 type HookStatus = "success" | "skipped" | "error" | "timeout";
 type PythonStatus = "success" | "skipped" | "error";
 
@@ -133,6 +134,10 @@ export class EventHookService {
 		options?: EventHookEmitOptions,
 	): Promise<EventHookEmitResult> {
 		return this.emit("daily-review-requested", dailynoteKey, options, payload);
+	}
+
+	async emitDailyReviewCancel(targetRequestId: string, dailynoteKey: string): Promise<EventHookEmitResult> {
+		return this.emit("daily-review-cancel-requested", dailynoteKey, undefined, { target_request_id: targetRequestId, dailynote_key: dailynoteKey });
 	}
 
 	async waitForDailyReviewApplied(
