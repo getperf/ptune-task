@@ -107,44 +107,50 @@ export class NoteReviewFeature {
 			new Notice(i18n.common.noteReview.notice.nonWorkNote);
 			return;
 		}
-		try {
-			await this.requestPythonReview(file);
-		} catch (error) {
-			logger.warn("[Command] NoteReviewFeature.open failed", error);
-			new Notice(i18n.common.noteReview.notice.failed);
-		}
+		// Every post-request outcome (accepted -> terminal, or a rejected
+		// request) is surfaced inside the progress modal so the note-review
+		// action never splits between a modal and a transient Notice. The
+		// pre-checks above intentionally stay on Notice.
+		await this.requestPythonReview(file);
 	}
 
 	private async requestPythonReview(file: TFile): Promise<void> {
-		const result = await this.eventHookService.emitNoteReviewRequested(
-			file.path,
-		);
-		logger.info(
-			`[EventHook] note-review-requested status=${result.status} requestId=${result.requestId} note=${file.path}`,
-		);
+		const modal = new NoteReviewProgressModal(this.app);
+		modal.open();
 
-		// Only an accepted (enqueued) request produces a ptune-log terminal to
-		// wait on; open the confirmation modal and surface the real outcome.
-		if (result.status === "success") {
-			await this.showReviewProgress(file.path, result.requestId);
-			return;
-		}
-
-		if (this.shouldShowReviewRequestNotice(result.status, result.message)) {
-			const message = this.mapReviewRequestNotice(
-				result.status,
-				result.message,
+		try {
+			const result = await this.eventHookService.emitNoteReviewRequested(
+				file.path,
 			);
-			new Notice(message);
+			logger.info(
+				`[EventHook] note-review-requested status=${result.status} requestId=${result.requestId} note=${file.path}`,
+			);
+
+			// Only an accepted (enqueued) request produces a ptune-log terminal
+			// to wait on; keep the modal open and surface the real outcome.
+			if (result.status === "success") {
+				await this.awaitReviewTerminal(modal, file.path, result.requestId);
+				return;
+			}
+
+			// The request was not accepted (timeout / error). No terminal will
+			// arrive, so resolve the same modal with the request-level outcome
+			// instead of a separate Notice.
+			modal.showOutcome(
+				this.mapReviewRequestOutcome(result.status, result.message),
+				true,
+			);
+		} catch (error) {
+			logger.warn("[Command] NoteReviewFeature.requestPythonReview failed", error);
+			modal.showOutcome(i18n.common.noteReview.notice.failed, true);
 		}
 	}
 
-	private async showReviewProgress(
+	private async awaitReviewTerminal(
+		modal: NoteReviewProgressModal,
 		notePath: string,
 		requestId: string,
 	): Promise<void> {
-		const modal = new NoteReviewProgressModal(this.app);
-		modal.open();
 		const completion =
 			await this.noteReviewCompletionService.waitForNoteReviewCompleted({
 				requestId,
@@ -214,17 +220,7 @@ export class NoteReviewFeature {
 		return true;
 	}
 
-	private shouldShowReviewRequestNotice(
-		status: string,
-		rawMessage: string,
-	): boolean {
-		if (status === "skipped" && rawMessage === "event-hook is disabled") {
-			return false;
-		}
-		return true;
-	}
-
-	private mapReviewRequestNotice(status: string, rawMessage: string): string {
+	private mapReviewRequestOutcome(status: string, rawMessage: string): string {
 		const t = i18n.common.noteReview.notice;
 		// A successful (enqueued) ack is handled by the progress modal, not here.
 		if (status === "timeout") {
