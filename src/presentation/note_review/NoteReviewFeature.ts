@@ -188,7 +188,6 @@ export class NoteReviewFeature {
 		try {
 			const result =
 				await this.eventHookService.emitNoteAttached(notePath);
-			const message = this.eventHookNoticeMapper.map(result);
 			logger.info(
 				`[EventHook] note-attached status=${result.status} requestId=${result.requestId} note=${notePath}`,
 			);
@@ -197,13 +196,25 @@ export class NoteReviewFeature {
 					suppressTimeout: true,
 				})
 			) {
-				new Notice(message);
+				new Notice(this.mapNoteAttachedNotice(result));
 			}
 		} catch (error) {
 			logger.warn("[EventHook] note-attached emit failed", error);
-			// note-attached timeout is often a false negative while daemon continues processing.
-			// Keep this path silent to avoid noisy "daemon not running" notices.
+			new Notice(i18n.common.eventHook.notice.errorPrefix);
 		}
+	}
+
+	private mapNoteAttachedNotice(result: EventHookEmitResult): string {
+		const t = i18n.common.eventHook.notice;
+		// The status message is an interop acknowledgement (for example "ok"),
+		// not user-facing copy. Keep the manual command's outcomes localized.
+		if (result.status === "success") {
+			return t.success;
+		}
+		if (result.status === "skipped") {
+			return t.skipped;
+		}
+		return this.eventHookNoticeMapper.map(result);
 	}
 
 	private shouldShowEventHookNotice(

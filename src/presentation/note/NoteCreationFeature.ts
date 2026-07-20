@@ -277,30 +277,23 @@ export class NoteCreationFeature {
 					enabledOverride: eventHookEnabled,
 				},
 			);
-			const message = this.eventHookNoticeMapper.map(result);
 			logger.info(
 				`[EventHook] note-create status=${result.status} requestId=${result.requestId} note=${notePath}`,
 			);
-			if (this.shouldShowEventHookNotice(result.status, result.message)) {
-				new Notice(message);
+			if (this.shouldShowEventHookNotice(result.status)) {
+				new Notice(this.eventHookNoticeMapper.map(result));
 			}
 		} catch (error) {
 			logger.warn("[EventHook] note-create emit failed", error);
-			new Notice(i18n.common.eventHook.notice.timeout);
+			new Notice(i18n.common.eventHook.notice.errorPrefix);
 		}
 	}
 
-	private shouldShowEventHookNotice(
-		status: string,
-		rawMessage: string,
-	): boolean {
-		if (status === "skipped" && rawMessage === "event-hook is disabled") {
-			return false;
-		}
-		if (status === "timeout") {
-			// Timeout is occasionally observed as a false negative while daemon processes in background.
-			return false;
-		}
-		return true;
+	private shouldShowEventHookNotice(status: string): boolean {
+		// Note creation already has its own success Notice. The event hook runs in
+		// the background, so only an actionable integration error should interrupt
+		// the user; ACKs (including the daemon's "ok" message), skips, and timeouts
+		// remain observable in logs.
+		return status === "error";
 	}
 }
