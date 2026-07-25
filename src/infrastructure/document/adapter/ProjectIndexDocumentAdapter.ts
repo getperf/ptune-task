@@ -37,6 +37,10 @@ export class ProjectIndexDocumentAdapter {
     return true;
   }
 
+  setUpdatedAt(updatedAt: string): void {
+    this.md.getFrontmatter().set("updatedAt", updatedAt);
+  }
+
   toString(): string {
     return this.md.toString();
   }

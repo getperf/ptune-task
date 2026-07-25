@@ -15,8 +15,8 @@ export class ProjectIndexBuilder {
     const md = MarkdownFile.createEmpty();
     const frontmatter = md.getFrontmatter();
 
-    frontmatter.set("created", createdAt);
-    frontmatter.set("updated", createdAt);
+    frontmatter.set("createdAt", createdAt);
+    frontmatter.set("updatedAt", createdAt);
 
     if (folder.taskKey) {
       frontmatter.set("taskKey", folder.taskKey);

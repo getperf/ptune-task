@@ -1,6 +1,7 @@
 import { App, TFile, TFolder, normalizePath } from "obsidian";
 import { NoteSummary } from "../../domain/note/NoteSummary";
 import { ProjectFolder } from "../../domain/project/ProjectFolder";
+import { ProjectIndexDocumentAdapter } from "../document/adapter/ProjectIndexDocumentAdapter";
 import { PtuneRuntime } from "../../shared/PtuneRuntime";
 import { logger } from "../../shared/logger/loggerInstance";
 
@@ -84,6 +85,25 @@ export class ProjectRepository {
 
 		logger.info(
 			`[Repository] ProjectRepository.createNote created path=${note.notePath}`,
+		);
+	}
+
+	async updateProjectIndexUpdatedAt(
+		folder: ProjectFolder,
+		updatedAt: string,
+	): Promise<void> {
+		const file = this.app.vault.getAbstractFileByPath(
+			normalizePath(folder.indexNotePath),
+		);
+		if (!(file instanceof TFile)) {
+			throw new Error(`Project index not found: ${folder.indexNotePath}`);
+		}
+
+		const adapter = new ProjectIndexDocumentAdapter(await this.app.vault.read(file));
+		adapter.setUpdatedAt(updatedAt);
+		await this.app.vault.modify(file, adapter.toString());
+		logger.info(
+			`[Repository] ProjectRepository.updateProjectIndexUpdatedAt path=${folder.indexNotePath}`,
 		);
 	}
 }

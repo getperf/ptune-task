@@ -98,12 +98,30 @@ export class NoteCreationUseCase {
 		);
 
 		await this.repository.createNote(note, markdown);
+		await this.updateProjectIndexUpdatedAt(request.parentPath, note.createdAt);
 
 		logger.debug(
 			`[UseCase:end] NoteCreationUseCase.createProjectNote path=${note.notePath}`,
 		);
 
 		return note;
+	}
+
+	private async updateProjectIndexUpdatedAt(
+		projectFolderPath: string,
+		updatedAt: string,
+	): Promise<void> {
+		const folder = new ProjectFolder(projectFolderPath);
+
+		try {
+			await this.repository.updateProjectIndexUpdatedAt(folder, updatedAt);
+		} catch (error) {
+			// The work note is already durable; do not report its creation as failed.
+			logger.warn(
+				`[UseCase] NoteCreationUseCase.createProjectNote index update failed path=${folder.indexNotePath}`,
+				error,
+			);
+		}
 	}
 
 	private getFolderPrefix(parentPath: string): string {
