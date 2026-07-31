@@ -212,7 +212,7 @@ export const commonJa = {
 			running: "実行中...",
 			continueInBackground: "バックグラウンドで続行",
 			actionHint:
-				"バックグラウンドで続行すると、この画面を閉じてもレビューは継続します。キャンセルすると、実行中の日次振り返りを中止します。",
+				"当日作成ノートレビューは ptune-log Web UI で行います。\nノートの内容を確認・確定すると、このレビューは自動的に完了します。\nバックグラウンドで実行すると、この画面を閉じてもレビューは継続します。キャンセルすると、実行中の日次振り返りを中止します。",
 			cancelConfirmationTitle: "日次振り返りを中止しますか？",
 			cancelConfirmationMessage: "実行中の日次振り返りを中止します。",
 			stopReview: "レビューを中止",

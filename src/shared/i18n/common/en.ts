@@ -214,7 +214,7 @@ export const commonEn = {
 			running: "Running...",
 			continueInBackground: "Continue in background",
 			actionHint:
-				"Continue in background closes this dialog while the review keeps running. Cancel stops the daily review currently in progress.",
+				"Daily notes review takes place in the ptune-log Web UI.\nReview and confirm the notes there to complete this review automatically.\nContinue in background closes this dialog while the review keeps running. Cancel stops the daily review currently in progress.",
 			cancelConfirmationTitle: "Stop the daily review?",
 			cancelConfirmationMessage: "The daily review currently in progress will be stopped.",
 			stopReview: "Stop review",

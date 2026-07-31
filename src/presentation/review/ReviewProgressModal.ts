@@ -19,7 +19,7 @@ export class ReviewProgressModal extends Modal {
     logContainer.setCssProps({ border: "1px solid var(--background-modifier-border)", borderRadius: "8px", backgroundColor: "var(--background-secondary)", padding: "10px 12px", minHeight: "120px", maxHeight: "160px", overflowY: "auto" });
     this.logEl = logContainer.createEl("pre");
     this.logEl.setCssProps({ margin: "0", whiteSpace: "pre-wrap", wordBreak: "break-word", lineHeight: "1.5" });
-    contentEl.createEl("p", { text: t.actionHint });
+    contentEl.createEl("p", { text: t.actionHint }).addClass("whitespace-pre-line");
     new Setting(contentEl)
       .addButton((button) => button
         .setButtonText(t.continueInBackground)
