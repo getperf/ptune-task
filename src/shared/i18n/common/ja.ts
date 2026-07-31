@@ -210,6 +210,12 @@ export const commonJa = {
 		progress: {
 			title: "レビュー実行中",
 			running: "実行中...",
+			continueInBackground: "バックグラウンドで続行",
+			actionHint:
+				"バックグラウンドで続行すると、この画面を閉じてもレビューは継続します。キャンセルすると、実行中の日次振り返りを中止します。",
+			cancelConfirmationTitle: "日次振り返りを中止しますか？",
+			cancelConfirmationMessage: "実行中の日次振り返りを中止します。",
+			stopReview: "レビューを中止",
 			completed: "レビューが完了しました。まもなく閉じます",
 			failed: "エラーが発生しました",
 			events: {

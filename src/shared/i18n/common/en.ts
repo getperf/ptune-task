@@ -212,6 +212,12 @@ export const commonEn = {
 		progress: {
 			title: "Running review",
 			running: "Running...",
+			continueInBackground: "Continue in background",
+			actionHint:
+				"Continue in background closes this dialog while the review keeps running. Cancel stops the daily review currently in progress.",
+			cancelConfirmationTitle: "Stop the daily review?",
+			cancelConfirmationMessage: "The daily review currently in progress will be stopped.",
+			stopReview: "Stop review",
 			completed: "Review completed. Closing shortly",
 			failed: "An error occurred",
 			events: {

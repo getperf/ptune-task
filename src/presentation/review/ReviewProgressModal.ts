@@ -19,7 +19,15 @@ export class ReviewProgressModal extends Modal {
     logContainer.setCssProps({ border: "1px solid var(--background-modifier-border)", borderRadius: "8px", backgroundColor: "var(--background-secondary)", padding: "10px 12px", minHeight: "120px", maxHeight: "160px", overflowY: "auto" });
     this.logEl = logContainer.createEl("pre");
     this.logEl.setCssProps({ margin: "0", whiteSpace: "pre-wrap", wordBreak: "break-word", lineHeight: "1.5" });
-    new Setting(contentEl).addButton((button) => button.setButtonText("バックグラウンドで続行").onClick(() => this.onContinueInBackground())).addButton((button) => button.setButtonText("日次振り返りを中止").setWarning().onClick(() => void this.onCancel()));
+    contentEl.createEl("p", { text: t.actionHint });
+    new Setting(contentEl)
+      .addButton((button) => button
+        .setButtonText(t.continueInBackground)
+        .setCta()
+        .onClick(() => this.onContinueInBackground()))
+      .addButton((button) => button
+        .setButtonText(i18n.common.action.cancel)
+        .onClick(() => this.confirmCancellation()));
   }
 
   onClose(): void { if (this.autoCloseTimer !== null) window.clearTimeout(this.autoCloseTimer); this.autoCloseTimer = null; this.contentEl.empty(); }
@@ -28,4 +36,30 @@ export class ReviewProgressModal extends Modal {
   markFailed(message: string): void { if (this.statusEl) this.statusEl.setText(`${i18n.common.reviewFlow.progress.failed}: ${message}`); this.appendLine(`${i18n.common.reviewFlow.progress.failed}: ${message}`); }
   appendStatusLine(line: string): void { this.appendLine(line); }
   private appendLine(line: string): void { this.lines.push(line); this.logEl?.setText(this.lines.join("\n")); }
+
+  private confirmCancellation(): void {
+    new ReviewCancellationModal(this.app, this.onCancel).open();
+  }
+}
+
+class ReviewCancellationModal extends Modal {
+  constructor(app: App, private readonly onCancelReview: () => Promise<void>) { super(app); }
+
+  onOpen(): void {
+    const t = i18n.common.reviewFlow.progress;
+    this.contentEl.createEl("h3", { text: t.cancelConfirmationTitle });
+    this.contentEl.createEl("p", { text: t.cancelConfirmationMessage });
+    new Setting(this.contentEl)
+      .addButton((button) => button
+        .setButtonText(i18n.common.action.cancel)
+        .onClick(() => this.close()))
+      .addButton((button) => button
+        .setButtonText(t.stopReview)
+        .onClick(() => {
+          void this.onCancelReview();
+          this.close();
+        }));
+  }
+
+  onClose(): void { this.contentEl.empty(); }
 }
